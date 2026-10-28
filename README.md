@@ -10,6 +10,13 @@ Una empresa virtual en tu móvil y tu ordenador: una planta de oficina con 16 ag
 - **183 skills**: métodos profesionales reales (ecuación de valor de Hormozi, StoryBrand, PAS/AIDA, JTBD, RICE, OKR, SPIN, MEDDICC, Chris Voss, HEARD, WCAG, SRE, TDD…). Muchas se inspiran en las bibliotecas públicas de skills más usadas (anthropics/skills, obra/superpowers, coreyhaines31/marketingskills) y cada una indica en qué se basa. Puedes crear las tuyas.
 - **Referentes por puesto**: cada puesto trabaja con el criterio de 5-6 referentes mundiales de su especialidad (Walter Murch y MrBeast en vídeo, Dieter Rams en diseño, Ogilvy y Schwartz en copy, Kent Beck y Fowler en desarrollo…). Están en `src/expert.js`.
 - **Contexto**: sube la carpeta de tu app, archivos sueltos, texto pegado o un repositorio público de GitHub. En cada encargo el puesto recibe los fragmentos más relevantes y, dentro de Claude, puede buscar y abrir cualquier archivo con herramientas. También puede leer los archivos del proyecto de Claude si lo activas.
+- **Aprenden solos**:
+  - Tras cada entrega, el puesto se autoevalúa con el criterio de sus referentes. Si no llega a 8, rehace el trabajo él solo.
+  - Guarda lecciones en su memoria y la empresa acumula los hechos y decisiones del proyecto.
+  - Tus valoraciones («Útil» o «Mejorable») se convierten en reglas prioritarias.
+  - Cada 5 encargos, el puesto crea una skill propia a partir de su experiencia.
+  - Las lecciones se consolidan solas cuando pasan de 24.
+- **Trabajo autónomo continuo** (en Ajustes): mientras la app está abierta, Dirección lanza rondas cada 15-120 minutos y prioriza rehacer lo que salió flojo.
 - **Encargos por pasos**: en modo *Por pasos* el agente planifica 3-6 pasos y los ejecuta en orden; el panel *En marcha* muestra «Paso 3 de 5».
 - **Orden a la empresa**: Dirección organiza fases (las tareas de una fase van en paralelo y las siguientes usan lo anterior) y cierra con un informe ejecutivo.
 - **Ronda autónoma**, **traspasos** entre agentes («pasar a Vídeo el guion de Copy»), **revisar y mejorar**, imágenes de referencia, copiar y descargar en Markdown.

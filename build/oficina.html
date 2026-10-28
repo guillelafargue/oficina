@@ -192,6 +192,14 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
 .refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
 .src { color: var(--ink-3); font-size: 12.5px; }
+.d-exp { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.mem { margin-top: 6px; font-size: 13px; }
+.mem summary { cursor: pointer; color: var(--ink-3); width: fit-content; }
+.mem .refs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; color: var(--ink-2); }
+.mem .linkbtn { font-size: 12px; color: var(--ink-3); flex: none; }
+.fb { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-3); }
+.fbform { display: flex; gap: 6px; margin-top: 10px; }
+.fbform input { flex: 1; min-width: 0; min-height: 30px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; }
 .src::before { content: "· "; }
 
 /* Skills */
@@ -317,7 +325,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   <section class="view" id="v-oficina">
     <div class="vh">
       <div><h1 id="coTitle">La oficina</h1><p id="briefLine"></p></div>
-      <div class="stats"><span><b id="sWork">0</b>trabajando</span><span><b id="sIdle">0</b>libres</span></div>
+      <div class="stats"><span class="note" id="autoLine" hidden></span><span><b id="sWork">0</b>trabajando</span><span><b id="sIdle">0</b>libres</span></div>
     </div>
 
     <form class="composer" id="composer">
@@ -399,6 +407,9 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="fCompany">Empresa o marca</label><input id="fCompany" maxlength="80"></div>
     <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fAuto"><span><b>Trabajo autónomo continuo</b><span>Mientras la app esté abierta, Dirección lanza rondas solas: decide qué hace falta, reparte y mejora lo flojo. Máximo 12 rondas por sesión.</span></span></label>
+      <label for="fEvery" class="note">Cada</label><select id="fEvery"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
     <div id="keyFields">
       <div class="field"><label for="fKey">Clave de la API de Anthropic</label><input id="fKey" type="password" autocomplete="off" placeholder="sk-ant-...">
         <span class="note">Solo hace falta fuera de Claude. Se guarda en este navegador y solo se envía a api.anthropic.com.</span></div>
@@ -1469,7 +1480,7 @@ function persona(a) {
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
 Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
-${a.refs?.length ? `Trabajas con el criterio de los mayores referentes de tu especialidad y aplicas sus ideas cuando encajan: ${a.refs.map(([n, i]) => `${n} (${i})`).join("; ")}.\n` : ""}
+${a.refs?.length ? `Trabajas con el criterio de los mayores referentes de tu especialidad y aplicas sus ideas cuando encajan: ${a.refs.map(([n, i]) => `${n} (${i})`).join("; ")}.\n` : ""}${memoryBlock(a)}
 PROYECTO DE LA EMPRESA:
 ${state.brief}
 
@@ -1529,6 +1540,7 @@ ${roster()}
 
 TRABAJO YA ENTREGADO:
 ${recentWork(8)}
+${BRAIN.facts.length ? `\nLO QUE YA SABE LA EMPRESA:\n${BRAIN.facts.map(x => "- " + x.text).join("\n")}\n` : ""}${(() => { const weak = state.tasks.filter(t => t.status === "done" && (t.feedback === "down" || (typeof t.score === "number" && (t.finalScore ?? t.score) < 7))).slice(-6); return weak.length ? `\nENTREGAS QUE EL PROPIETARIO O SU AUTOR CONSIDERAN MEJORABLES (candidatas a rehacer):\n${weak.map(t => `- ${byId[t.agentId].name}: ${t.order}${t.faults?.length ? " (fallos: " + t.faults.join("; ") + ")" : ""}`).join("\n")}\n` : ""; })()}
 
 ${intro}
 
@@ -1556,7 +1568,7 @@ function setAgent(agentId) {
   const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
   const active = mine.find(t => t.phase !== "cola");
   state.status[agentId] = active ? "work" : mine.length ? "queue" : "idle";
-  if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
+  if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.phase === "review" ? "Autoevaluando" : active.phase === "revise" ? "Mejorando su trabajo" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
   else delete state.bubble[agentId];
 }
 async function runTask(o) {
@@ -1585,12 +1597,15 @@ async function runTask(o) {
         }
         const now = Date.now(); if (now - lastPaint > 300) { lastPaint = now; bump(t); }
       } });
-      t.status = "done"; t.step = t.steps.length;
+      t.step = t.steps.length;
+      await selfReview(a, t, skill, o.signal);
+      t.status = "done";
     } finally { release(); }
   } catch (e) {
     t.status = "error"; t.result = (e?.text ? e.text + "\n\n" : "") + "> " + errText(e);
   }
   t.phase = "fin"; setAgent(a.id); bump(t); await store.saveTask(t);
+  if (t.status === "done") maybeLearnSkill(a);
   return t;
 }
 
@@ -1648,6 +1663,167 @@ async function runTaskRaw(agentId, order, prompt, runId, signal) {
   t.phase = "fin"; setAgent(agentId); bump(t); await store.saveTask(t); return t;
 }
 
+/* ---------- Cerebro: memoria, autoevaluación y aprendizaje continuo ---------- */
+// Cada puesto acumula lecciones de su experiencia; la empresa acumula hechos compartidos.
+// Tras cada entrega el puesto se evalúa, rehace el trabajo si no llega al nivel y guarda lo aprendido.
+const BRAIN = { mem: {}, facts: [], review: true, auto: { on: false, every: 30, next: 0, rounds: 0 } };
+const MEM_MAX = 24, FACTS_MAX = 40, REVIEW_BELOW = 8, LEARNED_MAX = 5, AUTO_MAX_ROUNDS = 12;
+const memOf = id => (BRAIN.mem[id] ||= []);
+const similar = (a, b) => { const x = norm(a).replace(/\W+/g, " ").trim(), y = norm(b).replace(/\W+/g, " ").trim(); return x === y || x.includes(y.slice(0, 40)) || y.includes(x.slice(0, 40)); };
+function addLessons(id, list, src = "auto", from = "") {
+  const m = memOf(id); let n = 0;
+  for (const raw of list || []) {
+    const text = String(raw || "").trim().slice(0, 300); if (text.length < 8) continue;
+    const dup = m.find(x => similar(x.text, text));
+    if (dup) { dup.hits = (dup.hits || 1) + 1; if (src === "tu") dup.src = "tu"; continue; }
+    m.push({ id: uid(), text, src, from: from.slice(0, 80), at: Date.now(), hits: 1 }); n++;
+  }
+  if (n) store.saveBrain(id);
+  if (m.length > MEM_MAX) consolidate(id);
+  return n;
+}
+function addFacts(list) {
+  let n = 0;
+  for (const raw of list || []) {
+    const text = String(raw || "").trim().slice(0, 300); if (text.length < 8 || BRAIN.facts.some(x => similar(x.text, text))) continue;
+    BRAIN.facts.push({ id: uid(), text, at: Date.now() }); n++;
+  }
+  if (BRAIN.facts.length > FACTS_MAX) BRAIN.facts = BRAIN.facts.slice(-FACTS_MAX);
+  if (n) store.saveBrain("facts");
+}
+function memoryBlock(a) {
+  const m = memOf(a.id).slice().sort((x, y) => (y.src === "tu") - (x.src === "tu") || (y.hits || 1) - (x.hits || 1));
+  let s = "";
+  if (m.length) s += `\nLO QUE HAS APRENDIDO CON LA EXPERIENCIA (aplícalo siempre; lo marcado [Propietario] viene de sus valoraciones y tiene prioridad):\n${m.map(x => `- ${x.src === "tu" ? "[Propietario] " : ""}${x.text}`).join("\n")}\n`;
+  if (BRAIN.facts.length) s += `\nLO QUE YA SABE LA EMPRESA (decisiones y datos establecidos; respétalos):\n${BRAIN.facts.map(x => "- " + x.text).join("\n")}\n`;
+  return s;
+}
+function statsOf(id) {
+  const done = state.tasks.filter(t => t.agentId === id && t.status === "done");
+  const scored = done.filter(t => typeof t.score === "number");
+  const avg = scored.length ? scored.reduce((n, t) => n + (t.finalScore ?? t.score), 0) / scored.length : null;
+  const up = done.filter(t => t.feedback === "up").length, down = done.filter(t => t.feedback === "down").length;
+  return { done: done.length, avg, up, down, lessons: memOf(id).length, learned: state.customSkills.filter(s => s.agentId === id && s.learned).length };
+}
+function evalPrompt(a, t, skill) {
+  const body = t.result.length > 14000 ? t.result.slice(0, 7000) + "\n[…]\n" + t.result.slice(-7000) : t.result;
+  return `Eres el puesto de ${a.role} de «${state.company}». Acabas de entregar el trabajo de abajo. Evalúalo sin piedad, con el nivel de exigencia de ${(a.refs || []).slice(0, 3).map(r => r[0]).join(", ") || "los mejores de tu especialidad"} y del cliente más exigente.
+
+ENCARGO: ${t.order}${skill ? `\nMÉTODO PEDIDO: ${skill.name}` : ""}
+
+ENTREGA:
+${body}
+
+LO QUE YA HABÍAS APRENDIDO:
+${memOf(a.id).map(x => "- " + x.text).join("\n") || "(nada todavía)"}
+
+Responde SOLO con JSON:
+{"nota": número del 1 al 10 (10 = nivel de referente mundial; 7 = profesional correcto pero mejorable),
+ "fallos": ["fallo concreto y corregible", "..."] (máximo 4, vacío si no hay),
+ "aprendizajes": ["lección general y reutilizable en futuros encargos, en imperativo, máximo 25 palabras", "..."] (de 0 a 3, solo si son nuevas),
+ "hechos": ["dato o decisión explícita sobre la empresa o el proyecto que el resto del equipo debe conocer", "..."] (de 0 a 3)}`;
+}
+// Autoevaluación tras entregar: nota, revisión automática si no llega al nivel y aprendizaje.
+async function selfReview(a, t, skill, signal) {
+  t.phase = "review"; state.bubble[a.id] = "Autoevaluando"; bump(t);
+  let ev; try { ev = await ask(evalPrompt(a, t, skill), { json: true, quick: true, signal }); } catch (e) { if (e?.code === "cancelled") throw e; return; }
+  const nota = Math.max(1, Math.min(10, Number(ev?.nota) || 0)); if (!nota) return;
+  t.score = nota; t.faults = (Array.isArray(ev?.fallos) ? ev.fallos : []).map(String).slice(0, 4);
+  addLessons(a.id, ev?.aprendizajes, "auto", t.order); addFacts(ev?.hechos);
+  if (BRAIN.review && nota < REVIEW_BELOW && t.faults.length && !t.revised) {
+    t.phase = "revise"; state.bubble[a.id] = "Mejorando su trabajo"; bump(t);
+    const first = t.result;
+    try {
+      let lastPaint = 0;
+      t.result = await ask(`${execPrompt(a, t, skill)}
+
+TU PRIMERA VERSIÓN:
+${first.slice(0, 14000)}
+
+Tu autoevaluación le puso ${nota}/10 por estos fallos:
+${t.faults.map(f => "- " + f).join("\n")}
+
+Reescribe la entrega completa corrigiendo todo eso y llévala al nivel de los mejores de tu especialidad. Mantén la misma estructura de secciones. No expliques los cambios: entrega solo la versión mejorada.`, { signal, onText: ({ text }) => { t.result = text; const now = Date.now(); if (now - lastPaint > 300) { lastPaint = now; bump(t); } } });
+      t.revised = true; t.firstResult = first.slice(0, 20000);
+    } catch (e) { if (e?.code === "cancelled") throw e; t.result = first; }
+  }
+}
+async function consolidate(id) {
+  const a = byId[id], m = memOf(id); if (m._busy) return; m._busy = true;
+  try {
+    await acquire();
+    try {
+      const raw = await ask(`Eres el puesto de ${a.role}. Estas son tus lecciones acumuladas con la experiencia:\n${m.map(x => `- ${x.src === "tu" ? "[Propietario] " : ""}${x.text}`).join("\n")}\n\nConsolídalas en un máximo de 15 principios de trabajo: fusiona las repetidas, quita las contradichas por otras más recientes, conserva siempre el sentido de las marcadas [Propietario]. Responde SOLO con JSON: {"principios": [{"texto": "…", "propietario": true|false}]}`, { json: true, quick: true });
+      const list = (Array.isArray(raw?.principios) ? raw.principios : []).filter(x => x?.texto).slice(0, 15);
+      if (list.length >= 5) { BRAIN.mem[id] = list.map(x => ({ id: uid(), text: String(x.texto).slice(0, 300), src: x.propietario ? "tu" : "auto", at: Date.now(), hits: 2 })); store.saveBrain(id); }
+    } finally { release(); }
+  } catch {} finally { delete m._busy; if (state.open === id) refreshDrawerTasks(); }
+}
+// Cada 5 encargos terminados, el puesto convierte su experiencia en una skill propia.
+async function maybeLearnSkill(a) {
+  const n = state.tasks.filter(t => t.agentId === a.id && t.status === "done").length;
+  if (!n || n % 5) return;
+  const recent = state.tasks.filter(t => t.agentId === a.id && t.status === "done").sort((x, y) => y.createdAt - x.createdAt).slice(0, 5);
+  try {
+    await acquire();
+    let raw;
+    try {
+      raw = await ask(`Eres el puesto de ${a.role} de «${state.company}». Con tu experiencia reciente, crea UNA skill nueva: un método de trabajo propio, mejor que los que ya tienes, para el tipo de encargo que más te piden en esta empresa.
+
+TUS ÚLTIMOS ENCARGOS:
+${recent.map(t => `- ${t.order}${typeof t.score === "number" ? ` (autoevaluación ${t.score}/10)` : ""}${t.feedback ? ` (propietario: ${t.feedback === "up" ? "útil" : "mejorable"})` : ""}`).join("\n")}
+
+LO QUE HAS APRENDIDO:
+${memOf(a.id).map(x => "- " + x.text).join("\n") || "(nada)"}
+
+SKILLS QUE YA TIENES: ${skillsOf(a.id).map(s => s.name).join(", ")}
+
+Responde SOLO con JSON: {"crear": true|false, "nombre": "máximo 5 palabras", "desc": "para qué sirve en una frase", "metodo": "instrucciones paso a paso, concretas, de 80 a 160 palabras"}. Si no aporta nada nuevo, "crear": false.`, { json: true, quick: true });
+    } finally { release(); }
+    if (!raw?.crear || !raw.nombre || !raw.metodo || skillsOf(a.id).some(s => similar(s.name, raw.nombre))) return;
+    const learned = state.customSkills.filter(s => s.agentId === a.id && s.learned).sort((x, y) => x.createdAt - y.createdAt);
+    if (learned.length >= LEARNED_MAX) { const old = learned[0]; state.customSkills = state.customSkills.filter(s => s.id !== old.id); store.deleteSkill(old.id); }
+    const s = { id: "c." + uid(), agentId: a.id, name: String(raw.nombre).slice(0, 60), desc: String(raw.desc || raw.nombre).slice(0, 160), method: String(raw.metodo).slice(0, 3000), learned: true, src: "su propia experiencia", createdAt: Date.now() };
+    state.customSkills.push(s); await store.saveSkill(s); paintCounts();
+    toast(`${a.name} ha creado una skill nueva: «${s.name}».`);
+  } catch {}
+}
+async function giveFeedback(t, kind, comment) {
+  const a = byId[t.agentId]; t.feedback = kind; t.v++; bump(t); store.saveTask(t);
+  if (kind === "down") {
+    const c = comment.trim();
+    if (c) addLessons(a.id, [`En encargos como «${t.order.slice(0, 60)}», el propietario pidió: ${c}`], "tu", t.order);
+    runTask({ agentId: a.id, order: "Mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+      extra: `Tu entrega anterior:\n${t.result.slice(0, 12000)}\n\nEl propietario la ha marcado como mejorable${c ? `: «${c}»` : "."} Entrega la versión mejorada completa, corrigiendo exactamente eso.` });
+    toast(c ? "Anotado. Lo tendrá en cuenta siempre y ya está rehaciéndolo." : "Anotado. Ya está rehaciéndolo.");
+    return;
+  }
+  toast("Anotado. Repetirá lo que ha funcionado.");
+  try {
+    await acquire();
+    try {
+      const raw = await ask(`Eres el puesto de ${a.role}. El propietario ha valorado como muy útil esta entrega tuya:\nENCARGO: ${t.order}\nENTREGA:\n${t.result.slice(0, 8000)}\n\nExtrae de 1 a 2 lecciones concretas sobre qué hiciste bien y debes repetir siempre. Responde SOLO con JSON: {"aprendizajes": ["…"]}`, { json: true, quick: true });
+      addLessons(a.id, raw?.aprendizajes, "tu", t.order);
+    } finally { release(); }
+  } catch {}
+  if (state.open === a.id) openAgent(a.id);
+}
+// Trabajo autónomo continuo: Dirección lanza rondas solas mientras la app está abierta.
+function autoTick() {
+  const au = BRAIN.auto;
+  if (!au.on || state.run || !aiReady() || au.rounds >= AUTO_MAX_ROUNDS) return paintAuto();
+  if (!au.next) au.next = Date.now() + 60e3;
+  if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; runCompany("", "auto"); }
+  paintAuto();
+}
+function paintAuto() {
+  const el = $("#autoLine"); if (!el) return;
+  const au = BRAIN.auto;
+  if (!au.on) { el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = au.rounds >= AUTO_MAX_ROUNDS ? `Modo autónomo en pausa: ${AUTO_MAX_ROUNDS} rondas hechas en esta sesión` : state.run ? "Modo autónomo: el equipo está trabajando" : `Modo autónomo: próxima ronda a las ${new Date(au.next || Date.now() + 60e3).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 /* ---------- Pintado ---------- */
 let paintQueued = false;
 const changed = new Set();
@@ -1686,6 +1862,8 @@ function progressOf(t) {
   if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Terminado" : "Error" };
   if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
   if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
+  if (t.phase === "review") return { pct: 92, ind: true, txt: "Autoevaluando" };
+  if (t.phase === "revise") return { pct: 95, ind: true, txt: `Mejorando (se puso un ${t.score})` };
   if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k} de ${t.steps.length}`, step: t.steps[k - 1] || "" }; }
   return { pct: 40, ind: true, txt: t.result ? "Escribiendo" : "Pensando" };
 }
@@ -1870,6 +2048,7 @@ function openAgent(id, focusTask) {
       <button class="btn ghost sm x" type="button" id="dClose">Cerrar</button></div>
     <div class="d-body">
       <p class="d-bio">${esc(a.bio)} <span>Trabaja con ${esc(a.tools.join(", "))}.</span></p>
+      ${brainHTML(a)}
       ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => `<li><b>${esc(n)}</b> ${esc(i)}</li>`).join("")}</ul></div>` : ""}
       <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">Nuevo encargo</p>
         <label for="dText" hidden>Encargo</label>
@@ -1883,6 +2062,13 @@ function openAgent(id, focusTask) {
   $("#drawer").hidden = false; $("#scrim").hidden = false;
   if (focusTask) $("#drawer").querySelector(`[data-tid="${focusTask}"]`)?.scrollIntoView({ block: "start" });
 }
+function brainHTML(a) {
+  const st = statsOf(a.id), mem = memOf(a.id), learned = state.customSkills.filter(s => s.agentId === a.id && s.learned);
+  const facts = [st.done ? `${st.done} ${st.done === 1 ? "encargo" : "encargos"}` : "Sin experiencia todavía", st.avg != null ? `nota media ${st.avg.toFixed(1).replace(".", ",")}` : "", st.up ? `${st.up} útiles` : "", st.lessons ? `${st.lessons} aprendizajes` : "", st.learned ? `${st.learned} skills propias` : ""].filter(Boolean).join(" · ");
+  return `<div><p class="lbl">Experiencia</p><p class="d-exp">${esc(facts)}</p>
+    ${mem.length ? `<details class="mem"><summary>Lo que ha aprendido (${mem.length})</summary><ul class="refs">${mem.map(x => `<li><span>${x.src === "tu" ? "<b>Tuyo</b> " : ""}${esc(x.text)}</span><button class="linkbtn" type="button" data-memdel="${x.id}" aria-label="Olvidar">Olvidar</button></li>`).join("")}</ul></details>` : `<p class="note">Aprende de cada encargo: se autoevalúa, guarda lecciones y recuerda tus valoraciones.</p>`}
+    ${learned.length ? `<p class="note" style="margin-top:6px">Skills creadas por su experiencia: ${learned.map(s => esc(s.name)).join(", ")}</p>` : ""}</div>`;
+}
 function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; el.innerHTML = `${statusDot(state.open)} ${esc(statusText(state.open))}`; }
 function drawerTaskHTML(t) {
   const sk = t.skillId ? skillById(t.skillId) : null, p = progressOf(t);
@@ -1893,6 +2079,7 @@ function drawerTaskHTML(t) {
   const acts = t.status === "done" ? `<div class="task-acts">
       <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
       <button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
+      <span class="fb">${t.feedback === "up" ? "Marcado como útil" : t.feedback === "down" ? "Marcado como mejorable" : `<button class="btn ghost sm" type="button" data-fb="up" data-fbid="${t.id}">Útil</button><button class="btn ghost sm" type="button" data-fb="down" data-fbid="${t.id}">Mejorable</button>`}</span>
       <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>
       <span class="sep"></span>
       <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a otro puesto…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select>
@@ -1900,7 +2087,8 @@ function drawerTaskHTML(t) {
       <button class="btn sm" type="button" data-handoff="${t.id}">Pasar</button></div>`
     : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
   return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
-    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${[sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).length ? " · " + [sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).map(x => esc(x.name)).join(", ") : ""}</span></div>
+    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${[sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).length ? " · " + [sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).map(x => esc(x.name)).join(", ") : ""}${typeof t.score === "number" ? ` · autoevaluación ${t.score}/10${t.revised ? ", revisada y mejorada" : ""}` : ""}</span></div>
+    ${t.feedback !== "down" && t.status === "done" ? `<form class="fbform" data-fbform="${t.id}" hidden><label for="fbt-${t.id}" hidden>Qué falló</label><input id="fbt-${t.id}" placeholder="Qué debería hacer distinto (lo recordará siempre)"><button class="btn sm" type="submit">Rehacer</button></form>` : ""}
     ${steps}${body}${acts}</article>`;
 }
 function refreshDrawerTasks() {
@@ -1913,6 +2101,7 @@ function refreshDrawerTasks() {
 }
 function closeAgent() { state.open = null; scene?.select(null); $("#drawer").hidden = true; $("#scrim").hidden = true; }
 document.addEventListener("submit", e => {
+  if (e.target.dataset.fbform) { e.preventDefault(); const t = state.tasks.find(x => x.id === e.target.dataset.fbform); if (t) giveFeedback(t, "down", e.target.querySelector("input").value); return; }
   if (e.target.id !== "dOrder") return;
   e.preventDefault();
   const id = state.open, v = $("#dText").value.trim(), dc = state.dComp;
@@ -1955,6 +2144,12 @@ document.addEventListener("click", async e => {
       extra: `El puesto de ${byId[t.agentId].role} te pasa este trabajo para que lo uses como base:\n${t.result.slice(0, 12000)}` });
     toast(`Pasado a ${byId[to].name}.`); return;
   }
+  if ((b = el("[data-fb]"))) {
+    const t = state.tasks.find(x => x.id === b.dataset.fbid); if (!t) return;
+    if (b.dataset.fb === "up") return giveFeedback(t, "up", "");
+    const f = $(`[data-fbform="${t.id}"]`); if (f) { f.hidden = false; f.querySelector("input").focus(); } return;
+  }
+  if ((b = el("[data-memdel]"))) { const id = state.open, m = memOf(id); BRAIN.mem[id] = m.filter(x => x.id !== b.dataset.memdel); store.saveBrain(id); b.closest("li").remove(); return; }
   if ((b = el("[data-ctxdel]"))) {
     if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
     const gone = CTX.items.filter(x => x.source === b.dataset.ctxdel); CTX.items = CTX.items.filter(x => x.source !== b.dataset.ctxdel); CTX.ver++;
@@ -1999,6 +2194,7 @@ function openSettings() {
   $("#fCompany").value = state.company; $("#fBrief").value = state.brief;
   const s = settingsLocal(); $("#fKey").value = s.key || ""; $("#fModel").value = s.model || "claude-opus-5-5";
   $("#keyFields").hidden = AI.mode === "sample";
+  $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
   $("#settings").showModal();
 }
 $("#settings").addEventListener("close", async () => {
@@ -2006,6 +2202,10 @@ $("#settings").addEventListener("close", async () => {
   state.company = $("#fCompany").value.trim() || "Mi empresa";
   state.brief = $("#fBrief").value.trim() || state.brief;
   if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
+  BRAIN.review = $("#fReview").checked;
+  const wasOn = BRAIN.auto.on; BRAIN.auto.on = $("#fAuto").checked; BRAIN.auto.every = +$("#fEvery").value || 30;
+  if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
+  paintAuto();
   paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
 });
 $("#btnNewSkill").addEventListener("click", () => {
@@ -2197,11 +2397,12 @@ const store = {
     if (this.db) {
       try {
         const s = await this.base.get();
-        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; }
+        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
           this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
+        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = d.data(); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
         try { const cq = await this.base.collection("context").orderBy("createdAt", "asc").limit(1000).get(); CTX.items = cq.docs.map(d => d.data()).filter(x => x?.id); } catch {}
         mergeTasks(tq.docs.map(d => d.data())); mergeRuns(rq.docs.map(d => d.data())); state.customSkills = sq.docs.map(d => d.data()).filter(s => byId[s.agentId]);
       } catch { this.db = null; }
@@ -2210,16 +2411,21 @@ const store = {
       try { const s = JSON.parse(localStorage.getItem("oficina.v2") || "null");
         if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
       CTX.items = await idb.all();
+      try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; loadBrainMeta(b); } } catch {}
     }
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
   async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
   async del(col, id) { if (this.db) { try { await this.base.collection(col).doc(id).delete(); return; } catch {} } this.local(); },
-  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief, projectFiles: CTX.projectFiles }).catch(() => this.local()); this.local(); },
+  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief, projectFiles: CTX.projectFiles, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every }).catch(() => this.local()); this.local(); },
+  saveBrain(key) {
+    if (this.db) { const items = key === "facts" ? BRAIN.facts : memOf(key); return this.base.collection("brain").doc(key).set({ items: items.map(({ _busy, ...x }) => x) }).catch(() => {}); }
+    try { localStorage.setItem("oficina.brain", JSON.stringify({ mem: BRAIN.mem, facts: BRAIN.facts, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every })); } catch {}
+  },
   async saveCtx(x) { if (this.db) { try { await this.base.collection("context").doc(x.id).set(x); return; } catch (e) { if (e?.code === "quota_exceeded") { toast("El almacén está lleno: quita contexto o entregas antiguas."); throw e; } } } await idb.put(x); },
   async deleteCtx(id) { if (this.db) { try { await this.base.collection("context").doc(id).delete(); return; } catch {} } await idb.del(id); },
-  saveTask(t) { const { v, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); return this.put("tasks", rec); },
+  saveTask(t) { const { v, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); if (rec.firstResult) rec.firstResult = rec.firstResult.slice(0, 8000); return this.put("tasks", rec); },
   deleteTask(id) { return this.del("tasks", id); },
   saveRun(r) { const { ctl, ...rec } = r; return this.put("runs", JSON.parse(JSON.stringify(rec))); },
   saveSkill(s) { return this.put("skills", s); },
@@ -2227,8 +2433,10 @@ const store = {
   local() {
     try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
       tasks: state.tasks.filter(t => t.status !== "work").slice(-150).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+    if (!this.db) this.saveBrain("facts");
   },
 };
+function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + 60e3; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
   for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, status: t.status === "work" ? "error" : t.status, v: 0 });
@@ -2244,7 +2452,7 @@ async function boot() {
   setRoom(state.room);
   go(location.hash.slice(1) || "oficina");
   centerStage();
-  tick(); setInterval(tick, 30000);
+  tick(); setInterval(tick, 30000); setInterval(autoTick, 15000);
   document.addEventListener("visibilitychange", () => { if (document.hidden) scene.stop(); else if (state.view === "oficina") scene.start(); });
   AI.mode = window.claude?.use ? "pending" : "none"; updateBanner();
   if (window.claude?.use) {

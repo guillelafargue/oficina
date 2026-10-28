@@ -192,6 +192,14 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
 .refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
 .src { color: var(--ink-3); font-size: 12.5px; }
+.d-exp { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.mem { margin-top: 6px; font-size: 13px; }
+.mem summary { cursor: pointer; color: var(--ink-3); width: fit-content; }
+.mem .refs li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; color: var(--ink-2); }
+.mem .linkbtn { font-size: 12px; color: var(--ink-3); flex: none; }
+.fb { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-3); }
+.fbform { display: flex; gap: 6px; margin-top: 10px; }
+.fbform input { flex: 1; min-width: 0; min-height: 30px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; }
 .src::before { content: "· "; }
 
 /* Skills */
@@ -317,7 +325,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   <section class="view" id="v-oficina">
     <div class="vh">
       <div><h1 id="coTitle">La oficina</h1><p id="briefLine"></p></div>
-      <div class="stats"><span><b id="sWork">0</b>trabajando</span><span><b id="sIdle">0</b>libres</span></div>
+      <div class="stats"><span class="note" id="autoLine" hidden></span><span><b id="sWork">0</b>trabajando</span><span><b id="sIdle">0</b>libres</span></div>
     </div>
 
     <form class="composer" id="composer">
@@ -399,6 +407,9 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="fCompany">Empresa o marca</label><input id="fCompany" maxlength="80"></div>
     <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fAuto"><span><b>Trabajo autónomo continuo</b><span>Mientras la app esté abierta, Dirección lanza rondas solas: decide qué hace falta, reparte y mejora lo flojo. Máximo 12 rondas por sesión.</span></span></label>
+      <label for="fEvery" class="note">Cada</label><select id="fEvery"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
     <div id="keyFields">
       <div class="field"><label for="fKey">Clave de la API de Anthropic</label><input id="fKey" type="password" autocomplete="off" placeholder="sk-ant-...">
         <span class="note">Solo hace falta fuera de Claude. Se guarda en este navegador y solo se envía a api.anthropic.com.</span></div>
