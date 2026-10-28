@@ -1487,8 +1487,11 @@ function planStepsPrompt(a, order, skill) {
 ENCARGO (de ${"{from}"}):
 ${order}
 ${skill ? `\nMÉTODO A SEGUIR, skill «${skill.name}»:\n${skill.method}\n` : ""}
-Antes de trabajar, planifica. Divide el encargo en 3 a 6 pasos de trabajo concretos y ordenados, como lo haría un experto de tu área${skill ? " siguiendo el método indicado" : ""}.
-Responde SOLO con JSON: {"pasos": ["título corto del paso 1", "..."]}`;
+TU REPERTORIO DE SKILLS:
+${skillsOf(a.id).map(s => `- ${s.id}: ${s.name}. ${s.desc}`).join("\n")}
+
+Antes de trabajar, planifica. Elige de tu repertorio las skills (de 1 a 3) que más mejoran este encargo${skill ? ", además de la indicada" : ""}, y divide el trabajo en 3 a 6 pasos concretos y ordenados, como lo haría un experto de tu área aplicando esos métodos.
+Responde SOLO con JSON: {"skills": ["id de skill", "..."], "pasos": ["título corto del paso 1", "..."]}`;
 }
 function execPrompt(a, t, skill) {
   const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
@@ -1497,11 +1500,19 @@ function execPrompt(a, t, skill) {
 ${ctx ? "\n" + ctx + "\n" : ""}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
 ENCARGO (de ${t.from}):
 ${t.order}
-${skill ? `\nMÉTODO A SEGUIR, skill «${skill.name}»:\n${skill.method}\n` : ""}${t.hasImage ? "\nSe adjunta una imagen de referencia: analízala y úsala en el trabajo.\n" : ""}${plan}
+${methodsBlock(a, t, skill)}${t.hasImage ? "\nSe adjunta una imagen de referencia: analízala y úsala en el trabajo.\n" : ""}${plan}
 
 ${RULES(a)}
 - Si el contexto del propietario incluye su código, documentos o datos, trabaja sobre ellos: cita archivos y secciones concretas, respeta lo que ya existe y propone cambios exactos.${t.useTools ? "\n- Tienes herramientas para buscar y leer el contexto completo (y los archivos del proyecto si están activados). Úsalas antes de escribir si los fragmentos no bastan; no inventes contenido de archivos que no has leído." : ""}
 - Cierra con una línea «Siguiente paso sugerido: …».`;
+}
+// Todas las skills del puesto entran en cada encargo: las elegidas como método principal y el resto como repertorio a aplicar si encaja.
+function methodsBlock(a, t, skill) {
+  const main = [skill, ...(t.autoSkills || []).map(skillById)].filter(Boolean);
+  const rest = skillsOf(a.id).filter(s => !main.includes(s));
+  return (main.length ? `\nMÉTODOS PRINCIPALES DE ESTE ENCARGO (aplícalos a fondo):\n${main.map(s => `«${s.name}»${s.src ? ` (basado en ${s.src})` : ""}: ${s.method}`).join("\n")}\n` : "")
+    + `\nRESTO DE TU REPERTORIO (aplica también cualquier método que mejore el resultado):\n${rest.map(s => `«${s.name}»: ${s.method}`).join("\n")}\n`
+    + `Al final, en una línea, indica qué métodos has aplicado.\n`;
 }
 function companyPlanPrompt(order, kind) {
   const intro = kind === "auto"
@@ -1558,6 +1569,8 @@ async function runTask(o) {
         t.phase = "plan"; setAgent(a.id); bump(t);
         const raw = await ask(planStepsPrompt(a, t.order, skill).replace("{from}", t.from), { json: true, signal: o.signal, quick: true });
         t.steps = (Array.isArray(raw?.pasos) ? raw.pasos : []).map(String).filter(Boolean).slice(0, 6);
+        const mine = new Set(skillsOf(a.id).map(s => s.id));
+        t.autoSkills = (Array.isArray(raw?.skills) ? raw.skills : []).map(String).filter(id => mine.has(id) && id !== t.skillId).slice(0, 3);
       }
       t.phase = "exec"; setAgent(a.id); bump(t);
       let lastPaint = 0;
@@ -1887,7 +1900,7 @@ function drawerTaskHTML(t) {
       <button class="btn sm" type="button" data-handoff="${t.id}">Pasar</button></div>`
     : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
   return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
-    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</span></div>
+    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${[sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).length ? " · " + [sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).map(x => esc(x.name)).join(", ") : ""}</span></div>
     ${steps}${body}${acts}</article>`;
 }
 function refreshDrawerTasks() {
