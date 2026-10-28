@@ -272,6 +272,8 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .thinking { color: var(--ink-3); font-size: 13.5px; margin-top: 10px; }
 
 dialog { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: min(540px, calc(100% - 32px)); padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+dialog.live { width: min(980px, calc(100% - 32px)); }
+.live iframe { display: block; width: 100%; aspect-ratio: 16 / 10; max-height: 62vh; border: 1px solid var(--line); border-radius: 8px; background: #111; margin: 12px 0 16px; }
 dialog::backdrop { background: var(--scrim); }
 dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -.015em; }
 .field { display: flex; flex-direction: column; gap: 5px; margin-top: 16px; }
@@ -443,6 +445,15 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="pName">Título</label><input id="pName" maxlength="80" placeholder="Briefing de la app"></div>
     <div class="field"><label for="pText">Contenido</label><textarea id="pText" maxlength="200000" style="min-height:220px"></textarea></div>
     <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Añadir al contexto</button></div>
+  </form>
+</dialog>
+
+<dialog id="liveDlg" class="live">
+  <form method="dialog">
+    <h2 id="liveTitle">Vista en vivo</h2>
+    <p class="note">Así se ve la pieza. Para sacar el MP4 de una composición HyperFrames, descárgala y ejecuta «npx hyperframes render» en su carpeta.</p>
+    <iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe>
+    <div class="row"><button class="btn ghost" type="button" id="liveDl">Descargar HTML</button><button class="btn" value="close" type="submit">Cerrar</button></div>
   </form>
 </dialog>
 

@@ -128,7 +128,7 @@ function persona(a) {
   return `Eres el agente especialista en ${a.role} (${DEPTS[a.dept]}) de la empresa «${state.company}». Trabajas en una oficina con otros agentes especializados de primer nivel.
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
-Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
+${a.kit ? `CÓMO TRABAJAS CON TU STACK (lo más puntero de hoy en tu sector):\n${a.kit}\n` : ""}Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
 ${canonBlock(a)}${memoryBlock(a)}
 PROYECTO DE LA EMPRESA:
 ${state.brief}
@@ -742,7 +742,7 @@ function drawerTaskHTML(t) {
   const others = AGENTS.filter(x => x.id !== t.agentId);
   const acts = t.status === "done" ? `<div class="task-acts">
       <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
-      <button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
+      ${liveHTML(t.result) ? `<button class="btn ghost sm" type="button" data-live="${t.id}">Ver en vivo</button>` : ""}<button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
       <span class="fb">${t.feedback === "up" ? "Marcado como útil" : t.feedback === "down" ? "Marcado como mejorable" : `<button class="btn ghost sm" type="button" data-fb="up" data-fbid="${t.id}">Útil</button><button class="btn ghost sm" type="button" data-fb="down" data-fbid="${t.id}">Mejorable</button>`}</span>
       <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>
       <span class="sep"></span>
@@ -795,6 +795,8 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-delskill]"))) { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; } state.customSkills = state.customSkills.filter(s => s.id !== b.dataset.delskill); await store.deleteSkill(b.dataset.delskill); paintSkills(); paintCounts(); return; }
   if ((b = el("[data-copy]"))) { const t = state.tasks.find(x => x.id === b.dataset.copy); try { await navigator.clipboard.writeText(t.result); toast("Copiado."); } catch { toast("No se pudo copiar; selecciona el texto a mano."); } return; }
   if ((b = el("[data-dl]"))) return download(state.tasks.find(x => x.id === b.dataset.dl));
+  if ((b = el("[data-live]"))) return openLive(state.tasks.find(x => x.id === b.dataset.live));
+  if (el("#liveDl")) return downloadLive();
   if ((b = el("[data-improve]"))) {
     const t = state.tasks.find(x => x.id === b.dataset.improve);
     runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
@@ -843,6 +845,54 @@ $("#pasteDlg").addEventListener("close", () => {
   const name = $("#pName").value.trim() || text.split("\n")[0].slice(0, 60);
   addCtx([{ name, text }], name, "texto");
 });
+
+/* Vista en vivo de composiciones HTML (HyperFrames, prototipos de interfaz y animaciones). */
+function liveHTML(text) {
+  const blocks = [...(text || "").matchAll(/```html[^\n]*\n([\s\S]*?)```/gi)].map(m => m[1]);
+  return blocks.sort((x, y) => y.length - x.length)[0] || "";
+}
+// Reproductor mínimo: muestra cada .clip en su tramo, mueve los timelines de GSAP y escala el lienzo.
+const LIVE_PLAYER = `<script>(function(){
+  var stage=document.querySelector("[data-composition-id]"); if(!stage) return;
+  var W=+stage.dataset.width||1920,H=+stage.dataset.height||1080;
+  document.documentElement.style.cssText="margin:0;height:100%;background:#111;overflow:hidden";
+  document.body.style.cssText="margin:0;height:100%;overflow:hidden";
+  stage.style.width=W+"px";stage.style.height=H+"px";stage.style.position="absolute";stage.style.left="50%";stage.style.top="50%";stage.style.overflow="hidden";
+  function fit(){var k=Math.min(innerWidth/W,innerHeight/H);stage.style.transform="translate(-50%,-50%) scale("+k+")";}
+  fit();addEventListener("resize",fit);
+  var clips=[].slice.call(stage.querySelectorAll("[data-start]")).filter(function(e){return e!==stage;});
+  var end=clips.reduce(function(m,e){return Math.max(m,(+e.dataset.start||0)+(+e.dataset.duration||0));},0);
+  var t0=performance.now();
+  function frame(now){
+    var tls=window.__timelines||{},keys=Object.keys(tls),dur=end;
+    keys.forEach(function(k){dur=Math.max(dur,tls[k].duration());});
+    var t=((now-t0)/1000)%(dur||1);
+    clips.forEach(function(e){var s=+e.dataset.start||0,d=+e.dataset.duration||1e9,on=t>=s&&t<s+d;e.style.visibility=on?"":"hidden";
+      if(e.tagName==="VIDEO"||e.tagName==="AUDIO"){if(on&&e.paused){e.currentTime=t-s;e.play&&e.play().catch(function(){});}if(!on&&!e.paused)e.pause();}});
+    keys.forEach(function(k){tls[k].seek(t,false);});
+    requestAnimationFrame(frame);
+  }
+  addEventListener("load",function(){requestAnimationFrame(frame);});
+})();<\/script>`;
+let liveTask = null;
+function openLive(t) {
+  const html = liveHTML(t?.result); if (!html) return;
+  liveTask = t;
+  const doc = /<html[\s>]/i.test(html) ? html.replace(/<\/body>/i, LIVE_PLAYER + "</body>") : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}${LIVE_PLAYER}</body></html>`;
+  $("#liveTitle").textContent = t.order;
+  $("#liveFrame").srcdoc = doc;
+  $("#liveDlg").showModal();
+}
+async function downloadLive() {
+  if (!liveTask) return;
+  const html = liveHTML(liveTask.result), filename = `${byId[liveTask.agentId].name}-${liveTask.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ".html";
+  const data = /<html[\s>]/i.test(html) ? html : `<!doctype html>\n<html><head><meta charset="utf-8"></head><body>\n${html}\n</body></html>\n`;
+  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "text/html" })); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+$("#liveDlg").addEventListener("close", () => { $("#liveFrame").srcdoc = ""; });
 
 async function download(t) {
   if (!t) return;

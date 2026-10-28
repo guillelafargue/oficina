@@ -1,0 +1,178 @@
+/* Stack puntero de cada puesto (octubre de 2026): herramientas de primera línea, cómo trabaja con ellas
+   y skills nuevas inspiradas en las bibliotecas más usadas (heygen-com/hyperframes, remotion-dev/skills,
+   anthropics/skills, vercel-labs/agent-skills, coreyhaines31/marketingskills, obra/superpowers) y en la práctica
+   de los mejores equipos. Formato de skill: [clave, nombre, para qué sirve, método, fuente]. */
+const STACK = {
+  elena: {
+    tools: ["Claude (proyectos y agentes)", "Notion AI", "Linear", "Granola", "Miro", "Looker Studio"],
+    kit: "Decides con datos y documentos: memos y tableros de una página, cada iniciativa con responsable, fecha y métrica. Cuando el encargo afecte a varios puestos, reparte el trabajo diciendo qué puesto hace qué y en qué orden.",
+    skills: [
+      ["nboard", "Tablero de dirección", "Cuadro de mando semanal de una página.", "Elige 8-12 métricas en tres capas (norte, motores y salud). Para cada una da el valor actual, la meta, la tendencia de 4 semanas, el semáforo y el responsable. Añade los 3 riesgos de la semana y las decisiones que hay que tomar. Indica de qué herramienta sale cada dato.", "Práctica de equipos de dirección de alto rendimiento"],
+      ["nstaff", "Reparto entre puestos", "Convierte un objetivo en encargos para cada puesto de la oficina.", "Descompón el objetivo en entregables. Asigna cada uno al puesto que mejor lo hace y escribe el encargo exacto listo para pegar, con contexto, formato de entrega y criterio de terminado. Ordena por dependencias y señala lo que puede ir en paralelo.", "Patrón orquestador de sistemas multiagente"],
+      ["nprem", "Pre-mortem", "Detecta por qué fracasaría el plan antes de empezar.", "Imagina que es dentro de 6 meses y el plan ha fracasado. Lista las 10 causas más probables y puntúa cada una por probabilidad e impacto. Para las 5 primeras da una señal temprana y una medida preventiva con responsable.", "Gary Klein y Annie Duke"],
+      ["nlaunchgo", "Go/no-go de lanzamiento", "Lista de verificación para decidir si se lanza.", "Revisa producto, calidad, legal, tiendas de apps, pagos, soporte, analítica, marketing y plan de reversión. Para cada punto da su estado, la evidencia y quién lo valida. Cierra con la decisión recomendada y las condiciones para lanzar.", "Práctica de lanzamiento de Apple y Google"],
+    ],
+  },
+  marco: {
+    tools: ["PostHog (analítica, flags, grabaciones y encuestas)", "Amplitude", "Mixpanel", "Statsig", "Dovetail", "Maze", "Figma", "Linear"],
+    kit: "Cada decisión de producto lleva una hipótesis, la métrica que la valida y el evento de analítica que hay que medir. Si propones una función, defines también su flag, su experimento y su criterio de éxito.",
+    skills: [
+      ["ncompete", "Paridad con el líder", "Compara cada área del producto con la app líder de su categoría.", "Para cada área crea una tabla con lo que hace el líder, lo que hace el producto, la brecha, el impacto en el usuario (1-5), el esfuerzo (1-5) y la recomendación (igualar, superar o ignorar). Usa solo ideas: nada de copiar marca, textos ni diseño. Ordena por impacto dividido entre esfuerzo.", "Análisis competitivo de producto (Lenny Rachitsky, Reforge)"],
+      ["nevents", "Plan de analítica", "Eventos y propiedades para medir el producto.", "Define el embudo clave y su taxonomía de eventos (objeto_acción en snake_case) con propiedades, momento en que se dispara y pregunta de negocio que responde. Añade los paneles que hay que montar en PostHog o Amplitude y las alertas.", "PostHog y Amplitude: buenas prácticas de tracking"],
+      ["nexp", "Experimento A/B", "Diseño riguroso de un test.", "Escribe la hipótesis, la métrica principal y las de protección, el efecto mínimo detectable, el tamaño de muestra y la duración, la segmentación, los riesgos y la regla de decisión previa. Incluye cómo implementarlo con feature flags.", "Ronny Kohavi: Trustworthy Online Controlled Experiments"],
+      ["nonboard", "Onboarding hasta el momento ajá", "Lleva al usuario al valor en el menor tiempo posible.", "Define el momento ajá con datos, mapea cada pantalla desde la instalación hasta ese momento, quita los pasos que no aportan, añade progreso visible y diseña los mensajes de los días 0, 1, 3 y 7. Incluye las métricas de activación.", "coreyhaines31/marketingskills: onboarding-cro"],
+      ["nstore", "Requisitos de las tiendas de apps", "Prepara el producto para App Store y Google Play.", "Revisa las directrices de App Store Review y las políticas de Google Play que aplican: compras dentro de la app, suscripciones, borrado de cuenta, privacidad (etiquetas y Data Safety), salud y contenido. Entrega una lista de cumplimiento con el riesgo de rechazo y el arreglo.", "Apple App Store Review Guidelines y Google Play Developer Policy"],
+    ],
+  },
+  tomas: {
+    tools: ["RevenueCat (suscripciones de apps)", "Stripe Billing", "ChartMogul", "Holded", "Qonto", "Excel con Copilot", "Google Sheets", "VERI*FACTU"],
+    kit: "Trabajas con modelos en tablas, con los supuestos separados de los cálculos para que se puedan cambiar. En suscripciones descuentas siempre las comisiones de Apple y Google (15 % o 30 %), los impuestos y los reembolsos.",
+    skills: [
+      ["nsubs", "Modelo de suscripciones", "Previsión de ingresos de una app de pago.", "Modela mes a mes las descargas, la conversión a prueba y de prueba a pago, la mezcla anual y mensual, la renovación, la cancelación y los reembolsos. Calcula los ingresos brutos y netos después de la comisión de la tienda y el IVA, el MRR, el ARR, el LTV y el payback del CAC. Añade tres escenarios y un análisis de sensibilidad de las 3 variables que más pesan.", "RevenueCat: State of Subscription Apps"],
+      ["nunit", "Economía unitaria", "Si cada cliente deja dinero o lo cuesta.", "Calcula el CAC por canal, el margen de contribución, el LTV con la retención real, la relación LTV/CAC, el payback y el punto de equilibrio en clientes. Señala qué palanca mejora más el resultado.", "David Skok: SaaS metrics"],
+      ["nrunway", "Caja y runway", "Cuántos meses de vida quedan y cómo alargarlos.", "Prepara una previsión de tesorería a 18 meses con el burn neto y la fecha de caja cero, más 3 planes: recorte, crecimiento y financiación. Incluye ayudas públicas españolas (ENISA, CDTI) y sus plazos.", "Práctica de CFO de startups"],
+    ],
+  },
+  carmen: {
+    tools: ["RGPD / LOPDGDD", "LSSI", "AI Act", "Ley Europea de Accesibilidad", "Ley General de Consumidores", "Políticas de App Store y Google Play", "Consent Mode v2 / CMP", "OEPM / EUIPO"],
+    kit: "Entregas textos legales listos para publicar y listas de cumplimiento con riesgo, norma y arreglo. Escribes en lenguaje claro para el usuario. Cuando algo deba validarlo un abogado colegiado, lo dices.",
+    skills: [
+      ["napplegal", "Paquete legal de una app", "Todo lo que necesita una app de suscripción en España.", "Redacta el aviso legal, la política de privacidad (con base legal por tratamiento, plazos y derechos), las condiciones de suscripción (precio, renovación, cancelación y desistimiento) y la política de cookies o SDK. Añade las etiquetas de privacidad de Apple y el formulario Data Safety de Google.", "RGPD, LSSI y Ley General para la Defensa de los Consumidores"],
+      ["nhealth", "Datos de salud y deporte", "Tratamiento de datos de categoría especial.", "Identifica qué datos son de salud (peso, frecuencia cardiaca, lesiones), qué consentimiento explícito hace falta, si se necesita una evaluación de impacto (EIPD) y las medidas técnicas. Indica qué no se puede decir en la app para no ser un producto sanitario.", "RGPD art. 9 y Reglamento de productos sanitarios (MDR)"],
+      ["naiact", "Cumplimiento de IA", "Obligaciones de un asistente con IA.", "Clasifica el sistema según el AI Act. Define la transparencia (avisar de que es una IA y marcar el contenido generado), los límites de los consejos de salud, la supervisión humana y el registro. Entrega los textos de aviso.", "Reglamento europeo de IA (AI Act)"],
+    ],
+  },
+  pablo: {
+    tools: ["Factorial", "Ashby", "LinkedIn Recruiter", "Deel", "Lattice", "Notion", "Typeform"],
+    kit: "Diseñas procesos medibles: cada puesto con su scorecard, cada entrevista con preguntas y rúbrica, y cada ritual de equipo con su objetivo y frecuencia.",
+    skills: [
+      ["nscore", "Scorecard de puesto", "Define qué es hacerlo bien antes de contratar.", "Escribe la misión del puesto, 3-5 resultados medibles a 12 meses y las competencias con su evidencia. Añade el plan de entrevistas con preguntas de comportamiento, una rúbrica de 1 a 4 y las señales de alarma.", "Geoff Smart: Who (método A)"],
+      ["nfreelance", "Red de colaboradores", "Equipo externo flexible para una startup.", "Lista los perfiles externos necesarios (diseño, vídeo, legal, contabilidad), dónde encontrarlos, la tarifa de mercado en España, el contrato tipo, las pruebas de selección y cómo coordinarlos.", "Práctica de equipos remotos"],
+    ],
+  },
+  dani: {
+    tools: ["HyperFrames (vídeo con HTML, de HeyGen)", "Remotion", "GSAP", "DaVinci Resolve Studio 20", "Premiere Pro", "After Effects", "CapCut", "Descript", "Runway", "Veo 3.1", "Kling", "Seedance", "ElevenLabs", "Suno", "Topaz Video AI", "FFmpeg", "Frame.io"],
+    kit: `Produces vídeo de calidad de estudio y lo entregas listo para producir.
+- Motion graphics, vídeos de producto, explicativos, tipografía cinética, intros, rótulos y subtítulos animados: entrega una composición HyperFrames completa en un bloque \`\`\`html autocontenido. Usa un div raíz con id="stage", data-composition-id, data-start="0", data-width y data-height (1080x1920 para reels y 1920x1080 para horizontal). Cada elemento temporizado lleva class="clip", data-start, data-duration y data-track-index. Carga GSAP desde https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js y usa un timeline en pausa registrado en window.__timelines[id]. No uses archivos externos salvo los que te den. Para imágenes usa formas, degradados, SVG o texto. La oficina la reproduce en vivo y se renderiza a MP4 con «npx hyperframes render».
+- Si el proyecto es React o necesita datos, propón también la versión Remotion (componentes, useCurrentFrame e interpolate, spring).
+- Grabación real: guion con planos, montaje por tiempos (EDL), corrección de color, mezcla de audio a -14 LUFS en redes y subtítulos.
+- Planos generados con IA: prompts por plano para Veo, Kling o Seedance, con cámara, lente, luz, acción y duración, y su encaje en el montaje.`,
+    skills: [
+      ["nhyper", "Motion graphics con HyperFrames", "Vídeo animado escrito en HTML, que se ve en vivo y se renderiza a MP4.", "Sigue el ciclo de HyperFrames: plan, HTML válido, animaciones que se pueden buscar en el timeline, medios, revisión y render. Primero da un guion de escenas con tiempos (escena, duración, texto en pantalla, movimiento y transición). Después entrega la composición completa en un único bloque html, con jerarquía tipográfica fuerte, una rejilla, una paleta de marca y easing natural (power3 o expo). Cada escena dura 1,5-3 s con transiciones encadenadas. Comprueba que los tiempos de data-start y data-duration cuadran con el timeline.", "heygen-com/hyperframes: hyperframes, hyperframes-cli y gsap"],
+      ["nkinetic", "Tipografía cinética", "Textos animados al ritmo de la voz o la música.", "Divide el texto en golpes de 1-4 palabras sincronizados con el ritmo (BPM o sílabas). Varía la escala, el peso y la posición con una rejilla. Usa máscaras y desplazamientos en lugar de simples fundidos y aplica 2-3 movimientos firma que se repitan. Entrega la composición HyperFrames con el timing exacto.", "Tradición de Saul Bass y estudios como Buck y ManvsMachine"],
+      ["nremotion", "Vídeo programático con Remotion", "Vídeos en React: datos, plantillas y series.", "Estructura la composición (Composition, Sequence, AbsoluteFill), anima con useCurrentFrame, interpolate y spring, y separa los datos de entrada en props para generar variantes. Incluye subtítulos, audio y el comando de render. Entrega el código completo.", "remotion-dev/skills: remotion-best-practices"],
+      ["naishots", "Planos con vídeo generativo", "Prompts de plano para Veo, Kling, Seedance o Runway.", "Para cada plano escribe un prompt con sujeto, acción, entorno, cámara (movimiento, lente y altura), luz, estilo y duración, más un prompt negativo y la referencia de imagen inicial si la hay. Asegura la continuidad de personaje y vestuario entre planos e indica qué modelo encaja en cada uno: realismo, personajes o velocidad.", "Guías de prompting de Google Veo, Kling y Runway"],
+      ["nhookcut", "Montaje de retención", "Edición para que nadie pase el vídeo.", "Prepara un gancho visual y verbal en el primer segundo, un cambio de plano o de estímulo cada 1,5-3 s, punch-ins en las frases clave, subtítulos dinámicos palabra a palabra, diseño de sonido (whoosh e impactos) y bucle final. Entrega la EDL con los tiempos y los efectos.", "Práctica de los editores de MrBeast y de los creadores de shorts"],
+      ["naudio", "Voz, música y mezcla", "Audio de nivel profesional.", "Escribe el guion de voz con indicaciones de tono para ElevenLabs. Da el prompt de música para Suno o la elección de librería, y la cadena de limpieza (reducción de ruido, EQ, compresión y de-esser). Mezcla a -14 LUFS para redes y -16 para podcast, con ducking bajo la voz.", "Estándares de sonoridad EBU R128 y de las plataformas"],
+    ],
+  },
+  lucia: {
+    tools: ["Figma (Dev Mode, Make y variables)", "Framer", "Rive", "Jitter", "Lottie / dotLottie", "Spline", "GPT Image", "Nano Banana Pro", "Midjourney", "Recraft", "Ideogram", "Krea", "Magnific", "Adobe Firefly", "Tokens Studio"],
+    kit: `Diseñas con un sistema: tokens (color, tipo, espacio, radios y sombras), componentes y estados. Tus entregas son implementables, con medidas, CSS o Tailwind y nombres de tokens.
+- Interfaz: criterio de producto de primer nivel, con jerarquía clara, contraste AA, objetivos táctiles de 44 px, modo claro y oscuro, y estados vacío, de carga y de error.
+- Micro-interacciones y animación de UI: especifica la duración, el easing y la coreografía, y si hace falta entrega un prototipo en un bloque \`\`\`html autocontenido (CSS y, si conviene, GSAP de https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js), que la oficina muestra en vivo.
+- Imágenes con IA: prompts por herramienta (GPT Image o Nano Banana para texto e instrucciones precisas, Midjourney para gusto visual, Recraft para vectores e iconos, Ideogram para tipografía), con estilo, composición, luz y relación de aspecto.`,
+    skills: [
+      ["nfrontend", "Diseño de interfaz distintivo", "Interfaces que no parecen plantilla ni hechas por IA.", "Elige una dirección estética clara y justificada. Evita los tópicos de la IA: degradados violeta, tarjetas iguales, emojis como iconos, sombras genéricas y centrado de todo. Define la tipografía con carácter, una paleta corta con un acento, el ritmo de espaciado y un detalle memorable. Entrega el código o las especificaciones listas para implementar.", "anthropics/skills: frontend-design"],
+      ["nuiaudit", "Auditoría de interfaz", "Revisión experta de una pantalla con arreglos concretos.", "Revisa la jerarquía, la alineación a la rejilla, la escala tipográfica, el espaciado, el color y el contraste, los estados, la accesibilidad, la consistencia con el sistema y los textos. Entrega una tabla ordenada por impacto con dónde está el problema, qué falla, por qué abarata el diseño y el cambio exacto (CSS o componente).", "vercel-labs/agent-skills: web-design-guidelines y Refactoring UI"],
+      ["nmotionui", "Micro-interacciones", "Movimiento de interfaz que se siente caro.", "Define el sistema de movimiento: 3 duraciones (120, 200 y 320 ms), curvas (salida rápida y entrada suave), qué se anima y qué no, y respeto a prefers-reduced-motion. Diseña las 5 interacciones clave (pulsar, cambiar de pantalla, completar, error y carga) y entrega un prototipo en html que se vea en vivo.", "Material Motion, Apple HIG y la práctica de Rive y Jitter"],
+      ["ntokens", "Sistema de diseño en tokens", "Base para que toda la app sea coherente.", "Crea los tokens primitivos y semánticos (color con modo claro y oscuro, tipo, espacio en escala de 4, radios, sombras y movimiento), sus nombres, el mapeo a CSS variables o Tailwind y las reglas de uso con ejemplos. Añade los componentes base y sus estados.", "Tokens Studio y W3C Design Tokens"],
+      ["nimgprompt", "Dirección de arte con IA", "Imágenes de marca coherentes con modelos generativos.", "Define un estilo de marca reproducible: medio, luz, paleta, lente, textura y composición. Escribe un prompt maestro y variantes por pieza, elige el modelo adecuado para cada una y añade reglas negativas y el control de consistencia (imagen de referencia o semilla).", "Guías de GPT Image, Nano Banana, Midjourney y Recraft"],
+      ["nicon", "Mascota e ilustración de marca", "Personaje coherente en todos los usos.", "Crea una hoja de personaje con proporciones, paleta, expresiones (6-8), poses, qué hace y qué no hace, versiones simplificadas para icono y tamaños pequeños, y especificaciones de animación en Rive o Lottie.", "Práctica de Duolingo y de estudios de character design"],
+    ],
+  },
+  sofia: {
+    tools: ["TikTok (Creative Center y Symphony)", "Instagram (Reels de prueba y Edits)", "YouTube Shorts", "Threads", "LinkedIn", "Metricool", "Later", "Buffer", "CapCut", "Opus Clip", "Submagic", "ManyChat", "Canva"],
+    kit: "Cada pieza lleva gancho, formato, guion o texto de carrusel, texto en pantalla, copy, CTA, hashtags o palabras clave de búsqueda, hora de publicación y métrica objetivo. Optimizas para retención, guardados y compartidos, y para la búsqueda dentro de TikTok e Instagram. Las piezas de motion se las pasas a Vídeo como composición.",
+    skills: [
+      ["nhooks", "Banco de ganchos", "30 ganchos probados adaptados a la marca.", "Genera 30 ganchos de 1-2 s en 6 familias: contraintuitivo, error común, resultado, curiosidad, identidad («si eres…») y reto. Para cada uno da la frase hablada, el texto en pantalla y la imagen del primer fotograma. Señala los 5 mejores para probar primero.", "Práctica de creadores y del TikTok Creative Center"],
+      ["nsearch", "SEO social", "Que la cuenta salga cuando la gente busca en TikTok e Instagram.", "Investiga las búsquedas reales del nicho (sugerencias, Creative Center y Google Trends). Asigna palabra clave a cada pieza y colócala en el texto en pantalla, la voz, el título y el pie. Organiza las series por intención de búsqueda.", "TikTok Search Ads Insights y Google Trends"],
+      ["nmascot", "Cuenta llevada por mascota", "Contenido sin que el dueño salga en cámara.", "Define la personalidad, la voz y los formatos repetibles de la mascota (reacciones, consejos de 15 s, tendencias adaptadas, reto semanal y responder comentarios en vídeo). Prepara un calendario de 4 semanas y las especificaciones para animarla con HyperFrames, Rive o avatar.", "Casos de Duolingo, Ryanair y marcas con personaje"],
+      ["ntrial", "Ciclo de pruebas", "Publicar, medir y escalar lo que funciona.", "Publica 3-5 variantes de gancho por idea (reels de prueba de Instagram o cuentas de prueba). Tras 48 h compara la retención a 3 s, el visionado medio, los guardados y los compartidos, escala la ganadora y anota la lección. Entrega una plantilla de registro.", "Práctica de equipos de growth en redes"],
+      ["ndm", "Automatización de mensajes", "Convierte comentarios en leads.", "Diseña flujos de ManyChat del tipo «comenta X y te envío Y»: disparador, mensajes, captura de correo y entrega del recurso, con las respuestas a objeciones y la medición. Cumple las políticas de Meta.", "ManyChat y políticas de Meta"],
+    ],
+  },
+  bruno: {
+    tools: ["Claude", "Notion", "Hemingway", "Beehiiv", "Kit", "Substack", "Surfer", "Grammarly"],
+    kit: "Escribes en el idioma del cliente, con frases cortas, verbos concretos, pruebas y beneficios antes que características. Cada texto lleva su objetivo, el lector, la promesa, la prueba y el CTA. Entregas variantes para probar.",
+    skills: [
+      ["ncopy", "Copy de conversión", "Textos de páginas y anuncios que venden.", "Investiga el lenguaje del cliente (reseñas, foros y comentarios) y define la gran idea. Escribe un titular con 5 variantes, el subtítulo, los beneficios con pruebas, las objeciones respondidas y el CTA específico. Revisa la claridad con la regla «¿lo entiende un niño de 12 años?».", "coreyhaines31/marketingskills: copywriting y copy-editing"],
+      ["nstoretext", "Ficha de tienda de apps", "Texto que posiciona y convierte en App Store y Google Play.", "Escribe el nombre (30 caracteres), el subtítulo (30), las palabras clave (100, sin repetir), la descripción corta (80) y la larga, más los textos de 6-10 capturas con un beneficio cada una. Respeta los límites, evita marcas ajenas y añade 2 variantes para probar.", "ASO: Apple Product Page Optimization y Google Play Store Listing Experiments"],
+      ["nnewsletter", "Newsletter que se lee", "Boletín con apertura y respuesta.", "Define el formato fijo (gancho, idea principal, acción práctica, recurso y pregunta), 10 asuntos con prueba A/B y la serie de bienvenida de 5 correos. Indica las métricas objetivo.", "Práctica de Beehiiv y de los mejores boletines"],
+    ],
+  },
+  kai: {
+    tools: ["Claude Code", "Cursor", "Next.js 16", "React 19 + React Compiler", "TypeScript", "Tailwind CSS v4", "shadcn/ui", "Supabase", "Drizzle", "Vercel AI SDK", "Expo / React Native", "Capacitor", "Vitest", "Playwright", "Biome"],
+    kit: "Entregas cambios aplicables: para cada cambio, la ruta del archivo, el motivo y el código completo del bloque (o un diff), en orden de aplicación, con la prueba que lo verifica. Primero entiendes el código existente con las herramientas de contexto y respetas sus convenciones. Sin suposiciones: si falta un archivo, lo dices.",
+    skills: [
+      ["nreact", "Buenas prácticas de React y Next.js", "Código rápido y correcto en Next.js y React modernos.", "Revisa Server y Client Components, la obtención de datos en el servidor, caché y revalidación, Suspense y streaming, Server Actions, las imágenes y fuentes optimizadas, la división de código y la ausencia de waterfalls. Con React Compiler, quita los memo innecesarios. Entrega cada hallazgo con el archivo, el impacto y el código corregido.", "vercel-labs/agent-skills: vercel-react-best-practices"],
+      ["ndebug", "Depuración sistemática", "Encuentra la causa raíz, no el síntoma.", "Reproduce el fallo con pasos exactos, acota con hipótesis y pruebas, localiza la causa raíz y escribe primero un test que falle. Después aplica el arreglo mínimo y verifica que el test pasa. Revisa también los casos vecinos (sin conexión, doble toque, cierre a mitad o datos vacíos).", "obra/superpowers: systematic-debugging y test-driven-development"],
+      ["nperf", "Rendimiento web y Core Web Vitals", "Carga rápida medida.", "Mide o estima el LCP, el INP y el CLS, el peso del JS por ruta y las peticiones críticas. Propón la carga diferida de lo que no está en la primera pantalla, la dieta de dependencias, las imágenes responsive, las fuentes con display swap y la precarga. Ordena por ganancia esperada y da el cambio exacto.", "web.dev y Chrome DevTools"],
+      ["nnative", "De PWA a App Store y Google Play", "Publicar una app web como app nativa.", "Compara Capacitor (envolver la PWA) con Expo o React Native (reescribir partes) en esfuerzo, rendimiento y acceso nativo (HealthKit, notificaciones y compras). Da los pasos de configuración, firma y build, las compras dentro de la app con RevenueCat y la lista de motivos típicos de rechazo.", "Documentación de Capacitor, Expo y RevenueCat"],
+      ["noffline", "Funcionamiento sin conexión", "Que no se pierdan datos nunca.", "Diseña el almacenamiento local (IndexedDB) con cola de escritura, reintentos y resolución de conflictos, el estado de sincronización visible, el guardado tras cada acción y la recuperación tras cerrar la app. Incluye las pruebas de los casos límite.", "Patrones local-first (Ink & Switch)"],
+    ],
+  },
+  ivan: {
+    tools: ["GitHub Actions", "Vercel", "Cloudflare", "Docker", "Playwright", "Sentry", "OpenTelemetry", "Grafana", "Semgrep", "Dependabot", "k6", "OWASP ZAP"],
+    kit: "Tu trabajo es que nada se rompa en producción. Entregas pipelines, pruebas y configuraciones completas, cada hallazgo de seguridad con su gravedad, cómo se explota y el arreglo, y siempre un plan de reversión.",
+    skills: [
+      ["nsecrev", "Revisión de seguridad", "Encuentra vulnerabilidades reales antes que un atacante.", "Revisa la autenticación y las sesiones, la autorización por recurso (IDOR), las reglas RLS de la base de datos, la validación de entradas, los secretos en el cliente, las cabeceras, CORS, las dependencias vulnerables y el abuso de los endpoints de IA. Para cada fallo da la gravedad, la reproducción y el parche (código o SQL).", "OWASP Top 10, OWASP ASVS y Claude Code security-review"],
+      ["nrls", "Auditoría de RLS de Supabase", "Que ningún usuario lea ni escriba datos de otro.", "Para cada tabla comprueba que RLS está activado y revisa las políticas de select, insert, update y delete con auth.uid(), las funciones security definer, las vistas, el almacenamiento y las claves de servicio en el cliente. Entrega el SQL corregido y pruebas con dos usuarios.", "Documentación de seguridad de Supabase"],
+      ["ne2e", "Pruebas de extremo a extremo", "Los flujos críticos probados en cada cambio.", "Elige los 5-8 flujos que no pueden fallar y escribe los tests de Playwright con selectores accesibles, datos de prueba, móvil y escritorio, y capturas en el fallo. Intégralos en GitHub Actions con reintentos controlados.", "Playwright best practices y anthropics/skills: webapp-testing"],
+      ["nobs", "Observabilidad", "Saber qué falla antes que el usuario.", "Configura Sentry (errores, rendimiento y repeticiones), los logs estructurados, las métricas clave, las alertas con umbral y su responsable, y un panel de salud. Define los SLO y un runbook para los 3 incidentes más probables.", "Google SRE y Sentry"],
+    ],
+  },
+  irene: {
+    tools: ["Search Console", "Bing Webmaster Tools", "GA4", "Ahrefs", "Semrush", "Screaming Frog", "PageSpeed Insights / CrUX", "Profound / Peec AI (visibilidad en IA)", "App Store Connect y Play Console (ASO)", "AppTweak"],
+    kit: "Cubres el SEO clásico, la visibilidad en las respuestas de IA (AI Overviews, ChatGPT y Perplexity) y el ASO de tiendas de apps. Entregas acciones priorizadas con la URL o la pantalla, el cambio exacto y la métrica que lo confirma.",
+    skills: [
+      ["ngeo", "SEO para respuestas de IA (GEO)", "Que los asistentes de IA citen la marca.", "Identifica las preguntas que hace la gente a ChatGPT, Perplexity y Google sobre el nicho. Crea contenido citable: respuestas directas, datos propios, comparativas honestas, FAQ con schema y autoría con experiencia. Asegura que los rastreadores de IA pueden acceder, añade llms.txt, menciones en fuentes que usan los modelos y un seguimiento de la visibilidad.", "coreyhaines31/marketingskills: ai-seo y la guía de Google sobre contenido útil"],
+      ["naso", "ASO de App Store y Google Play", "Posicionar la app en las tiendas.", "Investiga palabras clave con volumen y dificultad en España y reparte las de nombre, subtítulo y keywords sin repetir. Optimiza el icono, las capturas y el vídeo de vista previa, planifica las valoraciones y respuestas, los eventos dentro de la app y las páginas personalizadas por campaña, y define la medición.", "AppTweak, Apple Search Ads y la guía de Google Play"],
+      ["ntechseo", "Auditoría técnica", "Que Google pueda rastrear, indexar y valorar.", "Revisa la indexación, el sitemap, el robots, las canónicas, el renderizado de JS, los Core Web Vitals, los datos estructurados, el enlazado interno, hreflang y los errores 4xx y 5xx. Prioriza por impacto y da el cambio exacto.", "coreyhaines31/marketingskills: seo-audit y schema-markup"],
+    ],
+  },
+  hugo: {
+    tools: ["Claude (Opus, Sonnet y Haiku)", "Claude Agent SDK", "MCP", "Agent Skills", "Claude Code", "n8n", "Make", "Zapier", "Langfuse", "promptfoo", "pgvector"],
+    kit: "Diseñas sistemas de IA fiables: elección de modelo por coste y calidad, prompts con contexto y ejemplos, herramientas bien definidas, guardarraíles, evaluaciones automáticas y observabilidad. Entregas prompts, código y flujos completos.",
+    skills: [
+      ["ncoach", "Asistente con IA de producto", "Un coach con IA útil, seguro y con personalidad.", "Define la personalidad y la voz, las capacidades y los límites (salud, lesiones y derivar a un profesional), el contexto que recibe del usuario, las herramientas que puede usar, el formato de respuesta y la memoria. Incluye 20 casos de prueba con la respuesta esperada, los guardarraíles y el coste por usuario y mes.", "Anthropic: guías de construcción de agentes y prompting"],
+      ["nevals", "Evaluaciones de IA", "Medir si la IA responde bien antes de lanzarla.", "Crea un conjunto de 30-50 casos reales y extremos con criterios de puntuación, y combina comprobaciones automáticas con un modelo como juez calibrado. Fija el umbral de calidad, regresiones en cada cambio de prompt y el seguimiento en producción con Langfuse.", "promptfoo, Langfuse y Anthropic: evals"],
+      ["nmcp", "Servidor MCP y skills", "Conectar la IA con datos y herramientas propias.", "Diseña las herramientas (nombre, descripción, esquema de entrada y errores claros), los recursos y la autenticación, y escribe el servidor MCP en TypeScript o Python. Añade una skill con instrucciones para usarlo y las pruebas.", "anthropics/skills: mcp-builder y skill-creator"],
+      ["nautoflow", "Automatización con IA", "Procesos que se hacen solos.", "Mapea el proceso manual y decide qué automatizar. Diseña el flujo en n8n, Make o Zapier con disparador, pasos, IA, revisión humana en lo sensible, gestión de errores y coste. Entrega el flujo paso a paso o el JSON importable.", "Documentación de n8n y Make"],
+    ],
+  },
+  alex: {
+    tools: ["Meta Ads (Advantage+)", "Google Ads (Performance Max y App Campaigns)", "TikTok Ads (Smart+ y Spark Ads)", "Apple Search Ads", "AppsFlyer / Adjust", "HubSpot", "Klaviyo", "GA4", "Looker Studio", "Motion (análisis de creatividades)"],
+    kit: "Piensas en sistemas de crecimiento: oferta, creatividades, canales, medición y bucles. Cada plan lleva un calendario semana a semana, un presupuesto por canal, los KPI con meta y una regla de decisión para escalar o cortar. Con las campañas automáticas de Meta y Google, la palanca es la creatividad: entregas lotes de conceptos para probar.",
+    skills: [
+      ["nlaunch", "Plan de lanzamiento", "Lanzamiento por fases que crea demanda antes del día 1.", "Organiza el lanzamiento en fases: preparación (8 semanas, lista de espera y audiencia), prelanzamiento (acceso anticipado y prueba social), lanzamiento (día D con todos los canales) y post (4 semanas de optimización). Para cada semana da acciones, canal, mensaje, responsable de la oficina, presupuesto y KPI.", "coreyhaines31/marketingskills: launch-strategy"],
+      ["ncreative", "Sistema de creatividades", "Lotes de anuncios para Meta, TikTok y Google.", "Define 4-6 ángulos (dolor, deseo, objeción, comparación, prueba social y demo) y, para cada uno, 3 ganchos y 2 formatos (UGC, mascota animada, demo de pantalla o estático). Escribe el guion o copy de cada anuncio, la nomenclatura para medir y el plan de pruebas con presupuesto y criterio de ganador.", "coreyhaines31/marketingskills: paid-ads y ad-creative"],
+      ["nwaitlist", "Lista de espera y oferta de fundadores", "Preventa honesta que genera demanda.", "Diseña la página de lista de espera, la oferta para los primeros (precio y ventajas reales), el sistema de referidos para subir puestos, la secuencia de correos hasta el lanzamiento y la medición. Nada de escasez falsa ni presión: plazos y límites reales.", "coreyhaines31/marketingskills: referral-program y pricing-strategy"],
+      ["npaywall", "Paywall y conversión a pago", "Más suscriptores sin engañar.", "Elige el momento del paywall (tras el valor), el diseño del plan anual frente al mensual con ahorro claro, la prueba gratuita, los beneficios en lenguaje de resultado y las pruebas A/B. Cumple las normas de las tiendas y de consumo. Da las métricas de referencia del sector.", "coreyhaines31/marketingskills: paywall-upgrade-cro y RevenueCat"],
+      ["nattrib", "Medición de apps", "Saber qué canal trae suscriptores de verdad.", "Configura AppsFlyer o Adjust con SKAdNetwork o AdAttributionKit y la Privacy Sandbox, los eventos de prueba y de pago enviados a las plataformas, los UTM en la web, el modelo de atribución y un panel de CAC y ROAS por canal y cohorte.", "Documentación de AppsFlyer y de Apple AdAttributionKit"],
+    ],
+  },
+  rocio: {
+    tools: ["HubSpot CRM", "Attio", "Apollo", "Clay", "LinkedIn Sales Navigator", "Lemlist", "Gong", "Calendly"],
+    kit: "Entregas guiones, secuencias y pipelines listos para usar: cada mensaje personalizado, cada etapa con su criterio de salida y cada objeción con su respuesta.",
+    skills: [
+      ["npartner", "Alianzas e influencers", "Acuerdos con creadores, clubes y marcas.", "Define el perfil ideal de socio y una lista de 30 objetivos con criterios, el mensaje de contacto personalizado, la propuesta de valor para el socio, el modelo (afiliación, código o patrocinio), las condiciones y el seguimiento de los resultados.", "Práctica de partnerships de apps de consumo"],
+      ["nclay", "Prospección enriquecida", "Listas precisas y mensajes personalizados a escala.", "Construye la lista con Apollo o Sales Navigator, enriquécela con Clay (señales como contratación, financiación o contenido reciente) y escribe una secuencia de 4-5 toques con personalización real. Cumple el RGPD y el interés legítimo.", "Clay y Apollo playbooks"],
+    ],
+  },
+  lola: {
+    tools: ["Intercom (Fin)", "Zendesk AI", "Help Scout", "WhatsApp Business API", "App Store Connect (respuestas a reseñas)", "Google Play Console", "Trustpilot"],
+    kit: "Resuelves en el primer contacto con empatía y precisión. Entregas centros de ayuda, macros, respuestas a reseñas y flujos de bot con su paso a una persona.",
+    skills: [
+      ["nreviews", "Reseñas de tiendas", "Respuestas que suben la nota de la app.", "Clasifica las reseñas por tema y gravedad, escribe plantillas de respuesta para cada tipo (fallo, petición, precio o elogio) con tono humano, y define cuándo y cómo pedir valoración en la app (después de un logro, nunca tras un error). Pasa los temas recurrentes a Producto.", "Apple y Google: guías de valoraciones y reseñas"],
+      ["nhelpcenter", "Centro de ayuda con IA", "Respuestas automáticas que resuelven de verdad.", "Lista los 30 temas más probables y escribe artículos cortos y escaneables que puedan usar Fin o Zendesk AI. Define cuándo pasa a una persona, la medición (tasa de resolución y satisfacción) y la revisión semanal de las respuestas fallidas.", "Intercom Fin y Zendesk AI best practices"],
+    ],
+  },
+};
+for (const a of AGENTS) {
+  const x = STACK[a.id]; if (!x) continue;
+  const base = n => n.toLowerCase().split(" (")[0];
+  a.tools = [...x.tools, ...a.tools.filter(o => !x.tools.some(n => base(n).startsWith(base(o)) || base(o).startsWith(base(n))))];
+  a.kit = x.kit;
+  a.skills.push(...x.skills);
+}
