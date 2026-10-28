@@ -181,6 +181,9 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .chk > span { min-width: 0; }
 .chk b { font-weight: 500; display: block; overflow-wrap: anywhere; }
 .chk b + span { display: block; font-size: 12.5px; color: var(--ink-3); }
+.ctx-report { margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid #c8741e; border-radius: 6px; font-size: 14px; color: var(--ink-2); }
+.ctx-report b { color: var(--ink); font-weight: 600; }
+.ctx-report details { margin-top: 8px; }
 .ctx-project { margin: 0 0 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .ctxg { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .ctxg-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
@@ -397,6 +400,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <input type="file" id="ctxDir" webkitdirectory multiple hidden>
     <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que hayas subido al proyecto de Claude donde vive esta oficina (no el código de tu app: ese súbelo con «Subir una carpeta»). Claude te pedirá permiso la primera vez.</span></span></label>
     <p class="note" id="ctxBusy" hidden></p>
+    <div class="ctx-report" id="ctxReport" hidden></div>
     <div id="ctxList"></div>
   </section>
 
