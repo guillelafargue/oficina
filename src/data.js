@@ -1,7 +1,7 @@
 /* Plantilla de la empresa: salas, agentes y su biblioteca de skills.
    Cada skill es un método de trabajo profesional que se inyecta en el prompt del agente. */
 const ROOMS = [
-  { id: "central", name: "Dirección", sign: "OFICINA", brick: "#7a3b2e", floor: "#8a6a4a", accent: "#f2b84b" },
+  { id: "central", name: "Dirección y gestión", sign: "OFICINA", brick: "#7a3b2e", floor: "#8a6a4a", accent: "#f2b84b" },
   { id: "estudio", name: "Estudio creativo", sign: "ESTUDIO", brick: "#5b3a5e", floor: "#6f5a48", accent: "#ff8fb1" },
   { id: "lab", name: "Ingeniería y datos", sign: "LAB", brick: "#2f4a63", floor: "#4f5a66", accent: "#7aa7ff" },
   { id: "ventas", name: "Comercial", sign: "VENTAS", brick: "#3e5a3a", floor: "#7a6146", accent: "#4fd18b" },
@@ -15,7 +15,7 @@ const DEPTS = {
 
 // look: [peinado 0-4, pelo, piel 0-4, tono camiseta, pantalón]
 const AGENTS = [
-  { id: "elena", room: "central", dept: "dir", name: "Elena", role: "Directora general (CEO)", look: [2, "#3b2a20", 1, 265, "#2b2f45"],
+  { id: "elena", room: "central", dept: "dir", name: "Dirección", role: "Dirección general (CEO)", look: [2, "#3b2a20", 1, 265, "#2b2f45"],
     bio: "Convierte objetivos en planes, reparte el trabajo entre departamentos, revisa cada entrega y decide el siguiente paso.",
     tools: ["OKR", "Notion", "Linear", "Asana", "Miro"],
     skills: [
@@ -25,7 +25,7 @@ const AGENTS = [
       ["investor", "Update para inversores", "Informe mensual al estilo Y Combinator.", "Formato investor update: titular del mes, métricas clave con variación, logros, problemas sin maquillar, prioridades del mes siguiente y peticiones concretas (contactos, talento, consejo)."],
       ["decision", "Decisión difícil", "Análisis de opciones con pre-mortem.", "Plantea 3-4 opciones, criterios ponderados en tabla, pre-mortem de la opción favorita (cómo podría fallar), decisión recomendada, qué la haría cambiar y siguiente paso reversible."],
     ] },
-  { id: "marco", room: "central", dept: "prod", name: "Marco", role: "Product manager", look: [1, "#1d1d1d", 2, 300, "#3a3a4a"],
+  { id: "marco", room: "central", dept: "prod", name: "Producto", role: "Product manager", look: [1, "#1d1d1d", 2, 300, "#3a3a4a"],
     bio: "Define qué se construye y por qué. Escribe PRD, historias de usuario y prioriza con datos.",
     tools: ["Linear", "Jira", "Figma", "Amplitude", "Productboard"],
     skills: [
@@ -35,7 +35,7 @@ const AGENTS = [
       ["compet", "Análisis de competencia", "Mapa competitivo y huecos de mercado.", "Compara 5 competidores en tabla (propuesta, precio, público, puntos fuertes, débiles), dibuja un mapa de posicionamiento en 2 ejes y señala 3 huecos donde podemos ganar."],
       ["jtbd", "Entrevistas JTBD", "Guion de discovery con clientes.", "Guion de entrevista Jobs To Be Done (momento del primer pensamiento, búsqueda, decisión, ansiedades), 12 preguntas abiertas, hipótesis a validar y plantilla de síntesis."],
     ] },
-  { id: "tomas", room: "central", dept: "fin", name: "Tomás", role: "Director financiero (CFO)", look: [0, "#b8b8b8", 0, 120, "#24303a"],
+  { id: "tomas", room: "central", dept: "fin", name: "Finanzas", role: "Finanzas (CFO)", look: [0, "#b8b8b8", 0, 120, "#24303a"],
     bio: "Números claros: presupuestos, precios, rentabilidad, caja y previsiones. Siempre con tablas.",
     tools: ["Excel", "Google Sheets", "Holded", "Stripe", "Qonto"],
     skills: [
@@ -45,7 +45,7 @@ const AGENTS = [
       ["unit", "Unit economics", "CAC, LTV, payback y margen de contribución.", "Calcula CAC por canal, LTV con margen y churn, ratio LTV/CAC, meses de payback y margen de contribución; marca en rojo lo que no es sostenible y cómo arreglarlo."],
       ["cash", "Tesorería 13 semanas", "Previsión de caja a corto plazo.", "Tabla semanal de 13 semanas con cobros, pagos, saldo inicial y final, alertas de caja mínima y acciones para alargar la pista."],
     ] },
-  { id: "carmen", room: "central", dept: "legal", name: "Carmen", role: "Asesora legal", look: [1, "#2b1b14", 3, 40, "#2a2030"],
+  { id: "carmen", room: "central", dept: "legal", name: "Legal", role: "Asesoría legal", look: [1, "#2b1b14", 3, 40, "#2a2030"],
     bio: "Contratos, privacidad y cumplimiento. Redacta documentos y señala riesgos. Recomienda validarlos con un abogado colegiado.",
     tools: ["RGPD / LOPDGDD", "LSSI", "Ley de IA de la UE", "OEPM / EUIPO"],
     skills: [
@@ -54,7 +54,7 @@ const AGENTS = [
       ["trademark", "Registro de marca", "Cómo proteger el nombre y el logo.", "Pasos para buscar anterioridades y registrar en OEPM o EUIPO, clases de Niza recomendadas, tasas orientativas, plazos y riesgos."],
       ["risk", "Revisión de riesgos", "Auditoría legal del proyecto.", "Lista de riesgos legales por área (datos, consumo, publicidad, IA, laboral, fiscal) con probabilidad, impacto y acción recomendada."],
     ] },
-  { id: "pablo", room: "central", dept: "people", name: "Pablo", role: "Personas y cultura", look: [3, "#4a3020", 2, 320, "#33334a"],
+  { id: "pablo", room: "central", dept: "people", name: "Personas", role: "Personas y cultura", look: [3, "#4a3020", 2, 320, "#33334a"],
     bio: "Atrae y cuida al talento: perfiles, ofertas, entrevistas, onboarding y cultura de equipo.",
     tools: ["LinkedIn Recruiter", "Factorial", "Notion", "Typeform"],
     skills: [
@@ -64,7 +64,7 @@ const AGENTS = [
       ["culture", "Manual de cultura", "Valores y forma de trabajar.", "5 valores con comportamientos observables, rituales del equipo, cómo decidimos, cómo damos feedback y qué no toleramos."],
     ] },
 
-  { id: "dani", room: "estudio", dept: "video", name: "Dani", role: "Editor de vídeo profesional", look: [4, "#2a1a12", 1, 20, "#1f2430"],
+  { id: "dani", room: "estudio", dept: "video", name: "Vídeo", role: "Edición de vídeo profesional", look: [4, "#2a1a12", 1, 20, "#1f2430"],
     bio: "Edición, color y sonido de nivel profesional. Escribe guiones, storyboards y planes de montaje plano a plano.",
     tools: ["DaVinci Resolve Studio", "Premiere Pro", "After Effects", "Final Cut Pro", "CapCut", "Runway", "Descript", "iZotope RX", "Frame.io"],
     skills: [
@@ -75,7 +75,7 @@ const AGENTS = [
       ["subs", "Subtítulos dinámicos", "Subtítulos al estilo de los grandes creadores.", "Divide el guion en bloques de 1-3 palabras, marca palabras clave para resaltar en color, emojis puntuales, posición y tipografía recomendadas, y cómo hacerlo en CapCut o DaVinci."],
       ["aivideo", "Vídeo con IA", "Storyboard y prompts para Runway o Veo.", "Storyboard de 6-10 planos y para cada uno un prompt de vídeo IA (sujeto, acción, cámara, lente, luz, estilo, duración) más el prompt negativo y cómo montarlos."],
     ] },
-  { id: "lucia", room: "estudio", dept: "design", name: "Lucía", role: "Diseñadora de producto y marca", look: [2, "#a0522d", 0, 340, "#2d2440"],
+  { id: "lucia", room: "estudio", dept: "design", name: "Diseño", role: "Diseño de producto y marca", look: [2, "#a0522d", 0, 340, "#2d2440"],
     bio: "Identidad de marca, interfaces y piezas gráficas, con especificaciones exactas: colores, tipografías, medidas y textos.",
     tools: ["Figma", "Illustrator", "Photoshop", "Adobe Firefly", "Midjourney", "Canva", "Spline"],
     skills: [
@@ -85,7 +85,7 @@ const AGENTS = [
       ["socialkit", "Kit de piezas para redes", "Plantillas con medidas exactas.", "Plantillas para post 1080x1350, story 1080x1920, portada de YouTube 2560x1440 y miniatura 1280x720: rejilla, zonas seguras, jerarquía, textos y colores."],
       ["uxaudit", "Auditoría UX", "Las 10 heurísticas de Nielsen.", "Evalúa con las 10 heurísticas de Nielsen, cada problema con gravedad 1-4, evidencia y solución concreta; termina con las 5 mejoras más rentables."],
     ] },
-  { id: "sofia", room: "estudio", dept: "social", name: "Sofía", role: "Social media manager", look: [3, "#d4a24c", 1, 0, "#2a2a3a"],
+  { id: "sofia", room: "estudio", dept: "social", name: "Redes", role: "Redes sociales", look: [3, "#d4a24c", 1, 0, "#2a2a3a"],
     bio: "Lleva tus redes: estrategia, calendario, publicaciones, comunidad y crecimiento en cada plataforma.",
     tools: ["Instagram", "TikTok", "LinkedIn", "YouTube", "X", "Meta Business Suite", "Metricool", "Later"],
     skills: [
@@ -96,7 +96,7 @@ const AGENTS = [
       ["community", "Gestión de comunidad", "Respuestas tipo y guía de moderación.", "Respuestas tipo para comentarios positivos, dudas, críticas y DMs de venta; guía de tono, tiempos de respuesta y criterios de moderación."],
       ["creators", "Colaboraciones con creadores", "Plan con influencers y mensaje de contacto.", "Perfil de creadores (micro y macro), criterios de selección, tipos de colaboración, presupuesto orientativo, brief y mensaje de primer contacto."],
     ] },
-  { id: "bruno", room: "estudio", dept: "content", name: "Bruno", role: "Copywriter y estratega de contenidos", look: [1, "#5a3b22", 3, 85, "#3a3026"],
+  { id: "bruno", room: "estudio", dept: "content", name: "Copy", role: "Copywriting y contenidos", look: [1, "#5a3b22", 3, 85, "#3a3026"],
     bio: "Escribe textos que venden y se leen: webs, anuncios, blog, newsletters, guiones y tono de marca.",
     tools: ["Google Docs", "Hemingway", "Notion", "Substack", "Grammarly"],
     skills: [
@@ -108,7 +108,7 @@ const AGENTS = [
       ["voice", "Tono de voz", "Guía de voz de marca.", "Personalidad en 4 rasgos 'somos X, pero no Y', vocabulario sí y no, ejemplos antes y después, y adaptación por canal."],
     ] },
 
-  { id: "kai", room: "lab", dept: "dev", name: "Kai", role: "Desarrollador full-stack", look: [0, "#101010", 4, 230, "#1d2433"],
+  { id: "kai", room: "lab", dept: "dev", name: "Desarrollo", role: "Desarrollo full-stack", look: [0, "#101010", 4, 230, "#1d2433"],
     bio: "Escribe código de producción: webs, apps, APIs y automatizaciones. Entrega código completo y listo para pegar.",
     tools: ["TypeScript", "React / Next.js", "Node.js", "Python", "PostgreSQL", "Supabase", "GitHub", "Claude Code"],
     skills: [
@@ -118,7 +118,7 @@ const AGENTS = [
       ["webapp", "Prototipo de app", "App React funcional en un archivo.", "App React en un único archivo (con CDN), estado local, diseño limpio y responsive, datos de ejemplo y lista de siguientes pasos para llevarla a producción."],
       ["codereview", "Revisión de código", "Bugs, seguridad y rendimiento.", "Revisa el código que te pasen: bugs con línea y causa, problemas de seguridad, rendimiento y legibilidad, y entrega la versión corregida completa."],
     ] },
-  { id: "ivan", room: "lab", dept: "dev", name: "Iván", role: "DevOps y QA", look: [1, "#6b4a2b", 2, 210, "#2a2a2a"],
+  { id: "ivan", room: "lab", dept: "dev", name: "DevOps", role: "DevOps y QA", look: [1, "#6b4a2b", 2, 210, "#2a2a2a"],
     bio: "Despliega, automatiza y prueba. Se asegura de que todo funcione, sea seguro y no se caiga.",
     tools: ["GitHub Actions", "Docker", "Vercel", "Cloudflare", "Playwright", "Sentry"],
     skills: [
@@ -127,7 +127,7 @@ const AGENTS = [
       ["security", "Seguridad OWASP", "Checklist del Top 10 aplicado.", "Repasa el OWASP Top 10 aplicado al proyecto, con estado, riesgo y corrección concreta; añade cabeceras de seguridad recomendadas."],
       ["deploy", "Despliegue a producción", "Dominio, SSL, backups y costes.", "Guía paso a paso para desplegar en Vercel o Cloudflare, configurar dominio y DNS, SSL, variables de entorno, backups, monitorización con Sentry y coste mensual estimado."],
     ] },
-  { id: "irene", room: "lab", dept: "seo", name: "Irene", role: "Especialista en SEO y datos", look: [2, "#0f0f0f", 3, 150, "#203030"],
+  { id: "irene", room: "lab", dept: "seo", name: "SEO", role: "SEO y analítica", look: [2, "#0f0f0f", 3, 150, "#203030"],
     bio: "Investiga qué busca tu cliente y mide qué funciona. Convierte los datos en decisiones.",
     tools: ["Search Console", "GA4", "Ahrefs", "Semrush", "Looker Studio", "BigQuery"],
     skills: [
@@ -137,7 +137,7 @@ const AGENTS = [
       ["abtest", "Test A/B", "Experimento bien diseñado.", "Hipótesis 'Si... entonces... porque...', variante, métrica principal y de control, tamaño de muestra y duración calculados, y criterio de decisión."],
       ["local", "SEO local", "Google Business Profile y reseñas.", "Optimización completa del perfil de Google Business, categorías, fotos, publicaciones, estrategia de reseñas y citaciones locales."],
     ] },
-  { id: "hugo", room: "lab", dept: "rnd", name: "Hugo", role: "Investigador de IA y automatización", look: [4, "#7a7a7a", 0, 200, "#262636"],
+  { id: "hugo", room: "lab", dept: "rnd", name: "IA", role: "IA y automatización", look: [4, "#7a7a7a", 0, 200, "#262636"],
     bio: "Encuentra la mejor herramienta para cada cosa y diseña agentes y automatizaciones que ahorran horas.",
     tools: ["Claude", "Claude Code", "MCP", "Zapier", "Make", "n8n", "Python"],
     skills: [
@@ -148,7 +148,7 @@ const AGENTS = [
       ["tools", "Comparativa de herramientas", "La mejor herramienta para cada necesidad.", "Tabla comparativa de 4-6 herramientas (precio, puntos fuertes, límites, integración) y recomendación final según el tamaño y presupuesto del proyecto."],
     ] },
 
-  { id: "alex", room: "ventas", dept: "mkt", name: "Álex", role: "Director de marketing", look: [0, "#3a3a3a", 2, 60, "#2a2f3a"],
+  { id: "alex", room: "ventas", dept: "mkt", name: "Marketing", role: "Dirección de marketing", look: [0, "#3a3a3a", 2, 60, "#2a2f3a"],
     bio: "Diseña cómo te encuentra el cliente y cómo compra: posicionamiento, campañas, embudo y crecimiento.",
     tools: ["Meta Ads", "Google Ads", "TikTok Ads", "HubSpot", "Klaviyo", "Looker Studio"],
     skills: [
@@ -158,7 +158,7 @@ const AGENTS = [
       ["funnel", "Embudo completo", "Lead magnet, landing y emails.", "Lead magnet, landing de captación, secuencia de 5 emails (bienvenida, historia, valor, prueba, oferta) con asunto y texto, oferta de entrada y upsell."],
       ["launch", "Lanzamiento PLF", "Product Launch Formula de Jeff Walker.", "Prelanzamiento con 3 contenidos (oportunidad, transformación, propiedad), apertura de carrito, cierre y emails de cada fase con fechas."],
     ] },
-  { id: "rocio", room: "ventas", dept: "sales", name: "Rocío", role: "Directora de ventas", look: [2, "#1a1a1a", 4, 30, "#2a2020"],
+  { id: "rocio", room: "ventas", dept: "sales", name: "Ventas", role: "Dirección de ventas", look: [2, "#1a1a1a", 4, 30, "#2a2020"],
     bio: "Cierra acuerdos. Prospección, llamadas, propuestas y un pipeline ordenado.",
     tools: ["Salesforce", "HubSpot CRM", "LinkedIn Sales Navigator", "Apollo", "Calendly"],
     skills: [
@@ -168,7 +168,7 @@ const AGENTS = [
       ["proposal", "Propuesta comercial", "Propuesta que se firma.", "Resumen del problema del cliente, solución, entregables, plazos, inversión en 3 opciones, garantías, casos de éxito y próximo paso con fecha."],
       ["pipeline", "Pipeline en CRM", "Etapas, criterios y previsión.", "Etapas del pipeline con criterio de entrada y salida, probabilidad por etapa, campos obligatorios, rutina semanal y cálculo de previsión de ventas."],
     ] },
-  { id: "lola", room: "ventas", dept: "cx", name: "Lola", role: "Atención al cliente", look: [3, "#c46a3a", 1, 175, "#20303a"],
+  { id: "lola", room: "ventas", dept: "cx", name: "Soporte", role: "Atención al cliente", look: [3, "#c46a3a", 1, 175, "#20303a"],
     bio: "Cuida a cada cliente: respuestas, preguntas frecuentes, protocolos y satisfacción.",
     tools: ["Zendesk", "Intercom", "WhatsApp Business", "Gmail", "Trustpilot"],
     skills: [
