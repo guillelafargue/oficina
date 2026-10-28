@@ -166,6 +166,34 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .del .d { font-size: 12px; color: var(--ink-3); margin-top: auto; }
 .intro { color: var(--ink-3); font-size: 13.5px; margin: 20px 0 0; }
 
+/* Contexto */
+.ctx-add { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.ctx-opt { padding: 16px 20px 18px 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.ctx-opt + .ctx-opt { padding-left: 20px; border-left: 1px solid var(--line); }
+.ctx-opt h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.ctx-opt p { margin: 0 0 6px; font-size: 13px; color: var(--ink-2); }
+.ctx-opt .crow { width: 100%; flex-wrap: nowrap; }
+.ctx-opt input { flex: 1; min-width: 0; min-height: 30px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; }
+.chk { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; min-width: 0; }
+.chk input { margin: 3px 0 0; accent-color: var(--accent); flex: none; }
+.chk > span { min-width: 0; }
+.chk b { font-weight: 500; display: block; overflow-wrap: anywhere; }
+.chk b + span { display: block; font-size: 12.5px; color: var(--ink-3); }
+.ctx-project { margin: 0 0 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ctxg { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ctxg-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.ctxg details { margin: 8px 0 0 23px; font-size: 13px; }
+.ctxg summary { cursor: pointer; color: var(--ink-3); width: fit-content; }
+.ctx-prev { margin: 6px 0 0 23px; font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.ctxfiles { list-style: none; margin: 8px 0 0; padding: 0; max-height: 320px; overflow: auto; }
+.ctxfiles li { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 12.5px; color: var(--ink-2); }
+.ctxfiles .num { font-size: 12px; overflow-wrap: anywhere; }
+.refs { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-3); }
+.refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
+.refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
+.src { color: var(--ink-3); font-size: 12.5px; }
+.src::before { content: "· "; }
+
 /* Skills */
 .skgroup { margin-top: 26px; }
 .skgroup h2 { margin: 0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
@@ -258,6 +286,8 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   .trow, .thead { grid-template-columns: minmax(0, 1fr) auto; }
   .trow .who, .thead span:nth-child(2) { display: none; }
   .sk { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  .ctx-opt, .ctx-opt + .ctx-opt { padding: 14px 0; border-left: 0; }
+  .ctx-opt + .ctx-opt { border-top: 1px solid var(--line); }
   .sk p, .sk details { grid-column: 1 / -1; grid-row: 2; }
   .sk details { grid-row: 3; }
   .sk .acts { grid-column: 2; grid-row: 1; }
@@ -274,6 +304,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
       <button class="tab" type="button" data-view="oficina">Oficina <span class="n" id="nWork"></span></button>
       <button class="tab" type="button" data-view="encargos">Encargos <span class="n" id="nTasks"></span></button>
       <button class="tab" type="button" data-view="entregables">Entregables <span class="n" id="nDone"></span></button>
+      <button class="tab" type="button" data-view="contexto">Contexto <span class="n" id="nCtx"></span></button>
       <button class="tab" type="button" data-view="skills">Skills <span class="n" id="nSkills"></span></button>
     </nav>
     <button class="linkbtn" type="button" data-settings>Ajustes</button>
@@ -298,6 +329,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
         <div class="seg" role="group" aria-label="Profundidad"><button type="button" data-mode="rapido" aria-pressed="false" title="Una sola pasada, más rápido">Rápido</button><button type="button" data-mode="pro" aria-pressed="true" title="Planifica por pasos y ejecuta cada uno a fondo">Por pasos</button></div>
         <span id="skillSlot"></span>
         <span id="imgSlot"></span>
+        <span id="ctxSlot"></span>
         <button type="button" class="attach" id="btnAttach" hidden>Adjuntar imagen</button>
         <input type="file" id="fileIn" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
         <span class="grow"></span>
@@ -332,6 +364,23 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
       <button class="btn ghost sm" type="button" id="btnNewSkill">Nueva skill</button></div>
     <div class="filters" id="skillFilters"></div>
     <div id="skillGrid"></div>
+  </section>
+
+  <section class="view" id="v-contexto" hidden>
+    <div class="vh"><div><h1>Contexto</h1><p>Tu código, documentos y datos. Cada puesto lee lo más relevante para su encargo antes de trabajar y, dentro de Claude, puede buscar y abrir cualquier archivo.</p></div>
+      <span class="stats" id="ctxSummary"></span></div>
+    <div class="ctx-add">
+      <div class="ctx-opt"><h3>Subir una carpeta</h3><p>El proyecto entero de tu app. Se leen el código y los textos; se ignoran dependencias, compilados e imágenes.</p><button class="btn ghost sm" type="button" id="ctxDirBtn">Elegir carpeta</button></div>
+      <div class="ctx-opt"><h3>Subir archivos</h3><p>Código, Markdown, CSV, JSON, HTML y otros archivos de texto.</p><button class="btn ghost sm" type="button" id="ctxFilesBtn">Elegir archivos</button></div>
+      <div class="ctx-opt"><h3>Pegar texto</h3><p>Un briefing, un documento, una conversación o el texto de un PDF.</p><button class="btn ghost sm" type="button" id="ctxPasteBtn">Pegar</button></div>
+      <form class="ctx-opt" id="ctxGh"><h3>Repositorio de GitHub</h3><p>Público. Funciona en la app instalada; dentro de Claude, usa la carpeta.</p>
+        <div class="crow"><label for="ghUrl" hidden>Dirección del repositorio</label><input id="ghUrl" placeholder="https://github.com/usuario/proyecto" inputmode="url"><button class="btn ghost sm" type="submit">Importar</button></div></form>
+    </div>
+    <input type="file" id="ctxFiles" multiple hidden>
+    <input type="file" id="ctxDir" webkitdirectory multiple hidden>
+    <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que tengas en el proyecto donde vive esta app. Claude te pedirá permiso la primera vez.</span></span></label>
+    <p class="note" id="ctxBusy" hidden></p>
+    <div id="ctxList"></div>
   </section>
 
   <section class="view" id="v-entregables" hidden>
@@ -369,6 +418,15 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="kDesc">Para qué sirve</label><input id="kDesc" maxlength="140"></div>
     <div class="field"><label for="kMethod">Método, paso a paso</label><textarea id="kMethod" maxlength="3000" placeholder="1. Empieza con…"></textarea></div>
     <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar skill</button></div>
+  </form>
+</dialog>
+
+<dialog id="pasteDlg">
+  <form method="dialog">
+    <h2>Pegar texto</h2>
+    <div class="field"><label for="pName">Título</label><input id="pName" maxlength="80" placeholder="Briefing de la app"></div>
+    <div class="field"><label for="pText">Contenido</label><textarea id="pText" maxlength="200000" style="min-height:220px"></textarea></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Añadir al contexto</button></div>
   </form>
 </dialog>
 

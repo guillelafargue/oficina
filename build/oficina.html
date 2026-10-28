@@ -166,6 +166,34 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .del .d { font-size: 12px; color: var(--ink-3); margin-top: auto; }
 .intro { color: var(--ink-3); font-size: 13.5px; margin: 20px 0 0; }
 
+/* Contexto */
+.ctx-add { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.ctx-opt { padding: 16px 20px 18px 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.ctx-opt + .ctx-opt { padding-left: 20px; border-left: 1px solid var(--line); }
+.ctx-opt h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.ctx-opt p { margin: 0 0 6px; font-size: 13px; color: var(--ink-2); }
+.ctx-opt .crow { width: 100%; flex-wrap: nowrap; }
+.ctx-opt input { flex: 1; min-width: 0; min-height: 30px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; }
+.chk { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; min-width: 0; }
+.chk input { margin: 3px 0 0; accent-color: var(--accent); flex: none; }
+.chk > span { min-width: 0; }
+.chk b { font-weight: 500; display: block; overflow-wrap: anywhere; }
+.chk b + span { display: block; font-size: 12.5px; color: var(--ink-3); }
+.ctx-project { margin: 0 0 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ctxg { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ctxg-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.ctxg details { margin: 8px 0 0 23px; font-size: 13px; }
+.ctxg summary { cursor: pointer; color: var(--ink-3); width: fit-content; }
+.ctx-prev { margin: 6px 0 0 23px; font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.ctxfiles { list-style: none; margin: 8px 0 0; padding: 0; max-height: 320px; overflow: auto; }
+.ctxfiles li { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 12.5px; color: var(--ink-2); }
+.ctxfiles .num { font-size: 12px; overflow-wrap: anywhere; }
+.refs { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-3); }
+.refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
+.refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
+.src { color: var(--ink-3); font-size: 12.5px; }
+.src::before { content: "· "; }
+
 /* Skills */
 .skgroup { margin-top: 26px; }
 .skgroup h2 { margin: 0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
@@ -258,6 +286,8 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   .trow, .thead { grid-template-columns: minmax(0, 1fr) auto; }
   .trow .who, .thead span:nth-child(2) { display: none; }
   .sk { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  .ctx-opt, .ctx-opt + .ctx-opt { padding: 14px 0; border-left: 0; }
+  .ctx-opt + .ctx-opt { border-top: 1px solid var(--line); }
   .sk p, .sk details { grid-column: 1 / -1; grid-row: 2; }
   .sk details { grid-row: 3; }
   .sk .acts { grid-column: 2; grid-row: 1; }
@@ -274,6 +304,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
       <button class="tab" type="button" data-view="oficina">Oficina <span class="n" id="nWork"></span></button>
       <button class="tab" type="button" data-view="encargos">Encargos <span class="n" id="nTasks"></span></button>
       <button class="tab" type="button" data-view="entregables">Entregables <span class="n" id="nDone"></span></button>
+      <button class="tab" type="button" data-view="contexto">Contexto <span class="n" id="nCtx"></span></button>
       <button class="tab" type="button" data-view="skills">Skills <span class="n" id="nSkills"></span></button>
     </nav>
     <button class="linkbtn" type="button" data-settings>Ajustes</button>
@@ -298,6 +329,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
         <div class="seg" role="group" aria-label="Profundidad"><button type="button" data-mode="rapido" aria-pressed="false" title="Una sola pasada, más rápido">Rápido</button><button type="button" data-mode="pro" aria-pressed="true" title="Planifica por pasos y ejecuta cada uno a fondo">Por pasos</button></div>
         <span id="skillSlot"></span>
         <span id="imgSlot"></span>
+        <span id="ctxSlot"></span>
         <button type="button" class="attach" id="btnAttach" hidden>Adjuntar imagen</button>
         <input type="file" id="fileIn" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
         <span class="grow"></span>
@@ -332,6 +364,23 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
       <button class="btn ghost sm" type="button" id="btnNewSkill">Nueva skill</button></div>
     <div class="filters" id="skillFilters"></div>
     <div id="skillGrid"></div>
+  </section>
+
+  <section class="view" id="v-contexto" hidden>
+    <div class="vh"><div><h1>Contexto</h1><p>Tu código, documentos y datos. Cada puesto lee lo más relevante para su encargo antes de trabajar y, dentro de Claude, puede buscar y abrir cualquier archivo.</p></div>
+      <span class="stats" id="ctxSummary"></span></div>
+    <div class="ctx-add">
+      <div class="ctx-opt"><h3>Subir una carpeta</h3><p>El proyecto entero de tu app. Se leen el código y los textos; se ignoran dependencias, compilados e imágenes.</p><button class="btn ghost sm" type="button" id="ctxDirBtn">Elegir carpeta</button></div>
+      <div class="ctx-opt"><h3>Subir archivos</h3><p>Código, Markdown, CSV, JSON, HTML y otros archivos de texto.</p><button class="btn ghost sm" type="button" id="ctxFilesBtn">Elegir archivos</button></div>
+      <div class="ctx-opt"><h3>Pegar texto</h3><p>Un briefing, un documento, una conversación o el texto de un PDF.</p><button class="btn ghost sm" type="button" id="ctxPasteBtn">Pegar</button></div>
+      <form class="ctx-opt" id="ctxGh"><h3>Repositorio de GitHub</h3><p>Público. Funciona en la app instalada; dentro de Claude, usa la carpeta.</p>
+        <div class="crow"><label for="ghUrl" hidden>Dirección del repositorio</label><input id="ghUrl" placeholder="https://github.com/usuario/proyecto" inputmode="url"><button class="btn ghost sm" type="submit">Importar</button></div></form>
+    </div>
+    <input type="file" id="ctxFiles" multiple hidden>
+    <input type="file" id="ctxDir" webkitdirectory multiple hidden>
+    <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que tengas en el proyecto donde vive esta app. Claude te pedirá permiso la primera vez.</span></span></label>
+    <p class="note" id="ctxBusy" hidden></p>
+    <div id="ctxList"></div>
   </section>
 
   <section class="view" id="v-entregables" hidden>
@@ -369,6 +418,15 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="kDesc">Para qué sirve</label><input id="kDesc" maxlength="140"></div>
     <div class="field"><label for="kMethod">Método, paso a paso</label><textarea id="kMethod" maxlength="3000" placeholder="1. Empieza con…"></textarea></div>
     <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar skill</button></div>
+  </form>
+</dialog>
+
+<dialog id="pasteDlg">
+  <form method="dialog">
+    <h2>Pegar texto</h2>
+    <div class="field"><label for="pName">Título</label><input id="pName" maxlength="80" placeholder="Briefing de la app"></div>
+    <div class="field"><label for="pText">Contenido</label><textarea id="pText" maxlength="200000" style="min-height:220px"></textarea></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Añadir al contexto</button></div>
   </form>
 </dialog>
 
@@ -558,6 +616,307 @@ const AGENTS = [
       ["chatbot", "Guion de chatbot", "Árbol de conversación para web o WhatsApp.", "Árbol de conversación con intents, mensajes exactos, botones, traspaso a humano y respuestas para cuando no entiende."],
     ] },
 ];
+
+/* Conocimiento experto de cada puesto: referentes mundiales de su especialidad y skills ampliadas.
+   Las skills se inspiran en las bibliotecas públicas más usadas (anthropics/skills, obra/superpowers,
+   coreyhaines31/marketingskills y otras) y en los métodos de los propios referentes.
+   Formato de skill: [clave, nombre, para qué sirve, método, fuente]. */
+const EXPERT = {
+  elena: {
+    refs: [
+      ["Andy Grove", "gestión de alto rendimiento: output del equipo, reuniones 1:1 y OKR originales"],
+      ["Peter Drucker", "eficacia del directivo: hacer lo correcto antes que hacerlo bien"],
+      ["Jeff Bezos", "decisiones de tipo 1 y tipo 2, memos de 6 páginas, obsesión por el cliente"],
+      ["Ray Dalio", "principios explícitos, transparencia radical y diagnóstico de problemas"],
+      ["Jim Collins", "el erizo, el volante y la gente adecuada en el autobús"],
+      ["Patrick Lencioni", "las 5 disfunciones de un equipo y la claridad organizativa"],
+    ],
+    skills: [
+      ["xmemo", "Memo de 6 páginas", "Documento narrativo para decidir, al estilo Amazon.", "Escribe en prosa, sin viñetas: contexto, tesis, datos, alternativas descartadas y por qué, plan, riesgos, preguntas frecuentes y qué decisión se pide. Debe poder leerse en 20 minutos y defenderse solo.", "Amazon (Jeff Bezos)"],
+      ["xprfaq", "PR/FAQ al revés", "Imagina el comunicado del lanzamiento antes de construir.", "Redacta la nota de prensa del día del lanzamiento (titular, problema, solución, cita del cliente, cómo empezar) y 10 preguntas frecuentes internas y externas difíciles con respuesta honesta.", "Amazon Working Backwards"],
+      ["xflywheel", "Volante de crecimiento", "Encuentra el ciclo que se refuerza solo.", "Identifica 4-6 eslabones causales del negocio que se alimentan entre sí, dibújalos como ciclo, señala el eslabón más débil y propón 3 acciones para acelerarlo con su métrica.", "Jim Collins"],
+      ["xmeeting", "Sistema de reuniones", "Ritmo operativo semanal, mensual y trimestral.", "Diseña el calendario de reuniones (diaria corta, semanal táctica, mensual estratégica, trimestral fuera de la oficina) con agenda fija, duración, asistentes, entradas y salidas de cada una.", "Patrick Lencioni, Andy Grove"],
+      ["xprinciples", "Principios de la empresa", "Reglas de decisión explícitas.", "Escribe 10-12 principios en formato «cuando X, hacemos Y porque Z», con un ejemplo real de aplicación y el error que evita cada uno.", "Ray Dalio"],
+      ["xbrainstorm", "Lluvia de ideas guiada", "Explora opciones antes de decidir.", "Primero preguntas para entender el objetivo, después 3 enfoques con pros y contras, recomendación argumentada y diseño mínimo validable. No pases a ejecutar hasta tener el enfoque claro.", "obra/superpowers: brainstorming"],
+      ["xplan", "Plan de ejecución detallado", "Plan por tareas pequeñas y verificables.", "Divide el objetivo en tareas de 2-5 minutos de esfuerzo humano o de un entregable claro, cada una con responsable, criterio de terminado y forma de verificarlo. Ordena por dependencias.", "obra/superpowers: writing-plans"],
+    ],
+  },
+  marco: {
+    refs: [
+      ["Marty Cagan", "equipos de producto empoderados y discovery continuo (Inspired)"],
+      ["Teresa Torres", "árbol de oportunidades y entrevistas semanales con clientes"],
+      ["Clayton Christensen", "jobs to be done e innovación disruptiva"],
+      ["Shreyas Doshi", "palancas de impacto, tareas LNO y pensamiento de producto"],
+      ["Lenny Rachitsky", "métricas de crecimiento y benchmarks de producto"],
+      ["Melissa Perri", "salir de la trampa de construir funcionalidades"],
+    ],
+    skills: [
+      ["xost", "Árbol de oportunidades", "Del resultado deseado a experimentos concretos.", "Define el resultado de negocio, ramifica oportunidades (necesidades del cliente con evidencia), soluciones por oportunidad y un experimento de suposición por solución. Elige la rama a atacar y por qué.", "Teresa Torres"],
+      ["xassump", "Mapa de suposiciones", "Qué tiene que ser cierto para que funcione.", "Lista suposiciones de deseabilidad, viabilidad, factibilidad y usabilidad; puntúalas por importancia y evidencia; diseña la prueba más barata para las 3 más arriesgadas.", "Marty Cagan, David Bland"],
+      ["xnorth", "Métrica estrella", "Una métrica que alinea a todo el equipo.", "Propón 3 candidatas a North Star, elige una con criterios (refleja valor al cliente, predice ingresos, accionable), y desglósala en 3-5 métricas de entrada con responsable.", "Amplitude North Star Playbook"],
+      ["xroadmap", "Roadmap por resultados", "Ahora, después, más adelante.", "Roadmap en tres columnas (ahora, siguiente, más adelante) con problemas a resolver en lugar de funcionalidades, resultado esperado, confianza y qué lo movería de columna.", "ProdPad, Janna Bastow"],
+      ["xpricingux", "Experimento de precio", "Validar disposición a pagar.", "Encuesta Van Westendorp con las 4 preguntas, cómo leer los resultados, y un test de página de precios falsa con métricas de decisión.", "Madhavan Ramanujam (Monetizing Innovation)"],
+      ["xretention", "Análisis de retención", "Curvas de cohortes y momento aha.", "Define activación, momento aha y hábito; plantilla de cohortes semanales; cómo detectar la curva que se aplana; 5 palancas para mejorarla.", "Lenny Rachitsky, Casey Winters"],
+      ["xspec", "Especificación técnica", "De requisito a diseño implementable.", "Contexto, objetivos y no objetivos, diseño propuesto con diagrama en texto, alternativas, plan de migración, observabilidad, plan de pruebas y preguntas abiertas.", "Google design docs"],
+    ],
+  },
+  tomas: {
+    refs: [
+      ["Aswath Damodaran", "valoración de empresas y narrativa con números"],
+      ["Warren Buffett", "ventaja competitiva duradera y disciplina de capital"],
+      ["Brad Feld", "términos de inversión (Venture Deals)"],
+      ["David Skok", "economía SaaS: LTV, CAC y payback"],
+      ["Mike Michalowicz", "Profit First: el beneficio primero"],
+    ],
+    skills: [
+      ["xvaluation", "Valoración de la empresa", "Cuánto vale y por qué.", "Cuenta la narrativa del negocio y tradúcela a supuestos (crecimiento, márgenes, reinversión, riesgo). DCF simplificado en tabla, contraste con múltiplos comparables y rango de valoración con sensibilidad.", "Aswath Damodaran"],
+      ["xsaas", "Métricas SaaS", "LTV, CAC, payback, churn y regla del 40.", "Calcula en tabla MRR, crecimiento, churn bruto y neto, ARPU, LTV, CAC, LTV/CAC, payback y regla del 40. Señala qué métrica está en zona roja y qué hacer.", "David Skok"],
+      ["xprofit", "Profit First", "Reparto del dinero que entra.", "Define cuentas (ingresos, beneficio, sueldo del fundador, impuestos, gastos operativos), porcentajes objetivo y actuales según facturación, plan de ajuste trimestral y calendario de transferencias.", "Mike Michalowicz"],
+      ["xtermsheet", "Revisión de term sheet", "Entender una oferta de inversión.", "Explica cláusula a cláusula (valoración pre y post, liquidación preferente, antidilución, consejo, vesting, derechos de veto), señala las peligrosas y propone contraoferta razonable.", "Brad Feld (Venture Deals)"],
+      ["xbreakeven", "Punto de equilibrio", "Cuánto hay que vender para no perder.", "Separa costes fijos y variables, calcula margen de contribución, unidades y facturación de equilibrio, y tabla de escenarios pesimista, base y optimista.", "Contabilidad de gestión"],
+      ["xxlsx", "Hoja de cálculo lista para usar", "Modelo con fórmulas que puedes copiar.", "Entrega la hoja como tablas con columnas definidas y las fórmulas exactas de cada celda clave (sintaxis de Excel y Google Sheets), supuestos en una pestaña aparte y comprobaciones de cuadre.", "anthropics/skills: xlsx"],
+    ],
+  },
+  carmen: {
+    refs: [
+      ["Reglamento General de Protección de Datos (RGPD)", "privacidad por diseño y bases de legitimación"],
+      ["Ley de Servicios de la Sociedad de la Información (LSSI)", "obligaciones de webs y comunicaciones comerciales en España"],
+      ["Reglamento europeo de IA (AI Act)", "obligaciones según el nivel de riesgo de los sistemas de IA"],
+      ["Lawrence Lessig", "propiedad intelectual y licencias abiertas"],
+      ["Ken Adams", "redacción contractual clara (A Manual of Style for Contract Drafting)"],
+    ],
+    skills: [
+      ["xgdpr", "Auditoría RGPD", "Cumplimiento de protección de datos.", "Registro de actividades de tratamiento en tabla (finalidad, base legal, datos, plazos, encargados), análisis de transferencias internacionales, derechos de los usuarios, brechas y lista de tareas priorizada.", "RGPD"],
+      ["xnda", "Acuerdo de confidencialidad", "NDA mutuo o unilateral.", "Redacta un NDA con definición precisa de información confidencial, exclusiones, obligaciones, duración, devolución, jurisdicción y penalización, con lenguaje claro al estilo Ken Adams.", "Ken Adams"],
+      ["xaiact", "Cumplimiento AI Act", "Uso de IA conforme a la normativa europea.", "Clasifica cada uso de IA de la empresa por nivel de riesgo, enumera obligaciones aplicables (transparencia, supervisión humana, documentación) y propone textos de aviso a usuarios.", "Reglamento (UE) 2024/1689"],
+      ["xpartners", "Pacto de socios", "Reglas entre fundadores.", "Cláusulas clave: reparto, vesting con cliff, buena y mala salida, arrastre y acompañamiento, no competencia, toma de decisiones y resolución de bloqueos. Explica cada una en lenguaje llano.", "Práctica de venture capital"],
+      ["xip", "Propiedad intelectual", "Proteger marca, código y contenidos.", "Inventario de activos, quién es titular de cada uno, cesiones necesarias de empleados y freelancers, licencias de terceros a revisar y licencia recomendada para lo que publiques.", "Lawrence Lessig, Creative Commons"],
+      ["xcontractreview", "Revisión de contrato ajeno", "Detecta riesgos antes de firmar.", "Tabla cláusula, riesgo (alto, medio, bajo), por qué y redacción alternativa propuesta. Termina con las 3 cláusulas que no se deben firmar tal cual.", "Práctica de asesoría"],
+    ],
+  },
+  pablo: {
+    refs: [
+      ["Laszlo Bock", "decisiones de personas basadas en datos (Work Rules!)"],
+      ["Patty McCord", "cultura de libertad y responsabilidad de Netflix"],
+      ["Kim Scott", "franqueza radical: importar personalmente y desafiar directamente"],
+      ["Amy Edmondson", "seguridad psicológica en equipos"],
+      ["Geoff Smart", "selección con el método Who (scorecard y entrevistas Topgrading)"],
+    ],
+    skills: [
+      ["xscorecard", "Scorecard del puesto", "Define el éxito antes de contratar.", "Misión del puesto en una frase, 3-5 resultados medibles a 12 meses y 6-8 competencias imprescindibles con cómo detectarlas en entrevista.", "Geoff Smart (Who)"],
+      ["xfeedback", "Conversación de feedback", "Franqueza radical bien hecha.", "Guion con el modelo SBI (situación, comportamiento, impacto), preguntas para escuchar, acuerdo de siguiente paso y frases a evitar. Versión para feedback positivo y para correctivo.", "Kim Scott, Center for Creative Leadership"],
+      ["xperf", "Evaluación de desempeño", "Ciclo justo y útil.", "Formulario de autoevaluación y del responsable, escala anclada en comportamientos, calibración entre equipos y plan de desarrollo individual.", "Laszlo Bock"],
+      ["xsalary", "Banda salarial", "Política retributiva transparente.", "Niveles, rangos por nivel con fuentes de mercado, criterios para subir de nivel, componente variable y cómo comunicarlo.", "Buffer, GitLab handbook"],
+      ["xsafety", "Seguridad psicológica", "Diagnóstico y plan del equipo.", "Encuesta de 7 preguntas de Amy Edmondson, interpretación, y 5 rituales concretos para mejorarla (retros sin culpa, preguntas del líder, etc.).", "Amy Edmondson"],
+      ["xcomms", "Comunicación interna", "Mensajes al equipo que se entienden.", "Formatos 3P (progreso, planes, problemas), boletín interno, actualización de dirección y preguntas frecuentes, con tono directo y concreto.", "anthropics/skills: internal-comms"],
+    ],
+  },
+  dani: {
+    refs: [
+      ["Walter Murch", "la regla de seis del montaje: emoción, historia, ritmo"],
+      ["Thelma Schoonmaker", "montaje con ritmo y tensión dramática"],
+      ["Roger Deakins", "fotografía e iluminación cinematográfica"],
+      ["MrBeast", "retención en YouTube: gancho, ritmo y recompensas constantes"],
+      ["Casey Neistat", "storytelling personal y vlog"],
+      ["Peter Mckinnon", "transiciones, B-roll y estética de creador"],
+    ],
+    skills: [
+      ["xmurch", "Montaje con la regla de seis", "Decide cada corte por emoción, historia y ritmo.", "Para cada corte del guion indica por qué se corta según la regla de seis de Murch (emoción, historia, ritmo, mirada, plano 2D, espacio 3D), duración de plano y efecto buscado.", "Walter Murch"],
+      ["xretain", "Guion de retención MrBeast", "Que nadie se vaya del vídeo.", "Gancho en 0-5 s con promesa visual, re-gancho cada 30-60 s, escalada de apuestas, recompensa final y título y miniatura pensados antes del guion. Marca en qué segundo se espera cada caída de audiencia y cómo evitarla.", "MrBeast production guide"],
+      ["xshotlist", "Lista de planos de rodaje", "Plan de grabación para el equipo.", "Tabla con número, escena, tipo de plano, lente, movimiento de cámara, luz, sonido, duración y notas. Agrupa por localización para rodar rápido.", "Práctica de producción"],
+      ["xlight", "Esquema de iluminación", "Luz cinematográfica con poco equipo.", "Esquema de tres puntos o luz motivada para cada escena, posición y temperatura de cada luz, alternativa con luz natural y referencia visual.", "Roger Deakins"],
+      ["xsound", "Diseño de sonido", "Audio profesional.", "Plan de pistas (voz, ambiente, efectos, música), cadena de procesado de voz (reducción de ruido, EQ, compresión, normalización a -14 LUFS para redes), y momentos de silencio dramático.", "Práctica de postproducción"],
+      ["xthumb", "Miniatura y título", "Lo que hace que hagan clic.", "10 títulos con curiosidad y claridad, 3 conceptos de miniatura (composición, emoción del rostro, texto de 3 palabras máximo, contraste) y cómo hacer test A/B.", "MrBeast, Paddy Galloway"],
+      ["xpodcast", "Episodio de podcast en vídeo", "Grabar, cortar y repartir en clips.", "Escaleta del episodio, preguntas, plan de cámaras, y lista de 8 clips verticales con minuto de inicio, gancho y texto en pantalla.", "Práctica de creadores"],
+    ],
+  },
+  lucia: {
+    refs: [
+      ["Dieter Rams", "10 principios del buen diseño: menos, pero mejor"],
+      ["Paula Scher", "identidad tipográfica audaz"],
+      ["Massimo Vignelli", "sistemas de diseño y retícula"],
+      ["Don Norman", "diseño centrado en las personas y affordances"],
+      ["Jony Ive", "diseño industrial y simplicidad"],
+      ["Refactoring UI (Adam Wathan y Steve Schoger)", "jerarquía, espaciado y color prácticos"],
+    ],
+    skills: [
+      ["xdesignsys", "Sistema de diseño", "Tokens, componentes y reglas.", "Tokens de color con contraste AA verificado, escala tipográfica, espaciado en múltiplos de 4, radios, sombras, y especificación de 10 componentes base con estados (normal, hover, foco, desactivado, error).", "Massimo Vignelli, Brad Frost (Atomic Design)"],
+      ["xfrontend", "Interfaz distintiva", "Pantallas que no parecen una plantilla.", "Elige una dirección estética clara y justificada, tipografía con carácter, paleta limitada con un acento, composición con jerarquía fuerte y detalles intencionados. Entrega HTML y CSS listos, evitando gradientes genéricos y estilos por defecto.", "anthropics/skills: frontend-design"],
+      ["xbrandbook", "Manual de marca", "Cómo usar la marca sin romperla.", "Logotipo y usos correctos e incorrectos, área de respeto, paleta con valores HEX, RGB y CMYK, tipografías, iconografía, fotografía, tono visual y 6 aplicaciones de ejemplo.", "anthropics/skills: brand-guidelines"],
+      ["xrefactor", "Pulido visual", "Mejorar una interfaz existente.", "Revisa jerarquía, espaciado, contraste, alineación y densidad con las reglas de Refactoring UI; entrega lista priorizada de cambios con antes y después en CSS.", "Refactoring UI"],
+      ["xposter", "Pieza gráfica", "Cartel, portada o anuncio.", "Concepto en una frase, retícula, jerarquía de lectura en 3 niveles, tipografía, paleta y composición detallada. Entrega en SVG o HTML cuando sea posible.", "anthropics/skills: canvas-design, Paula Scher"],
+      ["xa11y", "Accesibilidad WCAG", "Diseño que todos pueden usar.", "Auditoría WCAG 2.2 AA: contraste, tamaño de objetivos táctiles, foco visible, orden de lectura, textos alternativos y formularios. Tabla de problemas con severidad y solución.", "W3C WCAG"],
+      ["xpackaging", "Packaging", "Envase que vende en el lineal.", "Jerarquía del frontal (marca, producto, beneficio), información obligatoria, materiales, sostenibilidad y 3 conceptos con descripción visual.", "Práctica de diseño de packaging"],
+    ],
+  },
+  sofia: {
+    refs: [
+      ["Gary Vaynerchuk", "volumen de contenido nativo por plataforma y modelo pilar"],
+      ["Brendan Kane", "ganchos y crecimiento de un millón de seguidores"],
+      ["Justin Welsh", "sistema de contenido de creador en solitario"],
+      ["Jonah Berger", "por qué se comparte algo: STEPPS (Contagious)"],
+      ["Chris Do", "contenido educativo de valor y marca personal"],
+    ],
+    skills: [
+      ["xpillar", "Contenido pilar a 30 piezas", "Un contenido largo convertido en un mes.", "A partir de una pieza larga, extrae 30 piezas nativas por plataforma (reels, carruseles, hilos, stories, posts de LinkedIn) con gancho, formato y día de publicación.", "Gary Vaynerchuk"],
+      ["xstepps", "Contenido para compartir", "Diseñado para que se difunda.", "Evalúa la idea con STEPPS (moneda social, disparadores, emoción, público, valor práctico, historias) y reescríbela para puntuar alto en al menos 4.", "Jonah Berger"],
+      ["xsocialcontent", "Contenido social por plataforma", "Adaptado a cada red.", "Versiona el mismo mensaje para Instagram, TikTok, LinkedIn, X y YouTube Shorts respetando formato, longitud, tono y llamada a la acción de cada una.", "coreyhaines31/marketingskills: social-content"],
+      ["xugc", "Campaña UGC", "Que los clientes creen por ti.", "Mecánica, brief para creadores con guion de 3 tomas, derechos de uso, incentivos, hashtag y plan de reutilización en anuncios.", "Práctica de growth"],
+      ["xanalytics", "Informe mensual de redes", "Qué funcionó y qué repetir.", "Tabla por red con alcance, interacción, guardados, compartidos, seguidores y clics; top 5 y bottom 5 piezas con hipótesis de por qué; 3 decisiones para el mes siguiente.", "Práctica de social media"],
+      ["xlinkedin", "Marca personal en LinkedIn", "Autoridad del fundador.", "Perfil optimizado, 4 pilares de contenido, plantillas de post (historia, lección, lista, opinión), ritmo semanal y rutina de comentarios de 20 minutos.", "Justin Welsh"],
+    ],
+  },
+  bruno: {
+    refs: [
+      ["David Ogilvy", "publicidad que vende: el consumidor no es tonto"],
+      ["Eugene Schwartz", "niveles de consciencia y sofisticación del mercado (Breakthrough Advertising)"],
+      ["Gary Halbert", "cartas de venta y conocer al mercado hambriento"],
+      ["Joanna Wiebe", "copy basado en investigación de clientes (Copyhackers)"],
+      ["Ann Handley", "escribir con claridad y voz propia (Everybody Writes)"],
+      ["Donald Miller", "StoryBrand: el cliente es el héroe"],
+    ],
+    skills: [
+      ["xawareness", "Copy por nivel de consciencia", "El mensaje según lo que sabe el cliente.", "Define el nivel de consciencia del público (inconsciente, del problema, de la solución, del producto, muy consciente) y escribe titular y primer párrafo adaptados a cada nivel, indicando cuál usar dónde.", "Eugene Schwartz"],
+      ["xsalesletter", "Carta de ventas larga", "Página de ventas completa.", "Titular, subtítulo, historia, problema, agitación, solución, prueba, oferta apilada, garantía, escasez real, llamada a la acción y posdata. Basada en el lenguaje literal del cliente.", "Gary Halbert, Joanna Wiebe"],
+      ["xcopyedit", "Corrección de copy", "Siete pasadas de edición.", "Revisa en pasadas separadas: claridad, voz, so what, prueba, especificidad, emoción y fricción. Entrega el texto corregido y una tabla con los cambios y su motivo.", "coreyhaines31/marketingskills: copy-editing"],
+      ["xemailseq", "Secuencia de emails", "Bienvenida o venta automatizada.", "7 emails con asunto, preheader, objetivo, cuerpo completo y llamada a la acción, con lógica de envío por comportamiento.", "coreyhaines31/marketingskills: email-sequence"],
+      ["xogilvy", "Anuncio al estilo Ogilvy", "Titular que vende.", "20 titulares con beneficio y novedad, el mejor desarrollado con cuerpo de texto informativo, prueba concreta y firma de marca. Explica la elección.", "David Ogilvy"],
+      ["xcasestudy", "Caso de éxito", "Prueba social que convence.", "Estructura reto, solución y resultado con cifras, cita del cliente, titular con el resultado, versión larga para web y corta para redes y ventas.", "Práctica B2B"],
+      ["xcoauthor", "Documento en coautoría", "Redactar contigo paso a paso.", "Primero acuerda objetivo, lector y estructura; redacta sección a sección con preguntas al final de cada una; cierra con revisión de coherencia y resumen ejecutivo.", "anthropics/skills: doc-coauthoring"],
+    ],
+  },
+  kai: {
+    refs: [
+      ["Kent Beck", "desarrollo guiado por pruebas y diseño simple"],
+      ["Martin Fowler", "refactorización y arquitectura evolutiva"],
+      ["Robert C. Martin", "código limpio y principios SOLID"],
+      ["Dan Abramov", "React y modelos mentales de la interfaz"],
+      ["Guillermo Rauch", "la web rápida: Next.js y despliegue sin fricción"],
+      ["John Ousterhout", "módulos profundos y diseño de software (A Philosophy of Software Design)"],
+    ],
+    skills: [
+      ["xtdd", "Desarrollo con pruebas primero", "Rojo, verde, refactor.", "Para cada comportamiento: escribe la prueba que falla, el mínimo código que la pasa y refactoriza. Entrega pruebas y código completos y nunca código sin su prueba.", "obra/superpowers: test-driven-development, Kent Beck"],
+      ["xdebug", "Depuración sistemática", "Encontrar la causa raíz, no parchear.", "Reproduce el fallo, reúne evidencia, formula hipótesis, prueba de una en una, localiza la causa raíz, corrige y añade una prueba que lo evite. Nada de cambios al azar.", "obra/superpowers: systematic-debugging"],
+      ["xrefactorcode", "Refactorización segura", "Mejorar código sin romperlo.", "Identifica olores de código, elige refactorizaciones del catálogo de Fowler, aplica pasos pequeños con pruebas verdes entre cada uno y entrega el antes y después.", "Martin Fowler"],
+      ["xwebapp", "App web completa", "React, TypeScript y Tailwind.", "Estructura de carpetas, componentes, estado, llamadas a API, manejo de errores y carga, accesibilidad y código completo de cada archivo listo para ejecutar.", "anthropics/skills: web-artifacts-builder"],
+      ["xmcp", "Servidor MCP", "Conecta tus herramientas a la IA.", "Diseña las herramientas (nombre, descripción, parámetros con esquema), implementa el servidor MCP en TypeScript o Python, autenticación, errores y cómo probarlo con un cliente.", "anthropics/skills: mcp-builder"],
+      ["xarch", "Arquitectura del sistema", "Diseño que aguanta el crecimiento.", "Diagrama en texto de componentes, decisiones con ADR, modelo de datos, límites de módulos profundos, escalado, coste estimado y qué se deja para más adelante.", "John Ousterhout, Martin Fowler"],
+      ["xperfweb", "Rendimiento web", "Core Web Vitals en verde.", "Diagnóstico de LCP, INP y CLS, presupuesto de rendimiento, y lista de optimizaciones con impacto estimado (imágenes, fuentes, JS, caché, renderizado).", "web.dev (Google)"],
+    ],
+  },
+  ivan: {
+    refs: [
+      ["Gene Kim", "las tres vías de DevOps (The Phoenix Project)"],
+      ["Nicole Forsgren", "métricas DORA y Accelerate"],
+      ["Google SRE", "presupuestos de error y SLO"],
+      ["Kelsey Hightower", "Kubernetes y simplicidad operativa"],
+      ["Charity Majors", "observabilidad moderna"],
+    ],
+    skills: [
+      ["xslo", "SLO y presupuesto de error", "Fiabilidad medible.", "Define SLI por servicio, SLO con ventana, presupuesto de error, alertas por velocidad de consumo y política de qué hacer cuando se agota.", "Google SRE Book"],
+      ["xdora", "Métricas DORA", "Cómo de bien entrega el equipo.", "Mide frecuencia de despliegue, tiempo de entrega, tasa de fallos y tiempo de recuperación; compara con los niveles de élite y propone 5 mejoras.", "Nicole Forsgren (Accelerate)"],
+      ["xpostmortem", "Postmortem sin culpa", "Aprender de cada incidente.", "Resumen, impacto, cronología, causa raíz con los 5 porqués, qué salió bien, acciones con responsable y fecha. Tono sin culpables.", "Google SRE, Etsy"],
+      ["xwebtest", "Pruebas end-to-end", "Probar la web como un usuario.", "Escenarios críticos, scripts de Playwright completos con selectores robustos, capturas en fallos y cómo integrarlos en CI.", "anthropics/skills: webapp-testing"],
+      ["xobs", "Observabilidad", "Saber qué pasa en producción.", "Plan de logs estructurados, métricas y trazas con OpenTelemetry, cuadros de mando por servicio y 10 alertas útiles sin ruido.", "Charity Majors, OpenTelemetry"],
+      ["xverify", "Verificación antes de entregar", "Pruebas, no promesas.", "Antes de declarar algo terminado: lista de comandos de comprobación, salida esperada, criterios de aceptación y evidencia. Si algo no se ha podido verificar, dilo.", "obra/superpowers: verification-before-completion"],
+    ],
+  },
+  irene: {
+    refs: [
+      ["Rand Fishkin", "SEO, audiencia y SparkToro"],
+      ["Brian Dean", "técnica rascacielos y contenido enlazable"],
+      ["Aleyda Solís", "SEO internacional y técnico"],
+      ["Avinash Kaushik", "analítica orientada a decisiones"],
+      ["Lily Ray", "E-E-A-T y calidad del contenido"],
+      ["Kevin Indig", "SEO en la era de la búsqueda con IA"],
+    ],
+    skills: [
+      ["xprogseo", "SEO programático", "Cientos de páginas útiles desde datos.", "Elige el patrón de búsqueda, define la plantilla con secciones de valor real, fuentes de datos, enlazado interno, control de calidad contra contenido escaso y plan de indexación.", "coreyhaines31/marketingskills: programmatic-seo"],
+      ["xschema", "Datos estructurados", "Resultados enriquecidos en Google.", "JSON-LD completo para los tipos que apliquen (Organization, Product, FAQ, Article, LocalBusiness, BreadcrumbList), validación y dónde insertarlo.", "coreyhaines31/marketingskills: schema-markup"],
+      ["xgeo", "Visibilidad en buscadores con IA", "Aparecer en ChatGPT, Gemini y AI Overviews.", "Auditoría de entidades y menciones, contenido con respuestas directas y citables, datos propios, señales E-E-A-T y lista de fuentes donde conviene estar.", "Kevin Indig, Lily Ray"],
+      ["xskyscraper", "Contenido rascacielos", "La mejor página de su tema.", "Analiza las 10 primeras posiciones, define qué falta, esquema mejorado, recursos enlazables y plan de difusión para conseguir enlaces.", "Brian Dean"],
+      ["xtracking", "Plan de medición", "Eventos y conversiones bien medidos.", "Plan de etiquetado con eventos, parámetros y conversiones en GA4, convención de nombres, UTMs y verificación con DebugView.", "coreyhaines31/marketingskills: analytics-tracking"],
+      ["xinsight", "Informe de analítica", "De datos a decisiones.", "Para cada métrica: qué pasó, por qué (hipótesis con datos), y qué hacer. Usa el marco «so what» de Avinash Kaushik y termina con 3 acciones.", "Avinash Kaushik"],
+    ],
+  },
+  hugo: {
+    refs: [
+      ["Andrej Karpathy", "entender los modelos de lenguaje desde dentro"],
+      ["Andrew Ng", "flujos agénticos y aprendizaje automático aplicado"],
+      ["Simon Willison", "uso práctico y seguro de modelos, inyección de prompts"],
+      ["Anthropic", "guías de prompt engineering y construcción de agentes eficaces"],
+      ["Chip Huyen", "ingeniería de sistemas de IA en producción"],
+    ],
+    skills: [
+      ["xagents", "Agente eficaz", "Del flujo simple al agente.", "Empieza por el patrón más simple que funcione (cadena, enrutador, paralelización, orquestador con trabajadores, evaluador y optimizador) y justifica cuándo hace falta un agente autónomo. Define herramientas, bucle, límites y evaluación.", "Anthropic: Building effective agents"],
+      ["xevals", "Evaluación de IA", "Medir si el sistema funciona.", "Conjunto de 30 casos de prueba con entrada y salida esperada, métricas (exactitud, formato, seguridad), evaluador automático con rúbrica y cómo comparar versiones.", "Chip Huyen, Hamel Husain"],
+      ["xrag", "Sistema RAG", "Que la IA responda con tus documentos.", "Ingesta, troceado, embeddings, búsqueda híbrida, reordenado, prompt con citas, evaluación de recuperación y respuestas, y coste estimado.", "Chip Huyen"],
+      ["xskillmaker", "Crear una skill", "Empaqueta un método para reutilizarlo.", "Nombre, descripción que dispare bien, instrucciones paso a paso, ejemplos, recursos y casos de prueba para comprobar que la skill funciona.", "anthropics/skills: skill-creator"],
+      ["xinjection", "Seguridad de IA", "Protegerse de la inyección de prompts.", "Mapa de entradas no confiables, riesgos (exfiltración, acciones no deseadas), mitigaciones (separación de privilegios, confirmación humana, filtros) y pruebas de ataque.", "Simon Willison"],
+      ["xworkflow", "Flujo n8n o Make", "Automatización lista para montar.", "Disparador, nodos uno a uno con su configuración exacta, manejo de errores, reintentos, coste por ejecución y cómo probarlo.", "Práctica de automatización"],
+    ],
+  },
+  alex: {
+    refs: [
+      ["Philip Kotler", "fundamentos de marketing estratégico"],
+      ["Seth Godin", "la vaca púrpura y el mínimo público viable"],
+      ["Byron Sharp", "cómo crecen las marcas: disponibilidad mental y física"],
+      ["Alex Hormozi", "ofertas irresistibles y generación de leads ($100M Offers y Leads)"],
+      ["April Dunford", "posicionamiento (Obviously Awesome)"],
+      ["Rory Sutherland", "psicología del consumidor y alquimia"],
+    ],
+    skills: [
+      ["xposition", "Posicionamiento", "Dónde ganas y contra quién.", "Método de April Dunford: alternativas competitivas, atributos únicos, valor que habilitan, clientes que más lo aprecian, categoría de mercado y tendencias relevantes. Termina con la frase de posicionamiento.", "April Dunford"],
+      ["xpsych", "Psicología del marketing", "Sesgos que mueven decisiones.", "Aplica 10 principios (anclaje, prueba social, aversión a la pérdida, efecto señuelo, reciprocidad, autoridad, escasez, fluidez, coste hundido, compromiso) al caso con un ejemplo concreto de cada uno.", "coreyhaines31/marketingskills: marketing-psychology, Rory Sutherland"],
+      ["xcro", "Optimización de conversión", "Que la página convierta más.", "Auditoría de la página por claridad de propuesta, relevancia, fricción, ansiedad, distracción y urgencia. Lista priorizada por impacto con hipótesis de test A/B.", "coreyhaines31/marketingskills: page-cro"],
+      ["xleads", "Motor de leads Hormozi", "Los 4 métodos para conseguir clientes.", "Plan con contacto en frío, contenido gratuito, anuncios y referidos o afiliados: volumen diario, guion, imán de leads y métricas de cada uno.", "Alex Hormozi ($100M Leads)"],
+      ["xbrandgrowth", "Crecimiento de marca", "Disponibilidad mental y física.", "Activos distintivos de marca, momentos de compra a cubrir, alcance amplio frente a segmentación estrecha y plan de presupuesto 60/40 marca y rendimiento.", "Byron Sharp, Les Binet y Peter Field"],
+      ["xreferral", "Programa de referidos", "Que los clientes traigan clientes.", "Mecánica de doble recompensa, momento de pedirlo, mensajes, prevención de fraude, cálculo de coste por adquisición y métricas.", "coreyhaines31/marketingskills: referral-program"],
+      ["xpurplecow", "Idea notable", "Algo de lo que se hable.", "Mínimo público viable, 10 ideas notables (que la gente comente), filtro de viabilidad y la mejor desarrollada con plan de lanzamiento.", "Seth Godin"],
+    ],
+  },
+  rocio: {
+    refs: [
+      ["Neil Rackham", "SPIN Selling: preguntas de situación, problema, implicación y necesidad"],
+      ["Chris Voss", "negociación con empatía táctica (Never Split the Difference)"],
+      ["Aaron Ross", "prospección predecible (Predictable Revenue)"],
+      ["Matthew Dixon", "The Challenger Sale: enseñar, adaptar y tomar el control"],
+      ["Jeb Blount", "prospección fanática y disciplina comercial"],
+      ["Grant Cardone", "seguimiento persistente y volumen de actividad"],
+    ],
+    skills: [
+      ["xvoss", "Negociación Chris Voss", "Conseguir el sí sin ceder de más.", "Prepara la hoja de negociación: objetivo, etiquetas, preguntas calibradas («¿cómo…?», «¿qué…?»), espejos, auditoría de acusaciones, ancla y método Ackerman de concesiones 65-85-95-100.", "Chris Voss"],
+      ["xchallenger", "Venta Challenger", "Enseñar algo nuevo al cliente.", "Insight que reencuadra el problema del cliente, coste de no actuar con cifras, cómo nuestra solución encaja, y guion de reunión en 6 pasos (calentamiento, reencuadre, impacto racional, impacto emocional, nueva forma, solución).", "Matthew Dixon y Brent Adamson"],
+      ["xicp", "Cliente ideal y listas", "A quién vender primero.", "Perfil de cliente ideal (firmográficos, señales de compra, disparadores), buyer personas del comité, fuentes para construir la lista y puntuación de cuentas.", "Aaron Ross"],
+      ["xdiscovery", "Llamada de descubrimiento", "Calificar con MEDDICC.", "Guion con preguntas para métricas, comprador económico, criterios y proceso de decisión, dolor, campeón y competencia. Plantilla de notas y señales de que no hay oportunidad.", "MEDDICC (PTC)"],
+      ["xlinkedinsales", "Prospección en LinkedIn", "Social selling sin spam.", "Optimiza el perfil, secuencia de 5 toques (visita, comentario, conexión, valor, petición) con mensajes exactos y ritmo diario de 30 minutos.", "Jeb Blount, Justin Welsh"],
+      ["xclose", "Cierre y seguimiento", "No perder oportunidades por silencio.", "Técnicas de cierre honestas, plan de seguimiento de 8 toques en 21 días por canales distintos y email de ruptura que reactiva.", "Grant Cardone, Jeb Blount"],
+    ],
+  },
+  lola: {
+    refs: [
+      ["Tony Hsieh", "servicio que asombra (Zappos, Delivering Happiness)"],
+      ["Shep Hyken", "experiencia de cliente sorprendente"],
+      ["Disney Institute", "estándares de servicio y método HEARD"],
+      ["Horst Schulze", "excelencia del Ritz-Carlton"],
+      ["Fred Reichheld", "NPS y lealtad del cliente"],
+    ],
+    skills: [
+      ["xjourney", "Mapa del viaje del cliente", "Cada punto de contacto, mejorado.", "Fases (descubrimiento, compra, entrega, uso, renovación), emociones, puntos de dolor, momentos de la verdad y 10 mejoras priorizadas.", "Shep Hyken, Disney Institute"],
+      ["xwow", "Momentos wow", "Sorprender a bajo coste.", "15 gestos sorprendentes por fase con coste, a quién aplicarlo, quién lo ejecuta y cómo medir su efecto en reseñas y recompra.", "Tony Hsieh (Zappos)"],
+      ["xstandards", "Estándares de servicio", "El Ritz-Carlton de tu empresa.", "Credo, 12 estándares de servicio, lenguaje a usar y evitar, tiempos de respuesta por canal y sistema de empoderamiento con presupuesto por caso.", "Horst Schulze"],
+      ["xknowledge", "Base de conocimiento", "Que el cliente se ayude solo.", "Arquitectura de categorías, 20 artículos prioritarios con título por búsqueda real, plantilla de artículo, y cómo medir desvío de tickets.", "Práctica de soporte (Zendesk)"],
+      ["xchurn", "Prevención de bajas", "Recuperar clientes que se van.", "Señales de riesgo, flujo de cancelación con oferta según motivo, guion de llamada de retención y campaña de recuperación para los que ya se fueron.", "coreyhaines31/marketingskills, Fred Reichheld"],
+      ["xreviews", "Gestión de reseñas", "Más reseñas y mejores respuestas.", "Momentos para pedir reseña, mensajes, respuestas modelo a reseñas de 1 a 5 estrellas y plan para mejorar la puntuación media.", "Práctica de reputación online"],
+    ],
+  },
+};
+// Une el conocimiento experto con la plantilla
+for (const a of AGENTS) {
+  const x = EXPERT[a.id]; if (!x) continue;
+  a.refs = x.refs;
+  a.skills.push(...x.skills);
+}
 
 /* Motor de la oficina pixel-art: dibuja salas, muebles y agentes que caminan, se sientan y trabajan.
    Todo se dibuja con código en un canvas lógico de 448x256 px (mosaicos de 16 px) escalado sin suavizado. */
@@ -1005,14 +1364,14 @@ const P = a => Office.portrait(a);
 
 /* ---------- Skills ---------- */
 function allSkills() {
-  const base = AGENTS.flatMap(a => a.skills.map(([k, name, desc, method]) => ({ id: a.id + "." + k, agentId: a.id, name, desc, method, custom: false })));
+  const base = AGENTS.flatMap(a => a.skills.map(([k, name, desc, method, src]) => ({ id: a.id + "." + k, agentId: a.id, name, desc, method, src: src || "", custom: false })));
   return base.concat(state.customSkills.map(s => ({ ...s, custom: true })));
 }
 const skillById = id => allSkills().find(s => s.id === id);
 const skillsOf = agentId => allSkills().filter(s => s.agentId === agentId);
 
 /* ---------- IA: Claude dentro de claude.ai, o API propia fuera ---------- */
-const AI = { sample: null, mode: "none", images: false };
+const AI = { sample: null, mode: "none", images: false, tools: false };
 function settingsLocal() { try { return JSON.parse(localStorage.getItem("oficina.settings") || "{}"); } catch { return {}; } }
 function saveSettingsLocal(s) { try { localStorage.setItem("oficina.settings", JSON.stringify(s)); } catch {} }
 function aiReady() { return AI.mode === "sample" || !!settingsLocal().key; }
@@ -1025,9 +1384,10 @@ function parseJSONLoose(text) {
 }
 const fileToB64 = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); });
 
-async function ask(prompt, { onText, signal, json = false, image = null, quick = false } = {}) {
+async function ask(prompt, { onText, signal, json = false, image = null, quick = false, tools = null } = {}) {
   if (AI.mode === "sample") {
-    const opts = { signal, cache: false };
+    const opts = { signal };
+    if (tools?.length && AI.tools) opts.tools = tools; else opts.cache = false;
     if (quick) opts.modelTier = "quick";
     if (image && AI.images) opts.images = [image];
     if (json) return AI.sample.json(prompt, opts);
@@ -1109,7 +1469,7 @@ function persona(a) {
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
 Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
-
+${a.refs?.length ? `Trabajas con el criterio de los mayores referentes de tu especialidad y aplicas sus ideas cuando encajan: ${a.refs.map(([n, i]) => `${n} (${i})`).join("; ")}.\n` : ""}
 PROYECTO DE LA EMPRESA:
 ${state.brief}
 
@@ -1132,13 +1492,15 @@ Responde SOLO con JSON: {"pasos": ["título corto del paso 1", "..."]}`;
 }
 function execPrompt(a, t, skill) {
   const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
+  const ctx = ctxFor(`${t.order} ${skill?.name || ""} ${a.role}`, 24000);
   return `${persona(a)}
-${t.extra ? "\nCONTEXTO:\n" + t.extra + "\n" : ""}
+${ctx ? "\n" + ctx + "\n" : ""}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
 ENCARGO (de ${t.from}):
 ${t.order}
 ${skill ? `\nMÉTODO A SEGUIR, skill «${skill.name}»:\n${skill.method}\n` : ""}${t.hasImage ? "\nSe adjunta una imagen de referencia: analízala y úsala en el trabajo.\n" : ""}${plan}
 
 ${RULES(a)}
+- Si el contexto del propietario incluye su código, documentos o datos, trabaja sobre ellos: cita archivos y secciones concretas, respeta lo que ya existe y propone cambios exactos.${t.useTools ? "\n- Tienes herramientas para buscar y leer el contexto completo (y los archivos del proyecto si están activados). Úsalas antes de escribir si los fragmentos no bastan; no inventes contenido de archivos que no has leído." : ""}
 - Cierra con una línea «Siguiente paso sugerido: …».`;
 }
 function companyPlanPrompt(order, kind) {
@@ -1149,6 +1511,7 @@ function companyPlanPrompt(order, kind) {
 
 PROYECTO:
 ${state.brief}
+${ctxFor(order || state.brief, 8000)}
 
 EQUIPO (usa exactamente estos identificadores de agente y de skill):
 ${roster()}
@@ -1198,7 +1561,9 @@ async function runTask(o) {
       }
       t.phase = "exec"; setAgent(a.id); bump(t);
       let lastPaint = 0;
-      t.result = await ask(execPrompt(a, t, skill), { signal: o.signal, image: o.image || null, onText: ({ text }) => {
+      const tools = AI.mode === "sample" && AI.tools ? ctxTools() : [];
+      t.useTools = tools.length > 0;
+      t.result = await ask(execPrompt(a, t, skill), { signal: o.signal, image: o.image || null, tools, onText: ({ text }) => {
         t.result = text;
         if (t.steps.length) {
           let m, k = 0; const re = /^##\s*(\d+)[.)]/gm; while ((m = re.exec(text))) k = Math.max(k, +m[1]);
@@ -1289,6 +1654,7 @@ function paintCounts() {
   $("#nTasks").textContent = state.tasks.length || "";
   $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
   $("#nSkills").textContent = allSkills().length;
+  $("#nCtx").textContent = CTX.items.length || "";
   for (const r of ROOMS) {
     const n = AGENTS.filter(a => a.room === r.id && state.status[a.id] !== "idle").length;
     const total = AGENTS.filter(a => a.room === r.id).length;
@@ -1378,9 +1744,28 @@ function paintSkills() {
   const groups = AGENTS.map(a => [a, list.filter(s => s.agentId === a.id)]).filter(([, l]) => l.length);
   $("#skillGrid").innerHTML = groups.map(([a, l]) => `<section class="skgroup"><h2><img class="px" src="${P(a)}" alt="">${esc(a.name)} <span>${esc(a.role)}</span></h2>
     ${l.map(s => `<article class="sk"><h4>${esc(s.name)}${s.custom ? "<em>tuya</em>" : ""}</h4>
-      <div><p>${esc(s.desc)}</p><details><summary>Cómo lo hace</summary><p style="margin-top:6px">${esc(s.method)}</p></details></div>
+      <div><p>${esc(s.desc)}${s.src ? ` <span class="src">Basada en ${esc(s.src)}</span>` : ""}</p><details><summary>Cómo lo hace</summary><p style="margin-top:6px">${esc(s.method)}</p></details></div>
       <div class="acts"><button class="btn ghost sm" type="button" data-use="${s.id}">Usar</button>${s.custom ? `<button class="btn ghost sm" type="button" data-delskill="${s.id}">Borrar</button>` : ""}</div></article>`).join("")}</section>`).join("")
     || `<p class="empty">Aún no has creado skills propias.</p>`;
+}
+
+function paintContext() {
+  const box = $("#ctxList"); if (!box) return;
+  const srcs = ctxSources(), act = ctxActive();
+  $("#ctxSummary").textContent = CTX.items.length ? `${act.length} de ${CTX.items.length} archivos activos · ${fmtSize(ctxChars(act))} caracteres` : "";
+  $("#ctxBusy").textContent = CTX.busy; $("#ctxBusy").hidden = !CTX.busy;
+  const pf = $("#ctxProject");
+  pf.hidden = !(window.claude?.use);
+  pf.querySelector("input").checked = CTX.projectFiles;
+  box.innerHTML = srcs.length ? srcs.map(g => {
+    const on = g.items.filter(x => x.active).length, kind = { github: "Repositorio de GitHub", carpeta: "Carpeta", archivos: "Archivos", texto: "Texto" }[g.kind] || "Contexto";
+    const one = g.items.length === 1;
+    return `<section class="ctxg"><div class="ctxg-h">
+        <label class="chk"><input type="checkbox" data-ctxsrc="${esc(g.source)}" ${on ? "checked" : ""}><span><b>${esc(g.source)}</b><span>${kind} · ${g.items.length} ${g.items.length === 1 ? "archivo" : "archivos"} · ${fmtSize(ctxChars(g.items))} · ${fmtDate(g.createdAt)}</span></span></label>
+        <button class="btn ghost sm" type="button" data-ctxdel="${esc(g.source)}">Quitar</button></div>
+      ${one ? `<p class="ctx-prev">${esc(g.items[0].text.slice(0, 220))}${g.items[0].text.length > 220 ? "…" : ""}</p>` : `<details><summary>Ver archivos</summary><ul class="ctxfiles">${g.items.map(x => `<li><label class="chk"><input type="checkbox" data-ctxone="${x.id}" ${x.active ? "checked" : ""}><span class="num">${esc(x.name)}</span></label><span class="num">${fmtSize(x.text.length)}</span></li>`).join("")}</ul></details>`}
+    </section>`;
+  }).join("") : `<p class="empty">Todavía no hay contexto. Sube tu código, documentos o datos y el equipo trabajará sobre ellos.</p>`;
 }
 
 /* ---------- Sala ---------- */
@@ -1394,7 +1779,7 @@ function centerStage() { const w = $(".canvaswrap"); if (w && w.scrollWidth > w.
 function setRoom(id) { state.room = id; scene?.setRoom(roomById[id]); paintRooms(); paintTeam(); }
 
 /* ---------- Navegación ---------- */
-const VIEWS = ["oficina", "encargos", "skills", "entregables"];
+const VIEWS = ["oficina", "encargos", "entregables", "contexto", "skills"];
 function go(view) {
   if (!VIEWS.includes(view)) view = "oficina";
   state.view = view;
@@ -1404,6 +1789,7 @@ function go(view) {
   if (view === "encargos") paintTasks();
   if (view === "skills") paintSkills();
   if (view === "entregables") paintDeliverables();
+  if (view === "contexto") paintContext();
   paintRooms();
   if (location.hash.slice(1) !== view) history.replaceState(null, "", "#" + view);
   window.scrollTo({ top: 0 });
@@ -1427,6 +1813,8 @@ function paintComposer() {
   }
   $("#btnAttach").hidden = !(AI.images || AI.mode === "none") || !!c.image;
   $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">Quitar</button></span>` : "";
+  const na = ctxActive().length;
+  $("#ctxSlot").innerHTML = na ? `<button type="button" class="attach" data-go="contexto">Con tu contexto: ${na} ${na === 1 ? "archivo" : "archivos"}</button>` : `<button type="button" class="attach" data-go="contexto">Añadir contexto</button>`;
   const sk = c.skill ? skillById(c.skill) : null;
   $("#cmd").placeholder = c.target === "empresa" ? "Describe el encargo. Dirección lo repartirá entre los puestos."
     : sk ? `Con «${sk.name}»: ${sk.desc} Añade los detalles.` : `Encargo para ${byId[c.target].name}: describe lo que necesitas`;
@@ -1469,6 +1857,7 @@ function openAgent(id, focusTask) {
       <button class="btn ghost sm x" type="button" id="dClose">Cerrar</button></div>
     <div class="d-body">
       <p class="d-bio">${esc(a.bio)} <span>Trabaja con ${esc(a.tools.join(", "))}.</span></p>
+      ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => `<li><b>${esc(n)}</b> ${esc(i)}</li>`).join("")}</ul></div>` : ""}
       <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">Nuevo encargo</p>
         <label for="dText" hidden>Encargo</label>
         <textarea id="dText" placeholder="${dc.skill ? esc("Con «" + skillById(dc.skill).name + "». Añade los detalles.") : "Describe lo que necesitas"}"></textarea>
@@ -1553,6 +1942,14 @@ document.addEventListener("click", async e => {
       extra: `El puesto de ${byId[t.agentId].role} te pasa este trabajo para que lo uses como base:\n${t.result.slice(0, 12000)}` });
     toast(`Pasado a ${byId[to].name}.`); return;
   }
+  if ((b = el("[data-ctxdel]"))) {
+    if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
+    const gone = CTX.items.filter(x => x.source === b.dataset.ctxdel); CTX.items = CTX.items.filter(x => x.source !== b.dataset.ctxdel); CTX.ver++;
+    paintContext(); paintCounts(); paintComposer(); for (const x of gone) await store.deleteCtx(x.id); return;
+  }
+  if (el("#ctxPasteBtn")) { $("#pName").value = ""; $("#pText").value = ""; $("#pasteDlg").showModal(); return; }
+  if (el("#ctxFilesBtn")) return $("#ctxFiles").click();
+  if (el("#ctxDirBtn")) return $("#ctxDir").click();
   if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: t.extra }); return; }
   if ((b = el("[data-del]"))) {
     if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
@@ -1560,6 +1957,20 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open) closeAgent(); });
+document.addEventListener("change", async e => {
+  const t = e.target;
+  if (t.dataset.ctxsrc != null) { const list = CTX.items.filter(x => x.source === t.dataset.ctxsrc); list.forEach(x => x.active = t.checked); CTX.ver++; paintContext(); paintComposer(); for (const x of list) await store.saveCtx(x).catch(() => {}); }
+  else if (t.dataset.ctxone) { const x = CTX.items.find(y => y.id === t.dataset.ctxone); if (x) { x.active = t.checked; CTX.ver++; paintContext(); paintComposer(); await store.saveCtx(x).catch(() => {}); } }
+  else if (t.id === "ctxFiles" || t.id === "ctxDir") { await importFiles(t.files, t.id === "ctxDir"); t.value = ""; }
+  else if (t.id === "ctxProjectChk") { if (t.checked) await enableProjectFiles(true); else { CTX.projectFiles = false; paintContext(); } store.saveMeta(); }
+});
+$("#ctxGh").addEventListener("submit", e => { e.preventDefault(); const u = $("#ghUrl").value; if (u.trim()) { importGitHub(u); $("#ghUrl").value = ""; } });
+$("#pasteDlg").addEventListener("close", () => {
+  if ($("#pasteDlg").returnValue !== "save") return;
+  const text = $("#pText").value.trim(); if (!text) return;
+  const name = $("#pName").value.trim() || text.split("\n")[0].slice(0, 60);
+  addCtx([{ name, text }], name, "texto");
+});
 
 async function download(t) {
   if (!t) return;
@@ -1608,6 +2019,157 @@ function updateBanner() {
   b.innerHTML = AI.mode === "pending" ? "Conectando con Claude…" : `Para que el equipo trabaje, abre esta app dentro de Claude o añade tu clave de API en <b>Ajustes</b>.`;
 }
 
+/* ---------- Contexto: documentos y código del propietario que leen todos los puestos ---------- */
+const CTX = { items: [], ver: 0, projectFiles: false, fileTools: null, busy: "" };
+const TEXT_EXT = /\.(txt|md|mdx|markdown|csv|tsv|json|jsonc|jsonl|ya?ml|toml|ini|cfg|conf|xml|svg|html?|css|scss|sass|less|js|jsx|ts|tsx|mjs|cjs|vue|svelte|astro|py|ipynb|rb|php|java|kt|kts|swift|go|rs|c|h|cc|cpp|hpp|cs|fs|sql|sh|bash|zsh|ps1|dart|lua|r|ex|exs|erl|scala|clj|gradle|prisma|graphql|gql|proto|tf|hcl|rst|tex|srt|vtt|env\.example|gitignore|dockerignore|editorconfig)$/i;
+const TEXT_NAME = /(^|\/)(Dockerfile|Makefile|Procfile|Gemfile|README|LICENSE|CHANGELOG|AGENTS|CLAUDE)(\.[a-z]+)?$/i;
+const SKIP_PATH = /(^|\/)(node_modules|\.git|\.svn|dist|build|\.next|\.nuxt|out|coverage|vendor|\.venv|venv|__pycache__|\.cache|\.idea|\.vscode|Pods|DerivedData|\.gradle|target|bin|obj)(\/|$)/;
+const SKIP_FILE = /(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb|composer\.lock|Cargo\.lock|poetry\.lock|\.min\.(js|css)|\.map|\.DS_Store)$/i;
+const CTX_MAX_FILE = 200000, CTX_MAX_TOTAL = 6e6, CTX_MAX_FILES = 600;
+const STOP = new Set("para como esto esta este estos estas pero porque sobre entre desde hasta donde cuando quien cual cuales todo todos todas tiene tienen hacer hace sera seran puede pueden debe deben tambien mucho muchos poco cada otro otra otros otras nuestro nuestra vuestro their with that this from have will what which when where your about into than then them they were been more most some such only also just like make need quiero necesito favor".split(" "));
+const ctxActive = () => CTX.items.filter(x => x.active);
+const ctxChars = (list = CTX.items) => list.reduce((n, x) => n + (x.text?.length || 0), 0);
+const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const terms = s => [...new Set(norm(s).match(/[a-z0-9_]{4,}/g) || [])].filter(w => !STOP.has(w));
+const fmtSize = n => n > 1e6 ? (n / 1e6).toFixed(1) + " M" : n > 1e3 ? Math.round(n / 1e3) + " k" : String(n);
+let chunkCache = { ver: -1, list: [] };
+function ctxChunks() {
+  if (chunkCache.ver === CTX.ver) return chunkCache.list;
+  const list = [];
+  for (const it of ctxActive()) {
+    const lines = it.text.split("\n"); let buf = "", part = 0;
+    const flush = () => { if (buf.trim()) list.push({ it, part: part++, text: buf, low: norm(buf), name: norm(it.name) }); buf = ""; };
+    for (const l of lines) { if (buf.length + l.length > 2200) flush(); buf += l + "\n"; }
+    flush();
+  }
+  chunkCache = { ver: CTX.ver, list }; return list;
+}
+// Elige los fragmentos más relevantes para el encargo; si todo cabe, lo manda entero.
+function ctxFor(query, budget = 24000) {
+  const act = ctxActive(); if (!act.length) return "";
+  const index = `ARCHIVOS DEL CONTEXTO DEL PROPIETARIO (${act.length}):\n` + act.slice(0, 250).map(x => `- ${x.name} (${fmtSize(x.text.length)})`).join("\n") + (act.length > 250 ? `\n- … y ${act.length - 250} más` : "");
+  const all = ctxChars(act);
+  let picked;
+  if (all + index.length <= budget) picked = ctxChunks();
+  else {
+    const q = terms(query + " " + state.brief.slice(0, 300));
+    const chunks = ctxChunks(), N = chunks.length;
+    const idf = Object.fromEntries(q.map(w => [w, Math.log(1 + N / (1 + chunks.filter(c => c.low.includes(w) || c.name.includes(w)).length))]));
+    const scored = chunks.map(c => {
+      let sc = 0; for (const w of q) { if (c.low.includes(w)) sc += idf[w] * (1 + Math.min(3, c.low.split(w).length - 2) * .3); if (c.name.includes(w)) sc += 2 * idf[w]; }
+      if (/readme|claude\.md|agents\.md|brief|resumen|overview/.test(c.name) && c.part === 0) sc += 1.5;
+      return { c, sc };
+    }).sort((x, y) => y.sc - x.sc);
+    picked = []; let used = index.length;
+    for (const { c } of scored) { if (used + c.text.length > budget) continue; picked.push(c); used += c.text.length + 60; }
+    picked.sort((x, y) => act.indexOf(x.it) - act.indexOf(y.it) || x.part - y.part);
+  }
+  return `${index}\n\nCONTENIDO${all + index.length > budget ? " (fragmentos más relevantes para este encargo)" : ""}:\n` +
+    picked.map(c => `### ${c.it.name}${c.part ? ` (parte ${c.part + 1})` : ""}\n${c.text}`).join("\n");
+}
+function ctxTools() {
+  const t = [];
+  if (ctxActive().length) t.push(
+    { name: "buscar_contexto", description: "Busca en los documentos y el código que el propietario ha cargado como contexto de su empresa o su aplicación. Devuelve los fragmentos más relevantes para la consulta.",
+      inputSchema: { type: "object", properties: { consulta: { type: "string", description: "Palabras clave o pregunta" } }, required: ["consulta"] },
+      execute: ({ consulta }) => ctxFor(String(consulta || ""), 7000) },
+    { name: "leer_archivo_contexto", description: "Lee un archivo del contexto por su ruta tal como aparece en la lista. Devuelve hasta 10.000 caracteres a partir de 'desde'.",
+      inputSchema: { type: "object", properties: { ruta: { type: "string" }, desde: { type: "number" } }, required: ["ruta"] },
+      execute: ({ ruta, desde = 0 }) => {
+        const act = ctxActive(), r = String(ruta || ""), it = act.find(x => x.name === r) || act.find(x => x.name.endsWith(r));
+        if (!it) throw new Error("No hay ningún archivo con esa ruta en el contexto.");
+        const from = Math.max(0, +desde || 0);
+        return { ruta: it.name, caracteres_totales: it.text.length, desde: from, texto: it.text.slice(from, from + 10000) };
+      } });
+  if (CTX.projectFiles && CTX.fileTools) t.push(...CTX.fileTools);
+  return t;
+}
+function ctxSources() {
+  const m = new Map();
+  for (const x of CTX.items) { const g = m.get(x.source) || { source: x.source, kind: x.kind, items: [], createdAt: x.createdAt }; g.items.push(x); m.set(x.source, g); }
+  return [...m.values()].sort((a, b) => b.createdAt - a.createdAt);
+}
+async function addCtx(entries, source, kind) {
+  // entries: [{name, text}]
+  let added = 0, skipped = 0, total = ctxChars();
+  const now = Date.now();
+  for (const e of entries) {
+    if (CTX.items.length >= CTX_MAX_FILES || total + e.text.length > CTX_MAX_TOTAL) { skipped++; continue; }
+    const old = CTX.items.find(x => x.source === source && x.name === e.name);
+    const x = { id: old?.id || "x" + uid(), source, kind, name: e.name, text: e.text.slice(0, CTX_MAX_FILE), active: true, createdAt: old?.createdAt || now };
+    try { await store.saveCtx(x); } catch { skipped++; break; }
+    if (old) Object.assign(old, x); else CTX.items.push(x);
+    total += x.text.length; added++;
+    if (added % 10 === 0) { CTX.busy = `Guardando ${added} de ${entries.length}…`; paintContext(); }
+  }
+  CTX.busy = ""; CTX.ver++; paintContext(); paintCounts(); paintComposer();
+  toast(skipped ? `${added} añadidos. ${skipped} no caben en el límite del contexto.` : `${added} ${added === 1 ? "archivo añadido" : "archivos añadidos"} al contexto.`);
+}
+const isTextPath = p => (TEXT_EXT.test(p) || TEXT_NAME.test(p)) && !SKIP_PATH.test(p) && !SKIP_FILE.test(p);
+async function readFiles(fileList) {
+  const out = []; let ignored = 0;
+  for (const f of fileList) {
+    const name = f.webkitRelativePath || f.name;
+    if (!isTextPath(name) || f.size > 2e6) { ignored++; continue; }
+    const text = await f.text().catch(() => "");
+    if (!text || text.includes("\u0000")) { ignored++; continue; }
+    out.push({ name, text });
+  }
+  return { out, ignored };
+}
+async function importFiles(fileList, folder) {
+  if (!fileList?.length) return;
+  CTX.busy = "Leyendo archivos…"; paintContext();
+  const { out, ignored } = await readFiles([...fileList]);
+  if (!out.length) { CTX.busy = ""; paintContext(); toast("No hay archivos de texto o código que se puedan leer. Los PDF y Word aún no se leen: pega su texto."); return; }
+  const source = folder ? (out[0].name.split("/")[0] || "Carpeta") : out.length === 1 ? out[0].name : "Archivos sueltos";
+  if (ignored) toast(`Se ignoran ${ignored} archivos que no son texto ni código.`);
+  await addCtx(out, source, folder ? "carpeta" : "archivos");
+}
+async function importGitHub(url) {
+  const m = /github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:\/tree\/([^/?#]+)(?:\/([^?#]*))?)?\/?(?:[?#].*)?$/i.exec(url.trim());
+  if (!m) { toast("Pega la dirección de un repositorio, por ejemplo https://github.com/usuario/proyecto"); return; }
+  const [, owner, repo, branchIn, sub] = m;
+  CTX.busy = `Leyendo ${owner}/${repo}…`; paintContext();
+  try {
+    const gh = async u => { const r = await fetch(u); if (!r.ok) throw new Error(r.status === 404 ? "No encuentro el repositorio o es privado." : r.status === 403 ? "GitHub limita las descargas: prueba en un rato." : "HTTP " + r.status); return r.json(); };
+    const branch = branchIn || (await gh(`https://api.github.com/repos/${owner}/${repo}`)).default_branch;
+    const tree = await gh(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+    const files = (tree.tree || []).filter(x => x.type === "blob" && isTextPath(x.path) && (x.size || 0) < 4e5 && (!sub || x.path.startsWith(sub)))
+      .sort((a, b) => (/readme/i.test(b.path) - /readme/i.test(a.path)) || a.path.split("/").length - b.path.split("/").length).slice(0, 400);
+    const out = []; let i = 0;
+    await Promise.all(Array.from({ length: 6 }, async () => {
+      while (i < files.length) {
+        const f = files[i++];
+        try { const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${f.path.split("/").map(encodeURIComponent).join("/")}`); if (r.ok) { const text = await r.text(); if (!text.includes("\u0000")) out.push({ name: f.path, text }); } } catch {}
+        if (out.length % 20 === 0) { CTX.busy = `Leyendo ${owner}/${repo}: ${out.length} de ${files.length}…`; paintContext(); }
+      }
+    }));
+    if (!out.length) throw new Error("No he encontrado archivos de texto o código.");
+    out.sort((a, b) => a.name.localeCompare(b.name));
+    await addCtx(out, `${owner}/${repo}`, "github");
+  } catch (e) {
+    CTX.busy = ""; paintContext();
+    toast(AI.mode === "sample" && /fetch|network|Failed/i.test(String(e?.message)) ? "Dentro de Claude no puedo descargar de GitHub. Usa «Subir carpeta» con el proyecto descargado." : "No se pudo importar: " + (e?.message || e));
+  }
+}
+async function enableProjectFiles(ask = true) {
+  const f = window.claude?.use ? await window.claude.use("files").catch(() => null) : null;
+  if (!f || !AI.tools) { CTX.projectFiles = false; if (ask) toast("Los archivos del proyecto solo están disponibles al abrir la app dentro de Claude."); paintContext(); return; }
+  try { CTX.fileTools = await f.asSampleTools(); CTX.projectFiles = true; }
+  catch (e) { CTX.projectFiles = false; if (ask) toast(e?.code === "not_granted" ? "No se ha permitido leer los archivos del proyecto." : "No se pudieron abrir los archivos del proyecto."); }
+  paintContext();
+}
+// Almacén local del contexto fuera de Claude (IndexedDB, porque puede ocupar varios MB)
+const idb = {
+  _db: null,
+  open() { if (this._db) return this._db; this._db = new Promise((res, rej) => { const r = indexedDB.open("oficina", 1); r.onupgradeneeded = () => r.result.createObjectStore("context", { keyPath: "id" }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this._db; },
+  async tx(mode, fn) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction("context", mode), st = t.objectStore("context"), r = fn(st); t.oncomplete = () => res(r?.result); t.onerror = () => rej(t.error); }); },
+  async all() { try { return (await this.tx("readonly", st => st.getAll())) || []; } catch { return []; } },
+  put(x) { return this.tx("readwrite", st => st.put(x)).catch(() => {}); },
+  del(id) { return this.tx("readwrite", st => st.delete(id)).catch(() => {}); },
+};
+
 /* ---------- Almacenamiento: base de datos del artifact o este navegador ---------- */
 const store = {
   db: null, base: null,
@@ -1622,23 +2184,28 @@ const store = {
     if (this.db) {
       try {
         const s = await this.base.get();
-        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; }
+        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; }
         const [tq, rq, sq] = await Promise.all([
           this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
+        try { const cq = await this.base.collection("context").orderBy("createdAt", "asc").limit(1000).get(); CTX.items = cq.docs.map(d => d.data()).filter(x => x?.id); } catch {}
         mergeTasks(tq.docs.map(d => d.data())); mergeRuns(rq.docs.map(d => d.data())); state.customSkills = sq.docs.map(d => d.data()).filter(s => byId[s.agentId]);
       } catch { this.db = null; }
     }
     if (!this.db) {
       try { const s = JSON.parse(localStorage.getItem("oficina.v2") || "null");
         if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
+      CTX.items = await idb.all();
     }
-    paintHeader(); paintAll(); if (state.view !== "oficina") go(state.view);
+    CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
+    paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
   async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
   async del(col, id) { if (this.db) { try { await this.base.collection(col).doc(id).delete(); return; } catch {} } this.local(); },
-  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief }).catch(() => this.local()); this.local(); },
+  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief, projectFiles: CTX.projectFiles }).catch(() => this.local()); this.local(); },
+  async saveCtx(x) { if (this.db) { try { await this.base.collection("context").doc(x.id).set(x); return; } catch (e) { if (e?.code === "quota_exceeded") { toast("El almacén está lleno: quita contexto o entregas antiguas."); throw e; } } } await idb.put(x); },
+  async deleteCtx(id) { if (this.db) { try { await this.base.collection("context").doc(id).delete(); return; } catch {} } await idb.del(id); },
   saveTask(t) { const { v, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); return this.put("tasks", rec); },
   deleteTask(id) { return this.del("tasks", id); },
   saveRun(r) { const { ctl, ...rec } = r; return this.put("runs", JSON.parse(JSON.stringify(rec))); },
@@ -1669,7 +2236,7 @@ async function boot() {
   AI.mode = window.claude?.use ? "pending" : "none"; updateBanner();
   if (window.claude?.use) {
     const s = await window.claude.use("sample").catch(() => null);
-    if (s) { AI.sample = s; AI.mode = "sample"; try { AI.images = !!(await s.limits())?.images; } catch {} } else AI.mode = "none";
+    if (s) { AI.sample = s; AI.mode = "sample"; try { const l = await s.limits(); AI.images = !!l?.images; AI.tools = !!l?.tools; } catch {} } else AI.mode = "none";
   }
   if (AI.mode === "none") AI.images = true; // con clave propia la API acepta imágenes
   updateBanner(); paintComposer();
