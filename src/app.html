@@ -65,6 +65,8 @@ img.px { image-rendering: pixelated; }
 main { max-width: 1320px; margin: 0 auto; padding: 28px max(24px, env(safe-area-inset-right, 0px)) 64px max(24px, env(safe-area-inset-left, 0px)); }
 .vh { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
 .vh h1 { margin: 0; font-weight: 600; font-size: 26px; letter-spacing: -.025em; line-height: 1.15; }
+.exp { display: flex; gap: 8px; align-items: center; }
+.exp select { max-width: 240px; }
 .vh p { margin: 4px 0 0; color: var(--ink-2); font-size: 14px; max-width: 64ch; }
 .stats { display: flex; gap: 18px; color: var(--ink-2); font-size: 13px; }
 .stats b { font-family: var(--f-mono); font-weight: 500; color: var(--ink); margin-right: 4px; }
@@ -272,8 +274,8 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .thinking { color: var(--ink-3); font-size: 13.5px; margin-top: 10px; }
 
 dialog { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: min(540px, calc(100% - 32px)); padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
-dialog.live { width: min(980px, calc(100% - 32px)); }
-.live iframe { display: block; width: 100%; aspect-ratio: 16 / 10; max-height: 62vh; border: 1px solid var(--line); border-radius: 8px; background: #111; margin: 12px 0 16px; }
+dialog.livedlg { width: min(980px, calc(100% - 32px)); }
+.livedlg iframe { display: block; width: 100%; aspect-ratio: 16 / 10; max-height: 62vh; border: 1px solid var(--line); border-radius: 8px; background: #111; margin: 12px 0 16px; }
 dialog::backdrop { background: var(--scrim); }
 dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -.015em; }
 .field { display: flex; flex-direction: column; gap: 5px; margin-top: 16px; }
@@ -399,7 +401,8 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </section>
 
   <section class="view" id="v-entregables" hidden>
-    <div class="vh"><div><h1>Entregables</h1><p>El trabajo terminado, listo para copiar o descargar.</p></div></div>
+    <div class="vh"><div><h1>Entregables</h1><p>El trabajo terminado, listo para copiar o descargar. Puedes exportarlo todo junto, por sala o por puesto.</p></div>
+      <div class="exp"><label for="expSel" hidden>Qué exportar</label><select id="expSel"></select><button class="btn ghost sm" type="button" id="expBtn">Exportar</button></div></div>
     <div class="filters" id="delFilters"></div>
     <div id="delGrid"></div>
   </section>
@@ -448,7 +451,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </form>
 </dialog>
 
-<dialog id="liveDlg" class="live">
+<dialog id="liveDlg" class="livedlg">
   <form method="dialog">
     <h2 id="liveTitle">Vista en vivo</h2>
     <p class="note">Así se ve la pieza. Para sacar el MP4 de una composición HyperFrames, descárgala y ejecuta «npx hyperframes render» en su carpeta.</p>

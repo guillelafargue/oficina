@@ -21,7 +21,7 @@ Una empresa virtual en tu móvil y tu ordenador: una planta de oficina con 16 ag
 - **Trabajo autónomo continuo** (en Ajustes): mientras la app está abierta, Dirección lanza rondas cada 15-120 minutos y prioriza rehacer lo que salió flojo.
 - **Encargos por pasos**: en modo *Por pasos* el agente planifica 3-6 pasos y los ejecuta en orden; el panel *En marcha* muestra «Paso 3 de 5».
 - **Orden a la empresa**: Dirección organiza fases (las tareas de una fase van en paralelo y las siguientes usan lo anterior) y cierra con un informe ejecutivo.
-- **Ronda autónoma**, **traspasos** entre agentes («pasar a Vídeo el guion de Copy»), **revisar y mejorar**, imágenes de referencia, copiar y descargar en Markdown.
+- **Ronda autónoma**, **traspasos** entre agentes («pasar a Vídeo el guion de Copy»), **revisar y mejorar**, imágenes de referencia, copiar y descargar en Markdown, y **exportar** desde Entregables todo junto, por sala o por puesto en un solo archivo con índice.
 
 La plantilla vive en `src/data.js` (salas, agentes, skills) y el motor pixel-art en `src/office.js`.
 
