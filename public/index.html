@@ -401,7 +401,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     </div>
     <input type="file" id="ctxFiles" multiple hidden>
     <input type="file" id="ctxDir" webkitdirectory multiple hidden>
-    <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que tengas en el proyecto donde vive esta app. Claude te pedirá permiso la primera vez.</span></span></label>
+    <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que hayas subido al proyecto de Claude donde vive esta oficina (no el código de tu app: ese súbelo con «Subir una carpeta»). Claude te pedirá permiso la primera vez.</span></span></label>
     <p class="note" id="ctxBusy" hidden></p>
     <div id="ctxList"></div>
   </section>
@@ -2301,7 +2301,7 @@ function execPrompt(a, t, skill) {
   const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
   const ctx = ctxFor(`${t.order} ${skill?.name || ""} ${a.role}`, 24000);
   return `${persona(a)}
-${ctx ? "\n" + ctx + "\n" : ""}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
+${ctx ? "\n" + ctx + "\n" : CTX.projectFiles ? "" : "\nNO HAY ARCHIVOS DE CONTEXTO CARGADOS. Si el encargo trata sobre el código, los documentos o los datos de la app del propietario, dilo en la primera línea («No tengo cargado el código de la app: súbelo en Contexto») y trabaja solo con el briefing, sin inventar archivos.\n"}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
 ENCARGO (de ${t.from}):
 ${t.order}
 ${methodsBlock(a, t, skill)}${t.hasImage ? "\nSe adjunta una imagen de referencia: analízala y úsala en el trabajo.\n" : ""}${plan}
@@ -2836,7 +2836,8 @@ function paintComposer() {
   $("#btnAttach").hidden = !(AI.images || AI.mode === "none") || !!c.image;
   $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">Quitar</button></span>` : "";
   const na = ctxActive().length;
-  $("#ctxSlot").innerHTML = na ? `<button type="button" class="attach" data-go="contexto">Con tu contexto: ${na} ${na === 1 ? "archivo" : "archivos"}</button>` : `<button type="button" class="attach" data-go="contexto">Añadir contexto</button>`;
+  const srcs = [...new Set(ctxActive().map(x => x.source))], srcTxt = srcs.length > 2 ? `${srcs.slice(0, 2).join(", ")} y ${srcs.length - 2} más` : srcs.join(", ");
+  $("#ctxSlot").innerHTML = na ? `<button type="button" class="attach" data-go="contexto" title="${esc(srcs.join(", "))}">Contexto: ${esc(srcTxt)} (${na} ${na === 1 ? "archivo" : "archivos"})</button>` : `<button type="button" class="attach" data-go="contexto">Sin contexto: añadir tu app</button>`;
   const sk = c.skill ? skillById(c.skill) : null;
   $("#cmd").placeholder = c.target === "empresa" ? "Describe el encargo. Dirección lo repartirá entre los puestos."
     : sk ? `Con «${sk.name}»: ${sk.desc} Añade los detalles.` : `Encargo para ${byId[c.target].name}: describe lo que necesitas`;
@@ -3248,10 +3249,20 @@ async function importGitHub(url) {
     toast(AI.mode === "sample" && /fetch|network|Failed/i.test(String(e?.message)) ? "Dentro de Claude no puedo descargar de GitHub. Usa «Subir carpeta» con el proyecto descargado." : "No se pudo importar: " + (e?.message || e));
   }
 }
+// La carpeta oficina/ del proyecto es el código de esta misma app: los puestos no deben confundirla con la del propietario.
+const OWN_DIR = /^\/?oficina(\/|$)/;
+function hideOwnFiles(tools) {
+  const strip = v => Array.isArray(v) ? v.filter(e => !OWN_DIR.test(typeof e === "string" ? e : e?.path || "")).map(strip)
+    : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, strip(x)])) : v;
+  return (tools || []).map(tool => ({ ...tool, async execute(input, ...rest) {
+    if (Object.values(input || {}).some(x => typeof x === "string" && OWN_DIR.test(x))) throw new Error("Esa carpeta es el código de la propia oficina, no la app del propietario.");
+    return strip(await tool.execute(input, ...rest));
+  } }));
+}
 async function enableProjectFiles(ask = true) {
   const f = window.claude?.use ? await window.claude.use("files").catch(() => null) : null;
   if (!f || !AI.tools) { CTX.projectFiles = false; if (ask) toast("Los archivos del proyecto solo están disponibles al abrir la app dentro de Claude."); paintContext(); return; }
-  try { CTX.fileTools = await f.asSampleTools(); CTX.projectFiles = true; }
+  try { CTX.fileTools = hideOwnFiles(await f.asSampleTools()); CTX.projectFiles = true; }
   catch (e) { CTX.projectFiles = false; if (ask) toast(e?.code === "not_granted" ? "No se ha permitido leer los archivos del proyecto." : "No se pudieron abrir los archivos del proyecto."); }
   paintContext();
 }
