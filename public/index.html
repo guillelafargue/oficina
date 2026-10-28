@@ -2529,7 +2529,7 @@ async function selfReview(a, t, skill, signal) {
   let ev; try { ev = await ask(evalPrompt(a, t, skill), { json: true, quick: true, signal }); } catch (e) { if (e?.code === "cancelled") throw e; return; }
   const nota = Math.max(1, Math.min(10, Number(ev?.nota) || 0)); if (!nota) return;
   t.score = nota; t.faults = (Array.isArray(ev?.fallos) ? ev.fallos : []).map(String).slice(0, 4);
-  addLessons(a.id, ev?.aprendizajes, "auto", t.order); addFacts(ev?.hechos);
+  try { addLessons(a.id, ev?.aprendizajes, "auto", t.order); addFacts(ev?.hechos); } catch (e) { console.warn("No se pudo guardar el aprendizaje", e); }
   if (BRAIN.review && nota < REVIEW_BELOW && t.faults.length && !t.revised) {
     t.phase = "revise"; state.bubble[a.id] = "Mejorando su trabajo"; bump(t);
     const first = t.result;
@@ -3303,6 +3303,8 @@ const idb = {
 };
 
 /* ---------- Almacenamiento: base de datos del artifact o este navegador ---------- */
+// Los documentos que devuelve la base de datos llegan congelados: se copian para poder modificarlos.
+const thaw = d => { const v = d.data(); try { return structuredClone(v); } catch { return JSON.parse(JSON.stringify(v)); } };
 const store = {
   db: null, base: null,
   async init() {
@@ -3316,22 +3318,22 @@ const store = {
     if (this.db) {
       try {
         const s = await this.base.get();
-        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
+        if (s.exists) { const d = thaw(s); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
           this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
-        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = d.data(); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
+        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
         try {
           const col = this.base.collection("context"), items = []; let last = "";
           for (let i = 0; i < 10; i++) {
             const q = await (last ? col.where("id", ">", last) : col).orderBy("id").limit(1000).get();
-            items.push(...q.docs.map(d => d.data()).filter(x => x?.id));
+            items.push(...q.docs.map(thaw).filter(x => x?.id));
             if (q.docs.length < 1000) break; last = items[items.length - 1].id;
           }
           CTX.items = items.sort((a, b) => a.createdAt - b.createdAt);
-        } catch { try { const cq = await this.base.collection("context").limit(1000).get(); CTX.items = cq.docs.map(d => d.data()).filter(x => x?.id); } catch {} }
-        mergeTasks(tq.docs.map(d => d.data())); mergeRuns(rq.docs.map(d => d.data())); state.customSkills = sq.docs.map(d => d.data()).filter(s => byId[s.agentId]);
+        } catch { try { const cq = await this.base.collection("context").limit(1000).get(); CTX.items = cq.docs.map(thaw).filter(x => x?.id); } catch {} }
+        mergeTasks(tq.docs.map(thaw)); mergeRuns(rq.docs.map(thaw)); state.customSkills = sq.docs.map(thaw).filter(s => byId[s.agentId]);
       } catch { this.db = null; }
     }
     if (!this.db) {
