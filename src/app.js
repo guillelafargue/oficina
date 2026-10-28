@@ -589,8 +589,43 @@ function paintDeliverables() {
       <div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 260))}</div>
       <div class="d">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></button>`;
   }).join("");
+  paintExport();
   $("#delGrid").innerHTML = (!done.length && list.length ? `<p class="intro">Todavía no hay nada terminado. Así se verá cuando el equipo entregue su primer trabajo:</p>` : "")
     + (list.length ? `<div class="gallery">${cards}</div>` : `<p class="empty">Todavía no hay entregables en esta sala.</p>`);
+}
+/* Exportar entregables: todo, por sala o por puesto, en un solo Markdown con índice. */
+function exportGroups() {
+  const done = state.tasks.filter(t => t.status === "done");
+  const n = f => done.filter(f).length;
+  return [["todos", `Todo (${done.length})`, () => true],
+    ...ROOMS.map(r => ["room:" + r.id, `${r.name} (${n(t => byId[t.agentId].room === r.id)})`, t => byId[t.agentId].room === r.id]),
+    ...AGENTS.map(a => ["agent:" + a.id, `${a.name} (${n(t => t.agentId === a.id)})`, t => t.agentId === a.id])];
+}
+function paintExport() {
+  const sel = $("#expSel"); if (!sel) return;
+  const cur = sel.value || "todos", g = exportGroups();
+  sel.innerHTML = `<option value="todos">${esc(g[0][1])}</option><optgroup label="Por sala">${g.filter(x => x[0].startsWith("room:")).map(x => `<option value="${x[0]}">${esc(x[1])}</option>`).join("")}</optgroup><optgroup label="Por puesto">${g.filter(x => x[0].startsWith("agent:")).map(x => `<option value="${x[0]}">${esc(x[1])}</option>`).join("")}</optgroup>`;
+  sel.value = cur;
+  $("#expBtn").disabled = !state.tasks.some(t => t.status === "done");
+}
+function taskMarkdown(t) {
+  const a = byId[t.agentId], skills = [t.skillId, ...(t.autoSkills || [])].filter(Boolean).map(skillById).filter(Boolean).map(s => s.name);
+  const meta = [`Puesto: ${a.name} (${a.role})`, `Sala: ${ROOMS.find(r => r.id === a.room)?.name || a.room}`, `Fecha: ${new Date(t.createdAt).toLocaleString("es-ES")}`, `Pedido por: ${t.from}`,
+    skills.length ? `Métodos: ${skills.join(", ")}` : "", typeof t.score === "number" ? `Autoevaluación: ${t.score}/10${t.revised ? " (revisada y mejorada)" : ""}` : "",
+    t.feedback === "up" ? "Tu valoración: útil" : t.feedback === "down" ? "Tu valoración: mejorable" : ""].filter(Boolean);
+  return `## ${t.order}\n\n${meta.map(m => "- " + m).join("\n")}\n\n${t.result}\n`;
+}
+async function exportDeliverables() {
+  const key = $("#expSel").value || "todos", g = exportGroups().find(x => x[0] === key) || exportGroups()[0];
+  const list = state.tasks.filter(t => t.status === "done" && g[2](t)).sort((a, b) => a.createdAt - b.createdAt);
+  if (!list.length) return toast("No hay entregables terminados en esa selección.");
+  const title = `${state.company}: entregables${key === "todos" ? "" : " de " + g[1].replace(/ \(\d+\)$/, "")}`;
+  const data = `# ${title}\n\nExportado el ${new Date().toLocaleString("es-ES")}. ${list.length} ${list.length === 1 ? "entregable" : "entregables"}.\n\n${list.map((t, i) => `${i + 1}. ${t.order} (${byId[t.agentId].name})`).join("\n")}\n\n---\n\n${list.map(taskMarkdown).join("\n---\n\n")}`;
+  const filename = title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") + ".md";
+  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "text/markdown" })); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 function paintSkills() {
   filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Creadas por ti"], ...ROOMS.map(r => [r.id, r.name])]);
@@ -795,6 +830,7 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-delskill]"))) { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; } state.customSkills = state.customSkills.filter(s => s.id !== b.dataset.delskill); await store.deleteSkill(b.dataset.delskill); paintSkills(); paintCounts(); return; }
   if ((b = el("[data-copy]"))) { const t = state.tasks.find(x => x.id === b.dataset.copy); try { await navigator.clipboard.writeText(t.result); toast("Copiado."); } catch { toast("No se pudo copiar; selecciona el texto a mano."); } return; }
   if ((b = el("[data-dl]"))) return download(state.tasks.find(x => x.id === b.dataset.dl));
+  if (el("#expBtn")) return exportDeliverables();
   if ((b = el("[data-live]"))) return openLive(state.tasks.find(x => x.id === b.dataset.live));
   if (el("#liveDl")) return downloadLive();
   if ((b = el("[data-improve]"))) {
