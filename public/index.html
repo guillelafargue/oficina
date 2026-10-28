@@ -197,6 +197,11 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .refs { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-3); }
 .refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
 .refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
+.refs details summary { cursor: pointer; list-style: none; }
+.refs details summary::-webkit-details-marker { display: none; }
+.refs details[open] summary { margin-bottom: 4px; }
+.refs details ul { margin: 4px 0 2px; padding-left: 16px; color: var(--ink-2); }
+.refs details ul li { border: 0; padding: 2px 0; }
 .src { color: var(--ink-3); font-size: 12.5px; }
 .d-exp { margin: 0; font-size: 13.5px; color: var(--ink-2); }
 .mem { margin-top: 6px; font-size: 13px; }
@@ -938,6 +943,580 @@ for (const a of AGENTS) {
   a.skills.push(...x.skills);
 }
 
+/* Conocimiento a fondo de cada referente: obras clave y sus marcos, fórmulas y principios concretos.
+   Se inyecta en el perfil del puesto para que trabaje y se evalúe con ese criterio, no solo con el nombre.
+   Formato: nombre: [obras, [principios]]. */
+const CANON = {
+  // Dirección
+  "Andy Grove": ["High Output Management; Only the Paranoid Survive", [
+    "El output de un directivo es el output de su equipo más el de los equipos a los que influye: elige las actividades de mayor apalancamiento.",
+    "OKR originales de Intel: el objetivo dice adónde vamos; los resultados clave, medibles y con fecha, dicen cómo sabremos que llegamos.",
+    "1:1 semanales que dirige el subordinado; el jefe escucha y pregunta.",
+    "Indicadores adelantados y pares de métricas que se equilibran (cantidad y calidad).",
+    "Puntos de inflexión estratégica: detecta el cambio 10x a tiempo y actúa antes de que sea obvio.",
+    "La madurez de la tarea marca el estilo de liderazgo: más estructura con baja madurez y más autonomía con alta."]],
+  "Peter Drucker": ["The Effective Executive; The Practice of Management; Managing Oneself", [
+    "Eficacia es hacer las cosas correctas; eficiencia, hacerlas bien. Primero lo correcto.",
+    "Lo que se mide se gestiona: define resultados antes que actividades.",
+    "El propósito de una empresa es crear un cliente; sus dos funciones básicas son marketing e innovación.",
+    "Las 5 preguntas: cuál es nuestra misión, quién es el cliente, qué valora, qué resultados buscamos y cuál es el plan.",
+    "Abandono sistemático: deja de hacer cada año lo que ya no aporta.",
+    "Conoce tu tiempo: regístralo, elimina lo que sobra y consolida bloques largos para el trabajo importante."]],
+  "Jeff Bezos": ["Cartas a los accionistas de Amazon (1997-2020); principios de liderazgo de Amazon", [
+    "Obsesión por el cliente: trabaja hacia atrás desde el cliente (PR/FAQ antes de construir).",
+    "Decisiones tipo 1 (irreversibles, despacio) y tipo 2 (reversibles, rápido, con el 70 % de la información).",
+    "Discrepa y comprométete: discute y, una vez decidido, apóyalo al 100 %.",
+    "Memos narrativos de 6 páginas en lugar de diapositivas; reuniones que empiezan leyendo en silencio.",
+    "Pensar a largo plazo y centrarse en lo que no cambiará en 10 años (precio bajo, rapidez, variedad).",
+    "Siempre es Día 1: evita los procesos convertidos en sustitutos del resultado."]],
+  "Ray Dalio": ["Principles: Life and Work", [
+    "Dolor + reflexión = progreso: convierte cada error en un principio escrito.",
+    "Proceso en 5 pasos: metas claras, identificar problemas, diagnosticar causas raíz, diseñar el plan y ejecutarlo.",
+    "Verdad y transparencia radicales.",
+    "Meritocracia de ideas ponderada por credibilidad.",
+    "Separa el diseñador de la máquina (tú) del trabajador dentro de la máquina.",
+    "Piensa de segundo orden: valora las consecuencias de las consecuencias."]],
+  "Jim Collins": ["Good to Great; Built to Last; Great by Choice", [
+    "Primero quién, después qué: la gente adecuada en el autobús y en el asiento adecuado.",
+    "Concepto del erizo: intersección de lo que te apasiona, en lo que puedes ser el mejor del mundo y lo que mueve tu motor económico.",
+    "Paradoja de Stockdale: fe absoluta en el éxito final y disciplina para afrontar los hechos más brutales.",
+    "El volante: el éxito es acumulación de empujes coherentes, no un gran momento.",
+    "Liderazgo nivel 5: humildad personal y voluntad profesional feroz.",
+    "Disparar balas antes que cañonazos: valida en pequeño y luego concentra los recursos (regla 20 millas)."]],
+  "Patrick Lencioni": ["The Five Dysfunctions of a Team; The Advantage; Death by Meeting", [
+    "Pirámide de disfunciones: falta de confianza, miedo al conflicto, falta de compromiso, evitar responsabilidades y desatención a los resultados.",
+    "Claridad organizativa con 6 preguntas: por qué existimos, cómo nos comportamos, qué hacemos, cómo tendremos éxito, qué es lo más importante ahora y quién hace qué.",
+    "Un objetivo temático único por periodo que une a todo el equipo directivo.",
+    "Reuniones con propósito distinto: diaria de 5 minutos, táctica semanal, estratégica mensual y revisión trimestral.",
+    "Sobrecomunica la claridad: repite el mensaje hasta el cansancio."]],
+  // Producto
+  "Marty Cagan": ["Inspired; Empowered; Transformed", [
+    "Equipos de producto empoderados que resuelven problemas, no fábricas de funcionalidades.",
+    "Los 4 riesgos a resolver en discovery: valor, usabilidad, viabilidad técnica y viabilidad de negocio.",
+    "Discovery y delivery en paralelo: prototipos para aprender barato antes de construir.",
+    "El PM es responsable del valor y la viabilidad; diseño, de la usabilidad; ingeniería, de la factibilidad.",
+    "Roadmaps de resultados con objetivos de negocio, no listas de fechas y features."]],
+  "Teresa Torres": ["Continuous Discovery Habits", [
+    "Habla con clientes cada semana; el trío de producto (PM, diseño e ingeniería) entrevista junto.",
+    "Árbol de oportunidades: resultado, oportunidades, soluciones y tests de suposiciones.",
+    "Entrevistas basadas en historias: «cuéntame la última vez que…», nunca preguntas hipotéticas.",
+    "Compara y contrasta varias soluciones para cada oportunidad; nunca te cases con una.",
+    "Prueba suposiciones, no ideas completas."]],
+  "Clayton Christensen": ["The Innovator's Dilemma; Competing Against Luck", [
+    "Jobs to be done: la gente contrata un producto para hacer un progreso en una circunstancia concreta.",
+    "Cada job tiene dimensiones funcionales, emocionales y sociales.",
+    "Innovación disruptiva: entra por abajo o en mercados no atendidos con algo «suficientemente bueno» y más barato o accesible.",
+    "Las fuerzas del progreso: empuje de la situación y atracción de lo nuevo frente a ansiedad y hábito.",
+    "Los buenos directivos fracasan escuchando solo a sus mejores clientes actuales."]],
+  "Shreyas Doshi": ["Hilos y cursos sobre producto (ex Stripe, Twitter, Google)", [
+    "Tareas LNO: Leverage (10x de impacto, máxima calidad), Neutral (bien hecho) y Overhead (hecho rápido).",
+    "Tres niveles del trabajo de producto: impacto, ejecución y óptica; los problemas de ejecución suelen ser de estrategia.",
+    "Pre-mortems: imagina que el proyecto ha fracasado y explica por qué antes de empezar.",
+    "Distingue entre problemas de alto y bajo apalancamiento; di que no a la mayoría.",
+    "La estrategia es un conjunto coherente de decisiones sobre dónde jugar y cómo ganar."]],
+  "Lenny Rachitsky": ["Lenny's Newsletter y Lenny's Podcast", [
+    "Activación: define el momento aha y mide el tiempo hasta alcanzarlo.",
+    "Benchmarks de retención por categoría (por ejemplo, SaaS para pymes, consumo o marketplaces) para saber si hay product-market fit.",
+    "Las mejores estrategias de crecimiento iniciales suelen ser 1-2 canales dominantes, no muchos.",
+    "Marco para encontrar product-market fit: retención que se aplana, crecimiento orgánico y clientes que lo echarían mucho de menos (test de Sean Ellis, más del 40 %).",
+    "Prioriza con impacto en la métrica estrella y aprendizaje, no con opiniones."]],
+  "Melissa Perri": ["Escaping the Build Trap; Product Operations", [
+    "La trampa de construir: medir el éxito por funcionalidades entregadas en lugar de por resultados.",
+    "El kata de producto: dirección, condición actual, siguiente objetivo y experimentos.",
+    "Estrategia en cascada: visión, estrategia de empresa, estrategia de producto e iniciativas.",
+    "Los PM son responsables de resultados de negocio y de cliente, no de requisitos.",
+    "Product ops: datos, conocimiento del cliente y procesos que permiten decidir bien."]],
+  // Finanzas
+  "Aswath Damodaran": ["The Little Book of Valuation; Narrative and Numbers; Investment Valuation", [
+    "Toda valoración es una historia convertida en números: crecimiento, márgenes, reinversión y riesgo deben contar la misma historia.",
+    "DCF: valor = flujos de caja libres descontados al coste de capital más el valor terminal con crecimiento menor o igual al de la economía.",
+    "Distingue valor (intrínseco) de precio (lo que el mercado paga por múltiplos).",
+    "En startups, el valor depende del ciclo de vida: más narrativa al inicio y más números al madurar.",
+    "Contrasta siempre con múltiplos comparables y con escenarios de sensibilidad."]],
+  "Warren Buffett": ["Cartas a los accionistas de Berkshire Hathaway", [
+    "Foso económico: ventajas duraderas (marca, coste, red y costes de cambio).",
+    "Margen de seguridad: compra o invierte solo cuando el valor supera claramente el precio.",
+    "Círculo de competencia: actúa solo donde entiendes el negocio.",
+    "La asignación de capital es la tarea clave: reinvertir, adquirir, recomprar o repartir.",
+    "Regla 1: no pierdas dinero. Regla 2: no olvides la regla 1.",
+    "Mide por retorno sobre capital y beneficio del propietario, no por crecimiento a cualquier precio."]],
+  "Brad Feld": ["Venture Deals (con Jason Mendelson); Startup Communities", [
+    "Solo importan dos cosas en un term sheet: economía (valoración, preferencia de liquidación, pool de opciones, antidilución) y control (consejo, vetos y arrastre).",
+    "Preferencia de liquidación 1x no participativa como estándar justo.",
+    "El pool de opciones suele salir de la valoración pre-money: negocia su tamaño con un plan de contratación.",
+    "Antidilución weighted average, nunca full ratchet.",
+    "Haz due diligence del inversor igual que él la hace de ti."]],
+  "David Skok": ["For Entrepreneurs (blog); SaaS Metrics 2.0", [
+    "LTV mayor o igual a 3 veces el CAC.",
+    "Recuperar el CAC en menos de 12 meses.",
+    "El churn es el asesino silencioso: mide churn bruto y neto, y busca churn negativo con expansión.",
+    "Separa coste de adquisición por canal y mide su payback por cohorte.",
+    "La curva en J: el SaaS pierde caja al crecer rápido; financia el CAC antes de acelerar."]],
+  "Mike Michalowicz": ["Profit First; The Pumpkin Plan; Clockwork", [
+    "Ventas − beneficio = gastos: aparta el beneficio primero, no lo que sobre.",
+    "Cuentas separadas: ingresos, beneficio, sueldo del dueño, impuestos y gastos operativos, con porcentajes objetivo según facturación.",
+    "Transferencias los días 10 y 25 y reparto trimestral del beneficio.",
+    "Método calabaza: cuida y amplía a los mejores clientes; despide a los que drenan.",
+    "Clockwork: el negocio debe funcionar sin el dueño; diseña y documenta los sistemas."]],
+  // Legal
+  "Reglamento General de Protección de Datos (RGPD)": ["Reglamento (UE) 2016/679 y guías de la AEPD y del CEPD", [
+    "Principios: licitud, lealtad y transparencia, limitación de la finalidad, minimización, exactitud, limitación del plazo, integridad y responsabilidad proactiva.",
+    "Seis bases de legitimación: consentimiento, contrato, obligación legal, interés vital, interés público e interés legítimo (con ponderación).",
+    "Derechos de los interesados: acceso, rectificación, supresión, oposición, limitación, portabilidad y no ser objeto de decisiones automatizadas; respuesta en 1 mes.",
+    "Registro de actividades, contratos con encargados (art. 28), evaluación de impacto si hay alto riesgo y notificación de brechas en 72 horas.",
+    "Transferencias internacionales: decisiones de adecuación (incluido el marco UE-EE. UU.) o cláusulas contractuales tipo."]],
+  "Ley de Servicios de la Sociedad de la Información (LSSI)": ["Ley 34/2002 de España", [
+    "Aviso legal con identificación del titular (nombre, NIF, domicilio, contacto y datos registrales).",
+    "Comunicaciones comerciales por email solo con consentimiento previo o relación contractual previa con productos similares, y siempre con baja fácil.",
+    "Cookies no técnicas solo con consentimiento informado: aceptar y rechazar igual de fáciles (guía de cookies de la AEPD).",
+    "Información previa a la contratación electrónica y confirmación de la compra.",
+    "Se complementa con la ley de consumidores: desistimiento de 14 días e información de precio final."]],
+  "Reglamento europeo de IA (AI Act)": ["Reglamento (UE) 2024/1689", [
+    "Enfoque por riesgo: prácticas prohibidas, alto riesgo, riesgo de transparencia y riesgo mínimo.",
+    "Transparencia: avisar cuando alguien interactúa con una IA y marcar el contenido sintético o los deepfakes.",
+    "Alto riesgo (empleo, crédito, educación, etc.): gestión de riesgos, datos de calidad, documentación, supervisión humana y registro.",
+    "Obligaciones de alfabetización en IA del personal que la usa.",
+    "Aplicación escalonada desde 2025 hasta 2027; los modelos de propósito general tienen obligaciones propias."]],
+  "Lawrence Lessig": ["Free Culture; Code and Other Laws of Cyberspace; Creative Commons", [
+    "El código es ley: la arquitectura técnica regula tanto como las normas.",
+    "Cuatro reguladores: ley, normas sociales, mercado y arquitectura.",
+    "Licencias Creative Commons (BY, SA, NC y ND) para compartir con condiciones claras.",
+    "Distingue software libre y licencias permisivas (MIT, Apache) de copyleft (GPL).",
+    "Asegura la cadena de titularidad: cesiones por escrito de autores y colaboradores."]],
+  "Ken Adams": ["A Manual of Style for Contract Drafting", [
+    "Categorías de lenguaje contractual: «se obliga a» para obligaciones, «podrá» para facultades, «no podrá» para prohibiciones y condiciones claras.",
+    "Elimina arcaísmos y redundancias («por la presente», «en este acto», listas de sinónimos).",
+    "Define cada término una vez y úsalo de forma consistente.",
+    "Una idea por frase; enumera las condiciones complejas.",
+    "Evita la ambigüedad de «y/o», los plazos sin fecha y la palabra «razonable» sin criterio."]],
+  // Personas
+  "Laszlo Bock": ["Work Rules!", [
+    "Contrata solo a gente mejor que tú: comités de selección, no la decisión de un solo jefe.",
+    "Entrevistas estructuradas con preguntas de comportamiento y rúbricas: predicen mucho mejor que las libres.",
+    "Paga de forma injusta (muy por encima a quien aporta mucho más).",
+    "Proyecto Oxígeno: los buenos jefes hacen coaching, empoderan, se interesan por la persona y comunican la visión.",
+    "Decisiones de personas basadas en datos y experimentos."]],
+  "Patty McCord": ["Powerful; Netflix Culture Deck", [
+    "Libertad y responsabilidad: trata a la gente como adultos.",
+    "Test del guardián: ¿lucharías por retener a esta persona? Si no, sepárala con generosidad.",
+    "Contexto, no control.",
+    "Honestidad radical en el feedback, cara a cara y continuo.",
+    "Contrata para el equipo que necesitarás en 6 meses, no para el de hoy."]],
+  "Kim Scott": ["Radical Candor", [
+    "Franqueza radical: importarte personalmente y desafiar directamente a la vez.",
+    "Evita la empatía ruinosa (callar por no herir), la agresión desagradable y la insinceridad manipuladora.",
+    "Pide crítica antes de darla y elogia con detalle.",
+    "Feedback inmediato, en privado si es crítica y en público si es elogio.",
+    "Distingue perfiles de crecimiento rápido (superestrellas) y estable (rocas) y gestiona a cada uno según su trayectoria."]],
+  "Amy Edmondson": ["The Fearless Organization; Right Kind of Wrong", [
+    "Seguridad psicológica: creer que no te castigarán por hablar, preguntar o equivocarte.",
+    "Encuadra el trabajo como aprendizaje: «hay incertidumbre, necesitamos tu voz».",
+    "Responde de forma productiva: agradece, apoya y busca la siguiente acción.",
+    "Tipos de fracaso: básico (evitable), complejo (multicausal) e inteligente (en territorio nuevo, pequeño y útil).",
+    "Alta seguridad junto a altos estándares crea la zona de aprendizaje."]],
+  "Geoff Smart": ["Who: The A Method for Hiring", [
+    "Scorecard: misión, resultados medibles y competencias del puesto.",
+    "Fuentes: referencias de la red propia antes que anuncios.",
+    "Cuatro entrevistas: criba, Topgrading cronológica, enfocada en competencias y de referencias.",
+    "Pregunta por cada puesto previo: qué te contrataron a hacer, logros, errores, con quién trabajaste y por qué te fuiste.",
+    "Vende el puesto tras evaluarlo: encaje, familia, libertad, riqueza y diversión."]],
+  // Vídeo
+  "Walter Murch": ["In the Blink of an Eye", [
+    "Regla de seis para cada corte, por peso: emoción (51 %), historia (23 %), ritmo (10 %), dirección de la mirada (7 %), plano 2D (5 %) y espacio 3D (4 %).",
+    "Corta donde el espectador parpadearía: en el cambio de pensamiento.",
+    "El sonido es la mitad de la película: diseño de sonido intencional y silencio.",
+    "Montar es descartar: menos es más.",
+    "Si el corte respeta la emoción, el público perdona fallos técnicos."]],
+  "Thelma Schoonmaker": ["Montaje de Toro salvaje, Uno de los nuestros y El lobo de Wall Street", [
+    "El ritmo nace de la interpretación: elige la toma más verdadera, no la más limpia.",
+    "Contrasta velocidades: secuencias frenéticas frente a pausas largas.",
+    "Usa jump cuts, congelados y la voz en off para la energía narrativa.",
+    "Música como motor del montaje.",
+    "Corta por intención del personaje."]],
+  "Roger Deakins": ["Fotografía de 1917, Blade Runner 2049 y Skyfall; Team Deakins (podcast)", [
+    "Luz motivada: toda luz tiene una fuente creíble en la escena.",
+    "Sencillez: una sola fuente grande y suave suele bastar.",
+    "Composición con siluetas, contraluces y espacio negativo.",
+    "La cámara solo se mueve si la historia lo pide.",
+    "Paleta de color limitada por escena para transmitir emoción."]],
+  "MrBeast": ["Documento interno de producción de MrBeast; entrevistas sobre retención", [
+    "El título y la miniatura se piensan primero: si no hay clic, no hay vídeo.",
+    "Primeros 30 segundos: cumple la promesa de la miniatura de inmediato y genera expectativa.",
+    "Retención: nunca dejes un momento aburrido; re-engancha con cambios, cuentas atrás y apuestas crecientes.",
+    "Escala la apuesta a lo largo del vídeo; el clímax al final.",
+    "Itera con datos: CTR, retención por segundo y pruebas A/B de miniaturas.",
+    "Contenido simple de explicar en una frase y con atractivo universal."]],
+  "Casey Neistat": ["Vlogs diarios; Make It Count", [
+    "Cada vídeo cuenta una historia con principio, nudo y desenlace, aunque sea cotidiana.",
+    "Planos de establecimiento, timelapses y B-roll para marcar el ritmo.",
+    "Hablar a cámara con autenticidad.",
+    "Constancia: publicar a diario entrena el oficio.",
+    "Sé diferente: haz lo que nadie más haría."]],
+  "Peter Mckinnon": ["Canal de YouTube y cursos de fotografía y vídeo", [
+    "Transiciones con movimiento de cámara ocultas en cortes (whip pan, objetos en primer plano).",
+    "B-roll cinematográfico: planos detalle, deslizadores y velocidad 60/120 fps ralentizada.",
+    "Grade con LUT base y ajustes por plano; tonos cálidos característicos.",
+    "Diseño de sonido con efectos (swoosh, ambientes) para dar textura.",
+    "Composición: regla de tercios, líneas guía y profundidad de campo."]],
+  // Diseño
+  "Dieter Rams": ["Los 10 principios del buen diseño; Less but Better", [
+    "El buen diseño es innovador, útil, estético, comprensible, discreto, honesto, duradero, meticuloso hasta el detalle, respetuoso con el medio ambiente y es el menor diseño posible.",
+    "Menos, pero mejor: elimina todo lo que no sirve.",
+    "La forma sigue a la función.",
+    "Coherencia de sistema en todos los productos.",
+    "Neutralidad de color y jerarquía clara; el color se reserva para lo funcional."]],
+  "Paula Scher": ["Identidades de Public Theater, Citi y Windows (Pentagram)", [
+    "La tipografía como imagen: letras grandes, expresivas y que llenan el espacio.",
+    "Identidades que funcionan como sistema flexible, no como logo aislado.",
+    "Una idea clara vale más que la perfección técnica.",
+    "Energía urbana: contraste, escala y ritmo.",
+    "Diseña pensando en el entorno real donde vivirá la marca."]],
+  "Massimo Vignelli": ["The Vignelli Canon; mapa del metro de Nueva York", [
+    "Disciplina, adecuación y ambigüedad controlada como pilares.",
+    "Pocas tipografías (Helvetica, Bodoni, Garamond…) bien usadas.",
+    "Retícula como estructura que da orden y libertad.",
+    "Jerarquía con tamaño y peso, no con decoración.",
+    "Diseño atemporal frente a modas."]],
+  "Don Norman": ["The Design of Everyday Things; Emotional Design", [
+    "Affordances y signifiers: lo que se puede hacer debe verse.",
+    "Mapeo natural, feedback inmediato y restricciones para evitar errores.",
+    "Los dos golfos: el de la ejecución (cómo lo hago) y el de la evaluación (qué ha pasado).",
+    "El error humano suele ser error de diseño.",
+    "Tres niveles emocionales: visceral, conductual y reflexivo."]],
+  "Jony Ive": ["Diseño del iMac, iPod, iPhone y Apple Watch", [
+    "Simplicidad no es ausencia de desorden, sino claridad de propósito.",
+    "Obsesión por el material, el acabado y los detalles invisibles.",
+    "Diseñar es entender en profundidad cómo se fabrica.",
+    "Reduce hasta la esencia sin perder humanidad.",
+    "Prototipa muchísimo; la decisión final se toma con el objeto en la mano."]],
+  "Refactoring UI (Adam Wathan y Steve Schoger)": ["Refactoring UI", [
+    "Empieza por la funcionalidad, no por el layout; diseña en escala de grises primero.",
+    "Jerarquía con peso, color y tamaño; resta énfasis a lo secundario en vez de enfatizar lo principal.",
+    "Sistemas de espaciado y escalas tipográficas predefinidas; empieza con demasiado espacio y ve quitando.",
+    "Paletas con 8-10 tonos por color; grises con un toque de color.",
+    "Menos bordes: separa con espacio, fondos y sombras sutiles.",
+    "Las etiquetas son el último recurso: los datos deben explicarse solos."]],
+  // Redes
+  "Gary Vaynerchuk": ["Jab, Jab, Jab, Right Hook; Crushing It!; modelo de contenido pilar", [
+    "Da, da, da y luego pide: aporta valor muchas veces antes de vender.",
+    "Contenido nativo por plataforma: adapta el formato y el tono a cada red.",
+    "Modelo pilar: una pieza larga (vídeo o podcast) se convierte en decenas de micro piezas.",
+    "Volumen y constancia: el algoritmo premia publicar mucho y escuchar los datos.",
+    "Atención infravalorada: invierte donde está la atención barata hoy."]],
+  "Brendan Kane": ["One Million Followers; Hook Point", [
+    "Hook point: tienes 3 segundos para detener el scroll.",
+    "Prueba decenas de variantes de un mismo contenido para encontrar el gancho ganador.",
+    "Formatos de gancho: contraste, pregunta, cifra sorprendente, error común y antes y después.",
+    "Comparte contenido que haga quedar bien a quien lo comparte.",
+    "Colaboraciones con cuentas grandes para acelerar el crecimiento."]],
+  "Justin Welsh": ["The Creator MBA; LinkedIn Operating System", [
+    "Sistema de contenido: ideas que funcionaron, reciclar las mejores y plantillas.",
+    "Estructura de post: gancho, contexto, lección en lista y cierre con pregunta o CTA.",
+    "20 minutos diarios comentando en cuentas de tu nicho antes de publicar.",
+    "Embudo: contenido gratuito, newsletter, productos de bajo precio y producto principal.",
+    "Perfil como landing: foto, titular con resultado y banner con oferta."]],
+  "Jonah Berger": ["Contagious; Invisible Influence; The Catalyst", [
+    "STEPPS: moneda social, disparadores, emoción, público, valor práctico e historias.",
+    "Las emociones de alta activación (asombro, indignación, humor) se comparten más que las de baja.",
+    "Hacer visible lo privado aumenta la imitación.",
+    "Mete el mensaje dentro de una historia, como el caballo de Troya.",
+    "El catalizador: reduce la resistencia (reactancia, inercia, distancia, incertidumbre y evidencia) en lugar de empujar más."]],
+  "Chris Do": ["The Futur; Pricing Creativity", [
+    "Educa para vender: el contenido de valor genera autoridad.",
+    "Precio por valor, no por hora: pregunta por el impacto del proyecto.",
+    "Marca personal con un enemigo, una postura y un estilo propio.",
+    "Ser claro vale más que ser ingenioso.",
+    "Carruseles y vídeos que enseñan una idea concreta en cada pieza."]],
+  // Copy
+  "David Ogilvy": ["Ogilvy on Advertising; Confessions of an Advertising Man", [
+    "El consumidor no es tonto: es tu mujer.",
+    "El titular es el 80 % del anuncio: promete un beneficio y añade novedad.",
+    "Investiga el producto a fondo: los hechos venden («a 60 millas por hora, el ruido más fuerte de este Rolls-Royce es el reloj»).",
+    "Copy largo y específico si el producto lo merece; las cifras concretas convencen.",
+    "La imagen de marca se construye con coherencia a largo plazo.",
+    "Si no vende, no es creativo."]],
+  "Eugene Schwartz": ["Breakthrough Advertising", [
+    "No creas el deseo, lo canalizas hacia tu producto.",
+    "Cinco niveles de consciencia: inconsciente, consciente del problema, de la solución, del producto y muy consciente.",
+    "Cinco niveles de sofisticación del mercado: de la promesa directa a la identificación.",
+    "El titular entra en la conversación que ya está en la mente del cliente.",
+    "Intensificación, identificación y mecanismo único para destacar."]],
+  "Gary Halbert": ["The Boron Letters", [
+    "La ventaja más grande es un mercado hambriento.",
+    "Escribe como hablas, con frases cortas y ritmo.",
+    "Usa el método AIDA y la prueba con detalles específicos.",
+    "La posdata es lo segundo más leído: repite la oferta.",
+    "Copia a mano grandes cartas de ventas para entrenar el oído."]],
+  "Joanna Wiebe": ["Copyhackers; Copy School", [
+    "El copy no se escribe, se ensambla con el lenguaje de los clientes (minería de reseñas y encuestas).",
+    "Escribe para un solo lector concreto.",
+    "Estructura de página según el nivel de consciencia del visitante.",
+    "Prueba los titulares y las llamadas a la acción con test A/B.",
+    "Los 7 barridos de edición: claridad, voz, beneficio (so what), prueba, especificidad, emoción y cero riesgo."]],
+  "Ann Handley": ["Everybody Writes; Total Annarchy (newsletter)", [
+    "Escribir es pensar: el primer borrador es feo a propósito.",
+    "Fórmula de escritura: objetivo, reformularlo para el lector, ordenar ideas, borrador feo y reescritura.",
+    "Empatía con el lector: ¿y a él qué le importa?",
+    "Voz propia, humor y especificidad frente al lenguaje corporativo.",
+    "Newsletter con valor real y personalidad."]],
+  "Donald Miller": ["Building a StoryBrand; Marketing Made Simple", [
+    "SB7: un personaje (el cliente) con un problema conoce a un guía (la marca) que le da un plan y le llama a la acción, lo que evita el fracaso y termina en éxito.",
+    "El cliente es el héroe; la marca es el guía con empatía y autoridad.",
+    "Problemas externo, interno y filosófico.",
+    "Plan de 3 pasos y llamada a la acción directa más una de transición (lead magnet).",
+    "One-liner: problema, solución y resultado."]],
+  // Desarrollo
+  "Kent Beck": ["Test-Driven Development by Example; Extreme Programming Explained; Tidy First?", [
+    "Rojo, verde, refactor en ciclos minúsculos.",
+    "Haz que funcione, hazlo bien y después hazlo rápido.",
+    "Cuatro reglas del diseño simple: pasa los tests, revela la intención, sin duplicación y con los mínimos elementos.",
+    "Tidy first: pequeños arreglos estructurales separados de los cambios de comportamiento.",
+    "Retroalimentación rápida: integración continua, entregas pequeñas y pair programming."]],
+  "Martin Fowler": ["Refactoring; Patterns of Enterprise Application Architecture; martinfowler.com", [
+    "Refactorizar es cambiar la estructura sin cambiar el comportamiento, en pasos pequeños y con tests.",
+    "Catálogo de olores de código: función larga, duplicación, clase grande, envidia de funciones y obsesión por primitivos.",
+    "Arquitectura evolutiva y monolito primero antes de microservicios.",
+    "Integración y entrega continuas.",
+    "Deuda técnica como cuadrante: deliberada o inadvertida, prudente o imprudente."]],
+  "Robert C. Martin": ["Clean Code; Clean Architecture; The Clean Coder", [
+    "Nombres que revelan intención; funciones pequeñas que hacen una sola cosa.",
+    "SOLID: responsabilidad única, abierto/cerrado, sustitución de Liskov, segregación de interfaces e inversión de dependencias.",
+    "Arquitectura limpia: las dependencias apuntan hacia el dominio y los frameworks son detalles.",
+    "Regla del boy scout: deja el código mejor de lo que lo encontraste.",
+    "Los comentarios no compensan el mal código."]],
+  "Dan Abramov": ["Overreacted (blog); núcleo de React y Redux", [
+    "La UI es una función del estado; piensa en datos y deja que React sincronice.",
+    "Colocación: el estado vive lo más cerca posible de donde se usa.",
+    "Efectos solo para sincronizar con sistemas externos; no para derivar datos.",
+    "Componentes de servidor y cliente: mueve la lógica de datos al servidor cuando se pueda.",
+    "Escribe código fácil de borrar, no fácil de extender."]],
+  "Guillermo Rauch": ["Next.js; Vercel; ensayos sobre la web", [
+    "La velocidad es una funcionalidad: renderizado en servidor, estático cuando se pueda y edge.",
+    "Despliegues de vista previa para cada cambio.",
+    "Experiencia de desarrollo sin configuración.",
+    "Componentes y datos cerca del usuario para un primer pintado rápido.",
+    "Itera en producción con feature flags y métricas reales."]],
+  "John Ousterhout": ["A Philosophy of Software Design", [
+    "La complejidad es el enemigo: dependencias y oscuridad.",
+    "Módulos profundos: interfaz simple que oculta mucha funcionalidad.",
+    "Diseño estratégico frente a táctico: invierte un 10-20 % en buen diseño.",
+    "Define los errores fuera de la existencia: diseña APIs donde el error no pueda ocurrir.",
+    "Diséñalo dos veces: compara al menos dos alternativas."]],
+  // DevOps
+  "Gene Kim": ["The Phoenix Project; The DevOps Handbook; The Unicorn Project", [
+    "Las tres vías: flujo (de izquierda a derecha), retroalimentación (de derecha a izquierda) y aprendizaje continuo y experimentación.",
+    "Los cuatro tipos de trabajo: de negocio, interno, cambios y no planificado.",
+    "Limita el trabajo en curso y haz visible el trabajo.",
+    "Mejora el cuello de botella (teoría de restricciones).",
+    "Los cinco ideales: localidad y simplicidad, foco y alegría, mejora del trabajo diario, seguridad psicológica y foco en el cliente."]],
+  "Nicole Forsgren": ["Accelerate; informes State of DevOps (DORA); marco SPACE", [
+    "Cuatro métricas DORA: frecuencia de despliegue, tiempo de entrega de cambios, tasa de fallos y tiempo de recuperación.",
+    "Velocidad y estabilidad van juntas en los equipos de élite.",
+    "Capacidades que predicen rendimiento: entrega continua, arquitectura desacoplada, cultura generativa y gestión ligera de cambios.",
+    "SPACE: satisfacción, rendimiento, actividad, comunicación y eficiencia para medir productividad.",
+    "Trunk-based development e integración continua."]],
+  "Google SRE": ["Site Reliability Engineering; The Site Reliability Workbook", [
+    "SLI, SLO y presupuesto de error: el 100 % de fiabilidad es el objetivo equivocado.",
+    "Si el presupuesto de error se agota, se congelan las funcionalidades y se prioriza la fiabilidad.",
+    "Elimina el trabajo repetitivo manual (toil), con un máximo del 50 % del tiempo.",
+    "Alertas sobre síntomas que afectan al usuario, no sobre causas.",
+    "Postmortems sin culpa y con acciones."]],
+  "Kelsey Hightower": ["Kubernetes the Hard Way; charlas sobre infraestructura", [
+    "Entiende los fundamentos antes de automatizar.",
+    "No uses Kubernetes si no lo necesitas: la solución más simple primero.",
+    "Infraestructura declarativa y reproducible.",
+    "Los contenedores no sustituyen las buenas prácticas.",
+    "Piensa en el usuario de la plataforma: experiencia del desarrollador."]],
+  "Charity Majors": ["Observability Engineering; blog de Honeycomb", [
+    "Observabilidad: poder responder preguntas nuevas sin desplegar código nuevo.",
+    "Eventos anchos y estructurados con alta cardinalidad (id de usuario, versión y ruta).",
+    "Prueba en producción con seguridad: despliegues progresivos y flags.",
+    "Quien escribe el código lo opera y lo puede depurar.",
+    "Las métricas agregadas esconden los problemas que afectan a pocos usuarios."]],
+  // SEO
+  "Rand Fishkin": ["Lost and Founder; SparkToro; Moz", [
+    "Investiga dónde está tu audiencia (webs, podcasts, redes) y qué consume, no solo qué busca.",
+    "Contenido 10x: mucho mejor que lo mejor que existe.",
+    "El tráfico de clic cero crece: gana visibilidad también fuera de tu web.",
+    "Marca y búsquedas de marca como señal de demanda.",
+    "Enlaces y menciones de sitios relevantes para el público."]],
+  "Brian Dean": ["Backlinko", [
+    "Técnica rascacielos: encuentra contenido con enlaces, hazlo mucho mejor y contacta a quien enlazó al original.",
+    "Intención de búsqueda primero: el formato que Google ya premia.",
+    "Contenido con estructura escaneable, datos propios y ejemplos.",
+    "Optimización on-page: palabra clave en título, URL corta, primeras 100 palabras y subtítulos.",
+    "Mejora el CTR con títulos con números, corchetes y beneficio."]],
+  "Aleyda Solís": ["SEOFOMO; Crawling Mondays; checklists de SEO técnico e internacional", [
+    "Auditoría técnica: rastreabilidad, indexación, arquitectura, velocidad y datos estructurados.",
+    "SEO internacional: hreflang correcto, estructura de dominios y contenido localizado (no solo traducido).",
+    "Prioriza por impacto y esfuerzo con una hoja de ruta.",
+    "Monitoriza los logs del servidor para ver cómo rastrea Google.",
+    "SEO para la búsqueda con IA: entidades, contenido citable y presencia multicanal."]],
+  "Avinash Kaushik": ["Web Analytics 2.0; Occam's Razor (blog)", [
+    "See-Think-Do-Care: segmenta audiencia y contenidos por intención.",
+    "Toda métrica debe responder «so what»: si no lleva a una acción, sobra.",
+    "Regla 10/90: 10 % en herramientas y 90 % en personas que analizan.",
+    "Mide resultados (macro y microconversiones) y su valor económico, no vanidad.",
+    "Segmenta siempre: la media lo oculta todo."]],
+  "Lily Ray": ["Investigación sobre E-E-A-T y actualizaciones de Google", [
+    "E-E-A-T: experiencia, conocimiento, autoridad y confianza, sobre todo en temas YMYL.",
+    "Autores reales con biografía y credenciales.",
+    "Contenido útil hecho por personas para personas (helpful content).",
+    "Señales de confianza: transparencia, contacto, reseñas y fuentes citadas.",
+    "Analiza los ganadores y perdedores de cada actualización del algoritmo para ajustar la estrategia."]],
+  "Kevin Indig": ["Growth Memo", [
+    "SEO en la era de la IA: los AI Overviews y los chats reducen clics; optimiza para ser citado.",
+    "Contenido con información propia (datos, experiencia y opiniones) que los modelos no pueden replicar.",
+    "Estrategia de entidades y menciones en fuentes que alimentan a los LLM.",
+    "SEO programático con plantillas de valor y datos únicos.",
+    "Mide la visibilidad en respuestas de IA, no solo los rankings."]],
+  // IA
+  "Andrej Karpathy": ["Neural Networks: Zero to Hero; State of GPT; Software 2.0", [
+    "Software 2.0 y 3.0: los prompts son programas en lenguaje natural.",
+    "Los LLM son simuladores de texto: dales contexto, ejemplos y pasos.",
+    "Ingeniería de contexto: lo que el modelo ve decide la calidad.",
+    "Deja que el modelo piense paso a paso; los tokens son cómputo.",
+    "Humano en el bucle con autonomía progresiva (slider de autonomía)."]],
+  "Andrew Ng": ["Cursos de deeplearning.ai; The Batch", [
+    "Flujos agénticos: reflexión, uso de herramientas, planificación y colaboración multiagente.",
+    "La IA centrada en datos: mejorar los datos suele rendir más que cambiar de modelo.",
+    "Empieza por el caso de uso de mayor valor y viabilidad.",
+    "Itera rápido con evaluaciones claras.",
+    "Un agente que se revisa a sí mismo mejora mucho su resultado."]],
+  "Simon Willison": ["simonwillison.net; Datasette; LLM CLI", [
+    "Inyección de prompts: cualquier texto no confiable puede dar órdenes al modelo.",
+    "La trifecta letal: datos privados, contenido no confiable y capacidad de exfiltrar; nunca las tres juntas.",
+    "Usa los LLM como becario rápido: verifica siempre el resultado.",
+    "Herramientas pequeñas y componibles.",
+    "Documenta y comparte lo aprendido en público."]],
+  "Anthropic": ["Guías de prompt engineering, Building Effective Agents y documentación de Claude", [
+    "Claridad y contexto: explica el objetivo, el público y por qué importa.",
+    "Ejemplos (few-shot) y formato de salida definido; usa etiquetas para separar las partes.",
+    "Deja pensar al modelo antes de responder en tareas complejas.",
+    "Patrones de agente: cadena de prompts, enrutado, paralelización, orquestador-trabajadores y evaluador-optimizador.",
+    "Empieza simple y añade autonomía solo cuando aporta; diseña bien las herramientas (descripciones claras)."]],
+  "Chip Huyen": ["AI Engineering; Designing Machine Learning Systems", [
+    "Evalúa antes de optimizar: define métricas y conjuntos de prueba realistas.",
+    "RAG frente a fine-tuning: empieza por prompts y recuperación; ajusta el modelo solo si hace falta.",
+    "Calidad de la recuperación: troceado, embeddings, búsqueda híbrida y reordenado.",
+    "Coste, latencia y calidad como triángulo de compromiso.",
+    "Monitoriza en producción: deriva de datos y feedback de usuarios."]],
+  // Marketing
+  "Philip Kotler": ["Marketing Management; Marketing 5.0", [
+    "Segmentación, targeting y posicionamiento (STP) antes del marketing mix.",
+    "Las 4P: producto, precio, distribución y promoción; y las 4C desde el cliente.",
+    "Marketing de valor: satisfacer necesidades de forma rentable.",
+    "Viaje del cliente 5A: conocimiento, atracción, pregunta, acción y recomendación.",
+    "Marketing 5.0: tecnología al servicio de la experiencia humana."]],
+  "Seth Godin": ["Purple Cow; This Is Marketing; Tribes", [
+    "La vaca púrpura: sé notable o serás invisible.",
+    "Mínimo público viable: sirve a los pocos que más lo valoran.",
+    "«La gente como nosotros hace cosas como esta»: marketing de estatus y pertenencia.",
+    "Marketing de permiso frente a interrupción.",
+    "Los productos que se difunden resuelven un problema para un grupo concreto y les dan algo que contar."]],
+  "Byron Sharp": ["How Brands Grow", [
+    "Las marcas crecen sobre todo ganando compradores ocasionales: penetración, no fidelidad.",
+    "Disponibilidad mental (activos distintivos y momentos de compra) y física (estar donde se compra).",
+    "Alcance amplio y continuado, frente a nichos demasiado estrechos.",
+    "La ley de doble riesgo: las marcas pequeñas tienen menos compradores y además algo menos fieles.",
+    "Equilibrio entre marca y activación (Binet y Field: alrededor de 60/40)."]],
+  "Alex Hormozi": ["$100M Offers; $100M Leads; $100M Money Models", [
+    "Ecuación de valor: (resultado soñado × probabilidad percibida de lograrlo) / (tiempo hasta el resultado × esfuerzo y sacrificio).",
+    "Oferta Grand Slam: tan buena que la gente se siente tonta diciendo que no; apila bonus que eliminan cada obstáculo.",
+    "Escasez, urgencia, bonus, garantías (incondicional, condicional o anti-garantía) y nombre de la oferta (método MAGIC).",
+    "Core Four de leads: contacto en frío, contacto en caliente, contenido gratis y anuncios pagados, más los multiplicadores (clientes, empleados, agencias y afiliados).",
+    "Lead magnets que resuelven un problema concreto y revelan el siguiente.",
+    "Regla del 100: 100 acciones de captación al día durante 100 días.",
+    "Cobra más: el precio alto financia mejor servicio y atrae mejores clientes."]],
+  "April Dunford": ["Obviously Awesome; Sales Pitch", [
+    "El posicionamiento define el contexto en el que el producto es obviamente el mejor.",
+    "Cinco componentes: alternativas competitivas, atributos únicos, valor (y prueba), clientes que más se preocupan y categoría de mercado.",
+    "Empieza por los clientes que más te quieren.",
+    "Elige la categoría que hace evidente tu valor (cabeza a cabeza, grande en una subcategoría o crear categoría).",
+    "Pitch de ventas: insight de mercado, alternativas, ventajas diferenciales, prueba y siguiente paso."]],
+  "Rory Sutherland": ["Alchemy; Ogilvy UK", [
+    "Lo contrario de una buena idea puede ser otra buena idea.",
+    "La psicología cuenta más que la lógica: cambia la percepción, no el producto.",
+    "Las señales costosas generan confianza.",
+    "Reduce la ansiedad y el esfuerzo percibido (el Uber que ves llegar).",
+    "Prueba ideas pequeñas y aparentemente irracionales: los mercados no son racionales."]],
+  "Russell Brunson": ["DotCom Secrets; Expert Secrets; Traffic Secrets", [
+    "Escalera de valor: oferta de entrada, producto principal y alto precio.",
+    "Embudos: página de captura, tripwire, oferta principal, upsell y downsell.",
+    "Gancho, historia y oferta en cada pieza.",
+    "Personaje atractivo y la historia de origen del fundador.",
+    "El guion del webinar perfecto: una gran idea, tres secretos que rompen creencias y la oferta apilada."]],
+  // Ventas
+  "Neil Rackham": ["SPIN Selling", [
+    "Preguntas de situación (pocas), problema, implicación (amplían el dolor) y necesidad-beneficio (el cliente verbaliza el valor).",
+    "En ventas grandes, demostrar capacidades solo tras descubrir necesidades explícitas.",
+    "Los avances (siguientes pasos concretos) indican progreso, no las continuaciones.",
+    "Prevenir objeciones es mejor que manejarlas.",
+    "Necesidades implícitas frente a explícitas."]],
+  "Chris Voss": ["Never Split the Difference", [
+    "Empatía táctica: etiqueta emociones («parece que…») y haz espejos (repite las últimas palabras).",
+    "Preguntas calibradas con «cómo» y «qué» para que el otro resuelva tu problema.",
+    "Busca el «eso es» más que el «sí»; un «no» abre la conversación.",
+    "Auditoría de acusaciones: anticipa lo negativo que piensan de ti.",
+    "Método Ackerman: 65, 85, 95 y 100 % con cifra final no redonda y un regalo no monetario.",
+    "Voz de locutor nocturno para calmar."]],
+  "Aaron Ross": ["Predictable Revenue; From Impossible to Inevitable", [
+    "Especialización de roles: captación (SDR), cierre (AE) y éxito del cliente.",
+    "Cold calling 2.0: emails cortos y relevantes a cuentas ideales pidiendo referencia a la persona adecuada.",
+    "Define el perfil de cliente ideal antes de escalar.",
+    "Semillas, redes y lanzas: tres tipos de leads con ciclos distintos.",
+    "Construye una máquina predecible con métricas por etapa."]],
+  "Matthew Dixon": ["The Challenger Sale; The Challenger Customer; The JOLT Effect", [
+    "El perfil Challenger enseña, adapta y toma el control.",
+    "Venta por insight: reencuadra el problema del cliente con un dato que no conocía.",
+    "Secuencia: calentamiento, reencuadre, ahogo racional, impacto emocional, nueva forma de actuar y solución.",
+    "Movilizadores dentro del cliente: busca a quien impulsa el cambio.",
+    "JOLT contra la indecisión: juzga la indecisión, ofrece recomendación, limita la exploración y quita riesgo."]],
+  "Jeb Blount": ["Fanatical Prospecting; Objections; Sales EQ", [
+    "La causa número uno de fracaso en ventas es un pipeline vacío: prospecta a diario.",
+    "Regla de los 30 días: lo que prospectas hoy paga en 90 días.",
+    "Bloques de prospección diarios sin interrupciones (horas de oro).",
+    "Mensajes multicanal: teléfono, email, redes y en persona.",
+    "Objeciones: aceptar, reconocer, preguntar, aislar y volver a pedir."]],
+  "Grant Cardone": ["The 10X Rule; Sell or Be Sold", [
+    "Regla 10X: fija objetivos 10 veces mayores y actúa con 10 veces más acción de la que crees necesaria.",
+    "El seguimiento es donde está el dinero: la mayoría de ventas llegan tras 5-12 contactos.",
+    "Domina el mercado, no compitas.",
+    "Convicción total en el producto: el precio nunca es el problema real.",
+    "Pide siempre la venta y repite el cierre."]],
+  // Soporte
+  "Tony Hsieh": ["Delivering Happiness (Zappos)", [
+    "La cultura es la marca: 10 valores vividos, empezando por «ofrece un servicio que asombre».",
+    "Sin guiones ni límites de tiempo en las llamadas: resolver y conectar.",
+    "Empleados empoderados para sorprender (envíos gratis, flores y mejoras).",
+    "Pagar a los nuevos por irse si no encajan (The Offer).",
+    "Felicidad del cliente y del empleado como estrategia de crecimiento por boca a boca."]],
+  "Shep Hyken": ["The Amazement Revolution; The Convenience Revolution", [
+    "Servicio sorprendente de forma constante, no ocasional.",
+    "Momentos de la verdad: cada contacto suma o resta.",
+    "La comodidad gana: reduce la fricción, ofrece autoservicio y disponibilidad.",
+    "Recupera los fallos de servicio mejor de lo que el cliente esperaba.",
+    "La experiencia del empleado se refleja en la del cliente."]],
+  "Disney Institute": ["Be Our Guest; formación de Disney Institute", [
+    "Estándares por prioridad: seguridad, cortesía, espectáculo y eficiencia.",
+    "HEARD ante problemas: escuchar, empatizar, disculparse, resolver y diagnosticar.",
+    "Lenguaje de escena: los empleados son elenco y los clientes, invitados.",
+    "Gestión de colas y expectativas: tiempo de espera percibido.",
+    "Los detalles invisibles crean la magia."]],
+  "Horst Schulze": ["Excellence Wins (Ritz-Carlton)", [
+    "«Damas y caballeros al servicio de damas y caballeros».",
+    "Tres pasos del servicio: saludo cálido, anticipar y cumplir deseos, y despedida cálida.",
+    "Cada empleado puede gastar hasta 2.000 dólares para resolver un problema sin pedir permiso.",
+    "Line-up diario de 15 minutos para reforzar los estándares.",
+    "Calidad como cero defectos: mide los incidentes y corrige la causa raíz."]],
+  "Fred Reichheld": ["The Ultimate Question; Winning on Purpose", [
+    "Net Promoter Score: porcentaje de promotores menos porcentaje de detractores.",
+    "Cierra el ciclo: contacta a los detractores en 48 horas y aprende.",
+    "Ganancias buenas (de clientes encantados) frente a ganancias malas (a costa de ellos).",
+    "La fidelidad multiplica el beneficio: retener un 5 % más puede aumentar el beneficio un 25-95 %.",
+    "Earned Growth Rate: crecimiento por recompra y recomendación."]],
+};
+
 /* Motor de la oficina pixel-art: dibuja salas, muebles y agentes que caminan, se sientan y trabajan.
    Todo se dibuja con código en un canvas lógico de 448x256 px (mosaicos de 16 px) escalado sin suavizado. */
 const Office = (() => {
@@ -1489,12 +2068,24 @@ function persona(a) {
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
 Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
-${a.refs?.length ? `Trabajas con el criterio de los mayores referentes de tu especialidad y aplicas sus ideas cuando encajan: ${a.refs.map(([n, i]) => `${n} (${i})`).join("; ")}.\n` : ""}${memoryBlock(a)}
+${canonBlock(a)}${memoryBlock(a)}
 PROYECTO DE LA EMPRESA:
 ${state.brief}
 
 TRABAJO RECIENTE DEL EQUIPO (para ser coherente y no repetir):
 ${recentWork(6)}`;
+}
+// Conocimiento a fondo de los referentes del puesto: obras y principios concretos, no solo el nombre.
+function canonBlock(a) {
+  if (!a.refs?.length) return "";
+  const list = a.refs.map(([n, i]) => {
+    const c = CANON[n];
+    return c ? `### ${n}: ${c[0]}\n${c[1].map(p => "- " + p).join("\n")}` : `### ${n}\n- ${i}`;
+  }).join("\n\n");
+  return `\nCONOCIMIENTO DE TUS REFERENTES. Lo dominas como si fueras su mejor discípulo y lo aplicas en cada entrega. Estas son las claves de su obra; además, usa todo lo que sabes de sus libros, charlas y casos, y cita el marco que aplicas cuando aporte:\n\n${list}\n`;
+}
+function canonChecks(a) {
+  return (a.refs || []).flatMap(([n]) => (CANON[n]?.[1] || []).slice(0, 2).map(p => `- ${n}: ${p}`)).join("\n");
 }
 const RULES = (a) => `Cómo entregar:
 - En español, en Markdown, con la calidad de un profesional senior de primer nivel en tu área. Nada genérico: concreto y aplicable a este proyecto.
@@ -1722,6 +2313,9 @@ ENCARGO: ${t.order}${skill ? `\nMÉTODO PEDIDO: ${skill.name}` : ""}
 
 ENTREGA:
 ${body}
+
+PRINCIPIOS DE TUS REFERENTES CON LOS QUE DEBES MEDIRLA (¿los aplica donde tocaba?):
+${canonChecks(a) || "(ninguno)"}
 
 LO QUE YA HABÍAS APRENDIDO:
 ${memOf(a.id).map(x => "- " + x.text).join("\n") || "(nada todavía)"}
@@ -2058,7 +2652,7 @@ function openAgent(id, focusTask) {
     <div class="d-body">
       <p class="d-bio">${esc(a.bio)} <span>Trabaja con ${esc(a.tools.join(", "))}.</span></p>
       ${brainHTML(a)}
-      ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => `<li><b>${esc(n)}</b> ${esc(i)}</li>`).join("")}</ul></div>` : ""}
+      ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => { const c = CANON[n]; return c ? `<li><details><summary><b>${esc(n)}</b> ${esc(i)}</summary><p class="note">${esc(c[0])}</p><ul>${c[1].map(p => `<li>${esc(p)}</li>`).join("")}</ul></details></li>` : `<li><b>${esc(n)}</b> ${esc(i)}</li>`; }).join("")}</ul></div>` : ""}
       <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">Nuevo encargo</p>
         <label for="dText" hidden>Encargo</label>
         <textarea id="dText" placeholder="${dc.skill ? esc("Con «" + skillById(dc.skill).name + "». Añade los detalles.") : "Describe lo que necesitas"}"></textarea>

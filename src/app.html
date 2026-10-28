@@ -191,6 +191,11 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .refs { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink-3); }
 .refs li { padding: 5px 0; border-bottom: 1px solid var(--line); }
 .refs b { color: var(--ink); font-weight: 500; margin-right: 4px; }
+.refs details summary { cursor: pointer; list-style: none; }
+.refs details summary::-webkit-details-marker { display: none; }
+.refs details[open] summary { margin-bottom: 4px; }
+.refs details ul { margin: 4px 0 2px; padding-left: 16px; color: var(--ink-2); }
+.refs details ul li { border: 0; padding: 2px 0; }
 .src { color: var(--ink-3); font-size: 12.5px; }
 .d-exp { margin: 0; font-size: 13.5px; color: var(--ink-2); }
 .mem { margin-top: 6px; font-size: 13px; }
