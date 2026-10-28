@@ -1,11 +1,16 @@
-"""Genera public/index.html (PWA independiente) a partir de src/app.html."""
+"""Ensambla la app: src/app.html + src/*.js -> build/oficina.html (artifact) y public/index.html (PWA)."""
 import pathlib
 root = pathlib.Path(__file__).parent
-app = (root / "src/app.html").read_text()
+src = root / "src"
+page = (src / "app.html").read_text()
+for name, ph in (("data.js", "/*__DATA__*/"), ("office.js", "/*__OFFICE__*/"), ("app.js", "/*__APP__*/")):
+    page = page.replace(ph, (src / name).read_text())
+(root / "build").mkdir(exist_ok=True)
+(root / "build/oficina.html").write_text(page)
 head = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2f45e0"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0f1d"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
 """
@@ -13,5 +18,5 @@ tail = """
 <script>if(!window.claude&&"serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body></html>
 """
-(root / "public/index.html").write_text(head + app + tail)
-print("public/index.html generado")
+(root / "public/index.html").write_text(head + page + tail)
+print("build/oficina.html y public/index.html generados")

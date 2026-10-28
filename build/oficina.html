@@ -1,0 +1,1653 @@
+<title>Oficina</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: estudio nocturno. Barra lateral de navegación, la sala pixel-art como protagonista y una columna «En marcha» con el trabajo vivo. Diseño oscuro deliberado, de un solo tema. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0f1d;
+  --panel: #111a2d;
+  --panel-2: #172238;
+  --line: #22304d;
+  --ink: #e7ecf7;
+  --ink-2: #a9b4cc;
+  --ink-3: #75829f;
+  --accent: #7aa7ff;
+  --accent-ink: #0a0f1d;
+  --amber: #f2b84b;
+  --ok: #4fd18b;
+  --bad: #ff6b6b;
+  --f-pix: "Silkscreen", ui-monospace, monospace;
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r: 14px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14.5px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+img.px { image-rendering: pixelated; }
+
+.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100%; }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); height: calc(100vh - env(safe-area-inset-top, 0px)); overflow: auto; border-right: 1px solid var(--line); background: #0c1323;
+  padding: 18px 12px 18px max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 18px; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
+.logo b { font-family: var(--f-pix); font-size: 17px; letter-spacing: .02em; font-weight: 400; }
+.logo i { width: 26px; height: 26px; border-radius: 7px; background: var(--amber); display: grid; place-items: center; font-style: normal; color: var(--accent-ink); font-family: var(--f-pix); font-size: 13px; }
+.co { font-size: 12px; color: var(--ink-3); padding: 0 6px; margin-top: -12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navgroup { display: flex; flex-direction: column; gap: 2px; }
+.navgroup .h { font-family: var(--f-pix); font-size: 10px; color: var(--ink-3); padding: 0 8px 6px; letter-spacing: .06em; }
+.nl { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; border: 0; background: none; text-align: left; color: var(--ink-2); width: 100%; }
+.nl:hover { background: var(--panel); color: var(--ink); }
+.nl[aria-current="true"] { background: var(--panel-2); color: var(--ink); box-shadow: inset 2px 0 0 var(--accent); }
+.nl .n { white-space: nowrap; margin-left: auto; font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.nl .sw { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.nl svg { width: 16px; height: 16px; flex: none; }
+.nav .foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+
+main { min-width: 0; padding: 18px max(18px, env(safe-area-inset-right, 0px)) 40px 22px; }
+.view[hidden] { display: none; }
+.vh { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.vh h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; text-wrap: balance; }
+.vh p { margin: 2px 0 0; color: var(--ink-3); font-size: 13px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 11.5px; padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; display: inline-block; }
+.dot.work { background: var(--accent); animation: pulse 1.1s infinite; } .dot.queue { background: var(--amber); } .dot.err { background: var(--bad); }
+@keyframes pulse { 50% { opacity: .3; } }
+.btn { border: 0; border-radius: 11px; padding: 0 16px; min-height: 42px; font-weight: 600; background: var(--accent); color: var(--accent-ink); white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.ghost { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); }
+.btn.amber { background: var(--amber); }
+.btn.sm { min-height: 32px; padding: 0 11px; font-size: 13px; border-radius: 9px; }
+.btn.stop { background: var(--bad); color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+
+/* Sala */
+.officegrid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.roomtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.rt { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 6px 10px 6px 6px; color: var(--ink-2); font-size: 13px; }
+.rt img { width: 46px; height: 26px; border-radius: 5px; object-fit: cover; image-rendering: pixelated; }
+.rt[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--panel-2); }
+.rt .n { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+.stage { padding: 10px; }
+.stage-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 2px 4px 10px; flex-wrap: wrap; }
+.stage-h h2 { margin: 0; font-family: var(--f-display); font-size: 19px; font-weight: 800; }
+.stage-h .sub { font-size: 12.5px; color: var(--ink-3); }
+.canvaswrap { position: relative; border-radius: 10px; overflow: hidden; border: 2px solid #050810; background: #050810; }
+canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixelated; aspect-ratio: 448 / 256; max-width: 100%; }
+.team { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 2px 0; }
+.mate { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px; padding: 4px 10px 4px 4px; font-size: 12.5px; text-align: left; }
+.mate img { width: 30px; height: 30px; border-radius: 7px; background: #0c1323; }
+.mate b { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+.mate span { color: var(--ink-3); font-size: 11.5px; }
+
+/* Compositor de encargos */
+.composer { padding: 12px; display: grid; gap: 10px; margin-bottom: 16px; }
+.composer textarea { width: 100%; resize: none; min-height: 52px; max-height: 200px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); line-height: 1.45; }
+.crow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.crow select { min-height: 36px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel-2); padding: 0 10px; max-width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel-2); padding: 0 11px; min-height: 34px; font-size: 13px; color: var(--ink-2); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.crow .grow { flex: 1; }
+.attach { font-size: 12.5px; color: var(--ink-2); border: 1px dashed var(--line); border-radius: 9px; padding: 6px 10px; background: none; }
+.chip-img { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.chip-img img { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; }
+.chip-img button, .skillchip button { border: 0; background: none; color: var(--ink-2); padding: 0 4px; }
+.skillchip { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; padding: 4px 6px 4px 10px; border-radius: 999px; background: color-mix(in oklab, var(--amber) 22%, var(--panel)); border: 1px solid color-mix(in oklab, var(--amber) 45%, var(--line)); }
+
+/* En marcha */
+.live { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.live > .card { padding: 12px; }
+.live h3 { margin: 0 0 10px; font-family: var(--f-pix); font-size: 12px; letter-spacing: .04em; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 400; }
+.job { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 8px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); text-align: left; width: 100%; }
+.job + .job { margin-top: 6px; }
+.job img { width: 34px; height: 34px; border-radius: 8px; background: #0c1323; }
+.job .t { font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.job .m { font-size: 11.5px; color: var(--ink-3); font-family: var(--f-mono); margin-top: 2px; }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+.bar.ind i { width: 35% !important; animation: slide 1.4s ease-in-out infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+.empty { color: var(--ink-3); font-size: 13px; margin: 0; }
+.run { border-color: color-mix(in oklab, var(--accent) 40%, var(--line)) !important; background: color-mix(in oklab, var(--accent) 8%, var(--panel)) !important; }
+.run p { margin: 0; font-size: 13px; color: var(--ink-2); }
+.run ol { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+.run li { margin-bottom: 3px; }
+.run .ph { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-top: 8px; }
+.st { font-family: var(--f-mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--line); color: var(--ink-2); white-space: nowrap; }
+.st.work { background: color-mix(in oklab, var(--accent) 30%, transparent); color: var(--ink); }
+.st.done { background: color-mix(in oklab, var(--ok) 25%, transparent); color: var(--ink); }
+.st.error { background: color-mix(in oklab, var(--bad) 28%, transparent); color: var(--ink); }
+.st.ex { background: color-mix(in oklab, var(--amber) 25%, transparent); color: var(--ink); }
+
+/* Listas */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.f { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; color: var(--ink-2); }
+.f[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tasks { display: flex; flex-direction: column; gap: 8px; }
+.trow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; text-align: left; width: 100%; }
+.trow img { width: 40px; height: 40px; border-radius: 9px; background: #0c1323; }
+.trow .t { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trow .m { font-size: 12px; color: var(--ink-3); }
+.trow:hover, .del:hover { border-color: var(--ink-3); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.del { padding: 0; overflow: hidden; text-align: left; display: flex; flex-direction: column; }
+.del .cover { height: 92px; position: relative; display: flex; align-items: flex-end; gap: 8px; padding: 10px; background-size: cover; background-position: center; image-rendering: pixelated; }
+.del .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,15,29,.94), rgba(10,15,29,.2)); }
+.del .cover > * { position: relative; z-index: 1; }
+.del .cover img { width: 36px; height: 36px; border-radius: 8px; background: #0c1323; }
+.del .cover b { font-size: 13px; }
+.del .cover span { display: block; font-size: 11px; color: var(--ink-2); }
+.del .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.del .body .t { font-weight: 600; font-size: 13.5px; line-height: 1.3; }
+.del .body .x { font-size: 12.5px; color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Skills */
+.skillgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.sk { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.sk .top { display: flex; gap: 10px; align-items: center; }
+.sk .top img { width: 36px; height: 36px; border-radius: 8px; background: #0c1323; }
+.sk h4 { margin: 0; font-size: 15px; font-family: var(--f-display); font-weight: 600; line-height: 1.2; }
+.sk .who { font-size: 11.5px; color: var(--ink-3); }
+.sk p { margin: 0; font-size: 13px; color: var(--ink-2); }
+.sk details { font-size: 12.5px; color: var(--ink-3); }
+.sk details summary { cursor: pointer; color: var(--ink-2); }
+.sk .acts { margin-top: auto; display: flex; gap: 6px; }
+.sk.custom { border-style: dashed; }
+
+/* Panel del agente */
+.scrim { position: fixed; inset: 0; background: rgba(3,6,14,.6); z-index: 20; }
+.drawer { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(640px, 100%); background: var(--panel); border-left: 1px solid var(--line);
+  display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.d-head { display: flex; gap: 14px; align-items: center; padding: 16px; border-bottom: 1px solid var(--line); }
+.d-head img { width: 64px; height: 64px; border-radius: 14px; background: #0c1323; flex: none; }
+.d-head h2 { margin: 0; font-family: var(--f-display); font-size: 22px; font-weight: 800; }
+.d-head p { margin: 0; font-size: 13px; color: var(--ink-2); }
+.d-head .x { margin-left: auto; align-self: flex-start; }
+.d-body { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+.lbl { font-family: var(--f-pix); font-size: 10.5px; color: var(--ink-3); margin: 0 0 8px; letter-spacing: .05em; }
+.tools { display: flex; flex-wrap: wrap; gap: 5px; }
+.tool { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink-2); }
+.minisk { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; }
+.minisk button { text-align: left; border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px; padding: 8px 10px; font-size: 12px; color: var(--ink-3); }
+.minisk button b { display: block; color: var(--ink); font-size: 13px; font-weight: 600; }
+.minisk button:hover, .minisk button[aria-pressed="true"] { border-color: var(--amber); }
+.dorder { display: grid; gap: 8px; }
+.dorder textarea { width: 100%; resize: vertical; min-height: 76px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.task { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg); }
+.task + .task { margin-top: 10px; }
+.task-h { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 9px 12px; background: var(--panel-2); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.task-h .o { font-size: 13.5px; font-weight: 600; min-width: 0; flex: 1 1 220px; }
+.task-h .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+.task-acts { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 12px; border-top: 1px solid var(--line); background: var(--panel); align-items: center; }
+.task-acts select, .task-acts input { min-height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); padding: 0 8px; font-size: 13px; max-width: 100%; }
+.task-acts input { flex: 1 1 160px; min-width: 0; }
+.steps { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px 0; font-size: 12.5px; color: var(--ink-3); }
+.steps .s.done { color: var(--ink-2); } .steps .s.cur { color: var(--ink); font-weight: 600; }
+.md { padding: 12px 14px 14px; font-size: 14px; overflow-wrap: anywhere; min-width: 0; }
+.md > :first-child { margin-top: 0; }
+.md h1, .md h2, .md h3 { font-family: var(--f-display); line-height: 1.2; margin: 1.1em 0 .4em; }
+.md h1 { font-size: 20px; } .md h2 { font-size: 17px; } .md h3 { font-size: 15px; }
+.md pre { background: #070b16; border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow-x: auto; font-family: var(--f-mono); font-size: 12.5px; }
+.md code { font-family: var(--f-mono); font-size: .9em; }
+.md table { border-collapse: collapse; display: block; overflow-x: auto; font-size: 13px; }
+.md th, .md td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+.md th { background: var(--panel-2); }
+.md blockquote { margin: 0; padding-left: 10px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.md a { color: var(--accent); }
+.thinking { color: var(--ink-3); font-family: var(--f-mono); font-size: 13px; padding: 12px 14px; }
+
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink); width: min(560px, calc(100% - 32px)); padding: 20px; }
+dialog::backdrop { background: rgba(3,6,14,.65); }
+dialog h2 { margin: 0 0 4px; font-family: var(--f-display); font-size: 21px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.field input, .field textarea, .field select { padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.field textarea { min-height: 110px; resize: vertical; }
+.note { font-size: 12px; color: var(--ink-3); margin: 0; }
+.row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 10px; font-size: 13.5px; max-width: calc(100% - 32px); }
+.banner { font-size: 13px; padding: 10px 12px; border-radius: 10px; background: color-mix(in oklab, var(--amber) 14%, var(--panel)); border: 1px solid color-mix(in oklab, var(--amber) 40%, var(--line)); margin-bottom: 14px; }
+.mobile-settings { display: none !important; }
+
+@media (max-width: 1180px) { .officegrid { grid-template-columns: minmax(0, 1fr); } .live { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } }
+@media (max-width: 820px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .nav { position: fixed; z-index: 15; top: auto; bottom: 0; left: 0; right: 0; height: auto; flex-direction: row; padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); border-right: 0; border-top: 1px solid var(--line); gap: 0; overflow: visible; }
+  .nav .logo, .nav .co, .nav .rooms-nav, .nav .foot, .navgroup .h { display: none; }
+  .nav .main-nav { flex-direction: row; flex: 1; justify-content: space-around; }
+  .nl { flex-direction: column; gap: 2px; font-size: 11px; padding: 6px 4px; align-items: center; width: auto; flex: 1; }
+  .nl .n { display: none; }
+  .nl[aria-current="true"] { box-shadow: inset 0 2px 0 var(--accent); }
+  main { padding: 14px max(16px, env(safe-area-inset-right, 0px)) 100px max(16px, env(safe-area-inset-left, 0px)); }
+  .vh h1 { font-size: 23px; }
+  .rt img { display: none; }
+  .drawer { top: 5vh; border-radius: 18px 18px 0 0; border-left: 0; padding-right: 0; }
+  .mobile-settings { display: inline-flex !important; }
+  .crow .grow { display: none; }
+  .canvaswrap { overflow-x: auto; overscroll-behavior-x: contain; }
+  canvas#scene { width: 680px; max-width: none; }
+  #btnSend, #btnAuto { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .dot.work, .bar.ind i { animation: none; } }
+</style>
+
+<div class="shell">
+  <nav class="nav" aria-label="Secciones">
+    <div class="logo"><i>O</i><b>OFICINA</b></div>
+    <div class="co" id="coName"></div>
+    <div class="navgroup main-nav">
+      <span class="h">ESPACIO</span>
+      <button class="nl" type="button" data-view="oficina"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 3h12v2H2zM2 7h5v6H2zM9 7h5v2H9zM9 11h5v2H9z"/></svg>Oficina<span class="n" id="nWork"></span></button>
+      <button class="nl" type="button" data-view="encargos"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 2h10v2H3zM3 6h10v2H3zM3 10h6v2H3z"/></svg>Encargos<span class="n" id="nTasks"></span></button>
+      <button class="nl" type="button" data-view="skills"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l2 4 4 .6-3 3 .8 4.4L8 11l-3.8 2 .8-4.4-3-3L6 5z"/></svg>Skills<span class="n" id="nSkills"></span></button>
+      <button class="nl" type="button" data-view="entregables"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>Entregables<span class="n" id="nDone"></span></button>
+    </div>
+    <div class="navgroup rooms-nav" id="roomsNav"></div>
+    <div class="foot"><button class="btn ghost sm" type="button" data-settings>Proyecto y ajustes</button></div>
+  </nav>
+
+  <main>
+    <div id="aiBanner" class="banner" hidden></div>
+
+    <section class="view" id="v-oficina">
+      <div class="vh">
+        <div><h1 id="coTitle">La oficina</h1><p id="briefLine"></p></div>
+        <div class="crow"><span class="pill"><span class="dot"></span><span id="sIdle">0</span> libres</span><span class="pill"><span class="dot work"></span><span id="sWork">0</span> trabajando</span>
+          <button class="btn ghost sm mobile-settings" type="button" data-settings>Ajustes</button></div>
+      </div>
+
+      <form class="card composer" id="composer">
+        <label for="cmd" hidden>Nuevo encargo</label>
+        <textarea id="cmd" rows="2" placeholder="Nuevo encargo. Ej.: «Lanzamos zapatillas veganas en enero: plan completo, web y 10 reels»"></textarea>
+        <div class="crow">
+          <label for="target" hidden>Para quién</label>
+          <select id="target"></select>
+          <div class="seg" role="group" aria-label="Profundidad"><button type="button" data-mode="rapido" aria-pressed="false" title="Una sola pasada, más rápido">Rápido</button><button type="button" data-mode="pro" aria-pressed="true" title="Planifica por pasos y ejecuta cada uno a fondo">Profundo</button></div>
+          <span id="skillSlot"></span>
+          <span id="imgSlot"></span>
+          <button type="button" class="attach" id="btnAttach" hidden>Adjuntar imagen</button>
+          <input type="file" id="fileIn" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <span class="grow"></span>
+          <button class="btn ghost" type="button" id="btnAuto" title="Dirección decide qué hacer según el proyecto y lo ya entregado">Ronda autónoma</button>
+          <button class="btn" type="submit" id="btnSend">Encargar</button>
+        </div>
+      </form>
+
+      <div class="officegrid">
+        <div>
+          <div class="roomtabs" id="roomTabs"></div>
+          <div class="card stage">
+            <div class="stage-h"><div><h2 id="stageName"></h2><span class="sub">Toca a cualquiera para hablar con él o ver su trabajo</span></div><span class="pill" id="clock"></span></div>
+            <div class="canvaswrap"><canvas id="scene" role="img" aria-label="Sala de la oficina con los agentes trabajando"></canvas></div>
+            <div class="team" id="team"></div>
+          </div>
+        </div>
+        <div class="live">
+          <div class="card run" id="runBox" hidden></div>
+          <div class="card"><h3>EN MARCHA <span class="pill" id="liveCount">0</span></h3><div id="liveList"></div></div>
+          <div class="card"><h3>ÚLTIMOS ENCARGOS <button class="btn ghost sm" type="button" data-go="encargos">Ver todos</button></h3><div id="recentList"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="v-encargos" hidden>
+      <div class="vh"><div><h1>Encargos</h1><p>Todo lo que has pedido, quién lo ha hecho y en qué punto está.</p></div></div>
+      <div class="filters" id="taskFilters"></div>
+      <div class="tasks" id="taskList"></div>
+    </section>
+
+    <section class="view" id="v-skills" hidden>
+      <div class="vh"><div><h1>Skills</h1><p>Métodos de trabajo profesionales de cada agente. Elige uno y el encargo seguirá ese método.</p></div>
+        <button class="btn amber sm" type="button" id="btnNewSkill">Crear skill</button></div>
+      <div class="filters" id="skillFilters"></div>
+      <div class="skillgrid" id="skillGrid"></div>
+    </section>
+
+    <section class="view" id="v-entregables" hidden>
+      <div class="vh"><div><h1>Entregables</h1><p>El trabajo terminado del equipo, listo para copiar o descargar.</p></div></div>
+      <div class="filters" id="delFilters"></div>
+      <div class="gallery" id="delGrid"></div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dName"></section>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h2>Proyecto y ajustes</h2>
+    <div class="field"><label for="fCompany">Nombre de tu empresa o marca</label><input id="fCompany" maxlength="80"></div>
+    <div class="field"><label for="fBrief">¿En qué trabaja la oficina?</label><textarea id="fBrief" maxlength="5000"></textarea>
+      <span class="note">Todos los agentes leen esto antes de cada tarea: qué vendes, a quién, objetivos, tono de marca, presupuesto.</span></div>
+    <div id="keyFields">
+      <div class="field"><label for="fKey">Clave de la API de Anthropic</label><input id="fKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+        <span class="note">Solo hace falta fuera de Claude. Se guarda en este navegador y solo se envía a api.anthropic.com.</span></div>
+      <div class="field"><label for="fModel">Modelo</label>
+        <select id="fModel"><option value="claude-opus-5-5">Claude Opus 5.5 (máxima calidad)</option><option value="claude-sonnet-5-5">Claude Sonnet 5.5 (equilibrado)</option><option value="claude-haiku-5-5">Claude Haiku 5.5 (rápido)</option></select></div>
+    </div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+
+<dialog id="skillDlg">
+  <form method="dialog">
+    <h2>Crear skill</h2>
+    <p class="note">Enseña a un agente un método propio: tu forma de hacer guiones, tu plantilla de propuesta, tu checklist de calidad…</p>
+    <div class="field"><label for="kAgent">Agente</label><select id="kAgent"></select></div>
+    <div class="field"><label for="kName">Nombre</label><input id="kName" maxlength="60" placeholder="Ej.: Guion para reels de producto"></div>
+    <div class="field"><label for="kDesc">Para qué sirve</label><input id="kDesc" maxlength="140"></div>
+    <div class="field"><label for="kMethod">Método (instrucciones paso a paso)</label><textarea id="kMethod" maxlength="3000" placeholder="1. Empieza con… 2. …"></textarea></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar skill</button></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script>
+/* Plantilla de la empresa: salas, agentes y su biblioteca de skills.
+   Cada skill es un método de trabajo profesional que se inyecta en el prompt del agente. */
+const ROOMS = [
+  { id: "central", name: "Dirección", sign: "OFICINA", brick: "#7a3b2e", floor: "#8a6a4a", accent: "#f2b84b" },
+  { id: "estudio", name: "Estudio creativo", sign: "ESTUDIO", brick: "#5b3a5e", floor: "#6f5a48", accent: "#ff8fb1" },
+  { id: "lab", name: "Ingeniería y datos", sign: "LAB", brick: "#2f4a63", floor: "#4f5a66", accent: "#7aa7ff" },
+  { id: "ventas", name: "Comercial", sign: "VENTAS", brick: "#3e5a3a", floor: "#7a6146", accent: "#4fd18b" },
+];
+
+const DEPTS = {
+  dir: "Dirección General", prod: "Producto y Estrategia", fin: "Finanzas", legal: "Legal", people: "Personas y Cultura",
+  video: "Vídeo y Audiovisual", design: "Diseño", social: "Redes Sociales", content: "Contenidos y Copy",
+  dev: "Ingeniería", seo: "SEO y Analítica", rnd: "I+D e IA", mkt: "Marketing", sales: "Ventas", cx: "Atención al Cliente",
+};
+
+// look: [peinado 0-4, pelo, piel 0-4, tono camiseta, pantalón]
+const AGENTS = [
+  { id: "elena", room: "central", dept: "dir", name: "Elena", role: "Directora general (CEO)", look: [2, "#3b2a20", 1, 265, "#2b2f45"],
+    bio: "Convierte objetivos en planes, reparte el trabajo entre departamentos, revisa cada entrega y decide el siguiente paso.",
+    tools: ["OKR", "Notion", "Linear", "Asana", "Miro"],
+    skills: [
+      ["okr", "OKR trimestrales", "Objetivos y resultados clave medibles con responsables.", "Usa el método OKR de John Doerr: 3 objetivos inspiradores, 3-4 resultados clave cuantitativos por objetivo (con valor actual y meta), iniciativas concretas, responsable del equipo para cada una y riesgos. Cierra con un ritual semanal de seguimiento."],
+      ["plan90", "Plan de 90 días", "Hoja de ruta semana a semana con hitos y métricas.", "Divide 12 semanas en 3 sprints de 4. Para cada semana: objetivo, entregables, responsable (agentes de la oficina), métrica de éxito y dependencias. Añade presupuesto estimado y los 3 riesgos principales con mitigación."],
+      ["dafo", "DAFO y estrategia", "Diagnóstico y apuestas estratégicas.", "Haz un DAFO honesto, después una matriz CAME (corregir, afrontar, mantener, explotar) y termina con 3 apuestas estratégicas priorizadas por impacto y esfuerzo."],
+      ["investor", "Update para inversores", "Informe mensual al estilo Y Combinator.", "Formato investor update: titular del mes, métricas clave con variación, logros, problemas sin maquillar, prioridades del mes siguiente y peticiones concretas (contactos, talento, consejo)."],
+      ["decision", "Decisión difícil", "Análisis de opciones con pre-mortem.", "Plantea 3-4 opciones, criterios ponderados en tabla, pre-mortem de la opción favorita (cómo podría fallar), decisión recomendada, qué la haría cambiar y siguiente paso reversible."],
+    ] },
+  { id: "marco", room: "central", dept: "prod", name: "Marco", role: "Product manager", look: [1, "#1d1d1d", 2, 300, "#3a3a4a"],
+    bio: "Define qué se construye y por qué. Escribe PRD, historias de usuario y prioriza con datos.",
+    tools: ["Linear", "Jira", "Figma", "Amplitude", "Productboard"],
+    skills: [
+      ["prd", "PRD completo", "Documento de requisitos de producto.", "Estructura: problema y evidencia, usuarios objetivo, jobs to be done, solución propuesta, requisitos funcionales numerados, no funcionales, fuera de alcance, métricas de éxito, riesgos y preguntas abiertas."],
+      ["stories", "Historias de usuario", "Backlog con criterios de aceptación.", "Escribe historias 'Como [usuario] quiero [acción] para [beneficio]', cada una con criterios de aceptación en formato Gherkin (Dado/Cuando/Entonces), estimación en puntos y prioridad."],
+      ["rice", "Priorización RICE", "Ordena ideas por impacto real.", "Tabla RICE (Reach, Impact 0.25-3, Confidence %, Effort en semanas) con puntuación calculada, ordenada de mayor a menor, y justificación breve de cada cifra."],
+      ["compet", "Análisis de competencia", "Mapa competitivo y huecos de mercado.", "Compara 5 competidores en tabla (propuesta, precio, público, puntos fuertes, débiles), dibuja un mapa de posicionamiento en 2 ejes y señala 3 huecos donde podemos ganar."],
+      ["jtbd", "Entrevistas JTBD", "Guion de discovery con clientes.", "Guion de entrevista Jobs To Be Done (momento del primer pensamiento, búsqueda, decisión, ansiedades), 12 preguntas abiertas, hipótesis a validar y plantilla de síntesis."],
+    ] },
+  { id: "tomas", room: "central", dept: "fin", name: "Tomás", role: "Director financiero (CFO)", look: [0, "#b8b8b8", 0, 120, "#24303a"],
+    bio: "Números claros: presupuestos, precios, rentabilidad, caja y previsiones. Siempre con tablas.",
+    tools: ["Excel", "Google Sheets", "Holded", "Stripe", "Qonto"],
+    skills: [
+      ["budget", "Presupuesto anual", "Presupuesto mes a mes de 12 meses.", "Tabla mensual de ingresos por línea, costes fijos, variables, marketing, personal e impuestos; resultado y caja acumulada. Indica supuestos explícitos y escenario pesimista/base/optimista."],
+      ["pricing", "Estrategia de precios", "Precio por valor, coste y competencia.", "Calcula coste unitario, precio de competidores y valor percibido; propone 3 planes (good-better-best) con anclaje, margen de cada uno y precio psicológico."],
+      ["model", "Modelo financiero 3 años", "P&L y supuestos de crecimiento.", "Supuestos (clientes, conversión, ticket, churn), cuenta de resultados anual de 3 años, punto de equilibrio y necesidades de financiación, todo en tablas."],
+      ["unit", "Unit economics", "CAC, LTV, payback y margen de contribución.", "Calcula CAC por canal, LTV con margen y churn, ratio LTV/CAC, meses de payback y margen de contribución; marca en rojo lo que no es sostenible y cómo arreglarlo."],
+      ["cash", "Tesorería 13 semanas", "Previsión de caja a corto plazo.", "Tabla semanal de 13 semanas con cobros, pagos, saldo inicial y final, alertas de caja mínima y acciones para alargar la pista."],
+    ] },
+  { id: "carmen", room: "central", dept: "legal", name: "Carmen", role: "Asesora legal", look: [1, "#2b1b14", 3, 40, "#2a2030"],
+    bio: "Contratos, privacidad y cumplimiento. Redacta documentos y señala riesgos. Recomienda validarlos con un abogado colegiado.",
+    tools: ["RGPD / LOPDGDD", "LSSI", "Ley de IA de la UE", "OEPM / EUIPO"],
+    skills: [
+      ["legalweb", "Textos legales web", "Aviso legal, privacidad y cookies.", "Redacta aviso legal (LSSI), política de privacidad (RGPD: responsable, finalidades, bases, plazos, derechos) y política de cookies con tabla de cookies. Marca los datos a rellenar entre corchetes."],
+      ["contract", "Contrato de servicios", "Contrato tipo con proveedores o clientes.", "Cláusulas: objeto, alcance, plazos, precio y pago, propiedad intelectual, confidencialidad, protección de datos, responsabilidad, resolución y jurisdicción. Señala las cláusulas a negociar."],
+      ["trademark", "Registro de marca", "Cómo proteger el nombre y el logo.", "Pasos para buscar anterioridades y registrar en OEPM o EUIPO, clases de Niza recomendadas, tasas orientativas, plazos y riesgos."],
+      ["risk", "Revisión de riesgos", "Auditoría legal del proyecto.", "Lista de riesgos legales por área (datos, consumo, publicidad, IA, laboral, fiscal) con probabilidad, impacto y acción recomendada."],
+    ] },
+  { id: "pablo", room: "central", dept: "people", name: "Pablo", role: "Personas y cultura", look: [3, "#4a3020", 2, 320, "#33334a"],
+    bio: "Atrae y cuida al talento: perfiles, ofertas, entrevistas, onboarding y cultura de equipo.",
+    tools: ["LinkedIn Recruiter", "Factorial", "Notion", "Typeform"],
+    skills: [
+      ["job", "Oferta de empleo", "Oferta atractiva más scorecard del puesto.", "Escribe la oferta (misión del puesto, retos de los primeros 6 meses, requisitos imprescindibles y deseables, condiciones) y un scorecard con resultados esperados y competencias."],
+      ["interview", "Entrevista por competencias", "Guion STAR con rúbrica.", "10 preguntas conductuales en formato STAR ligadas a las competencias clave, señales verdes y rojas para cada una y rúbrica de 1 a 4."],
+      ["onboarding", "Onboarding 30-60-90", "Plan de bienvenida del primer trimestre.", "Plan día 1, semana 1 y 30-60-90 días con objetivos, formación, personas clave y checkpoints."],
+      ["culture", "Manual de cultura", "Valores y forma de trabajar.", "5 valores con comportamientos observables, rituales del equipo, cómo decidimos, cómo damos feedback y qué no toleramos."],
+    ] },
+
+  { id: "dani", room: "estudio", dept: "video", name: "Dani", role: "Editor de vídeo profesional", look: [4, "#2a1a12", 1, 20, "#1f2430"],
+    bio: "Edición, color y sonido de nivel profesional. Escribe guiones, storyboards y planes de montaje plano a plano.",
+    tools: ["DaVinci Resolve Studio", "Premiere Pro", "After Effects", "Final Cut Pro", "CapCut", "Runway", "Descript", "iZotope RX", "Frame.io"],
+    skills: [
+      ["reel", "Reel viral 30-60 s", "Guion vertical plano a plano con gancho.", "Gancho visual y verbal en los primeros 3 s, después tabla con columnas: tiempo, plano (tipo y movimiento), acción, texto en pantalla, audio/SFX y transición. Ritmo de corte cada 1-2 s, bucle final que enlace con el inicio y CTA."],
+      ["edl", "Plan de montaje DaVinci", "Timeline, ritmo y ajustes de exportación.", "Estructura de pistas en DaVinci Resolve (V1 principal, V2 b-roll, A1 voz, A2 música, A3 SFX), orden de los clips, cortes J y L, puntos de beat, zooms y ajustes de exportación por red (resolución, bitrate, códec)."],
+      ["grading", "Look de color", "Etalonaje con árbol de nodos.", "Define el look (referencia de cine o marca), y el árbol de nodos en DaVinci: transformación de color, balance, exposición, contraste, curvas, saturación selectiva, protección de tonos de piel, LUT creativa y grano. Valores orientativos por nodo."],
+      ["youtube", "Vídeo largo de YouTube", "Guion con estructura de retención.", "Gancho de 15 s con promesa, estructura en capítulos con bucles abiertos, patrón de interrupción cada 60-90 s, payoff, CTA a mitad y final, título y 3 conceptos de miniatura."],
+      ["subs", "Subtítulos dinámicos", "Subtítulos al estilo de los grandes creadores.", "Divide el guion en bloques de 1-3 palabras, marca palabras clave para resaltar en color, emojis puntuales, posición y tipografía recomendadas, y cómo hacerlo en CapCut o DaVinci."],
+      ["aivideo", "Vídeo con IA", "Storyboard y prompts para Runway o Veo.", "Storyboard de 6-10 planos y para cada uno un prompt de vídeo IA (sujeto, acción, cámara, lente, luz, estilo, duración) más el prompt negativo y cómo montarlos."],
+    ] },
+  { id: "lucia", room: "estudio", dept: "design", name: "Lucía", role: "Diseñadora de producto y marca", look: [2, "#a0522d", 0, 340, "#2d2440"],
+    bio: "Identidad de marca, interfaces y piezas gráficas, con especificaciones exactas: colores, tipografías, medidas y textos.",
+    tools: ["Figma", "Illustrator", "Photoshop", "Adobe Firefly", "Midjourney", "Canva", "Spline"],
+    skills: [
+      ["brand", "Identidad de marca", "Concepto, paleta, tipografías y logo.", "Concepto creativo, paleta con HEX y uso (primario, secundario, neutros, ratios), pareja de tipografías de Google Fonts con jerarquía, logo descrito y además un SVG sencillo en código, iconografía, fotografía y 3 aplicaciones."],
+      ["ui", "Diseño de pantalla", "Especificación de UI lista para Figma o código.", "Wireframe en texto por zonas, tokens (color, espaciado de 4 en 4, radios, sombras), estados de cada componente y una maqueta HTML+CSS en un solo bloque de código."],
+      ["imgprompts", "Prompts de imagen IA", "8 prompts para Midjourney o Firefly.", "8 prompts con sujeto, composición, cámara y lente, luz, paleta, estilo y parámetros (--ar, --style, --v). Variaciones para redes, web y anuncios."],
+      ["socialkit", "Kit de piezas para redes", "Plantillas con medidas exactas.", "Plantillas para post 1080x1350, story 1080x1920, portada de YouTube 2560x1440 y miniatura 1280x720: rejilla, zonas seguras, jerarquía, textos y colores."],
+      ["uxaudit", "Auditoría UX", "Las 10 heurísticas de Nielsen.", "Evalúa con las 10 heurísticas de Nielsen, cada problema con gravedad 1-4, evidencia y solución concreta; termina con las 5 mejoras más rentables."],
+    ] },
+  { id: "sofia", room: "estudio", dept: "social", name: "Sofía", role: "Social media manager", look: [3, "#d4a24c", 1, 0, "#2a2a3a"],
+    bio: "Lleva tus redes: estrategia, calendario, publicaciones, comunidad y crecimiento en cada plataforma.",
+    tools: ["Instagram", "TikTok", "LinkedIn", "YouTube", "X", "Meta Business Suite", "Metricool", "Later"],
+    skills: [
+      ["calendar", "Calendario editorial", "4 semanas de publicaciones listas.", "Tabla de 4 semanas: día, red, formato (reel, carrusel, story, post), pilar de contenido, idea, copy completo, CTA y hashtags. Equilibrio entre contenido de valor, comunidad y venta."],
+      ["hooks", "Ganchos virales", "20 ganchos probados por categoría.", "20 ganchos agrupados (curiosidad, contraintuitivo, error común, resultado, historia, lista) adaptados al proyecto, con el primer plano visual sugerido para cada uno."],
+      ["carousel", "Carrusel que se guarda", "8-10 diapositivas con texto exacto.", "Portada con gancho, una idea por diapositiva, texto exacto de cada una (máx. 25 palabras), indicación visual, diapositiva de resumen y CTA a guardar o compartir. Más el pie de foto."],
+      ["strategy", "Estrategia de redes", "Pilares, frecuencia y KPIs por plataforma.", "Objetivo por red, 3-5 pilares de contenido, frecuencia y formatos, horarios, KPIs (alcance, guardados, CTR) y plan de 90 días para crecer."],
+      ["community", "Gestión de comunidad", "Respuestas tipo y guía de moderación.", "Respuestas tipo para comentarios positivos, dudas, críticas y DMs de venta; guía de tono, tiempos de respuesta y criterios de moderación."],
+      ["creators", "Colaboraciones con creadores", "Plan con influencers y mensaje de contacto.", "Perfil de creadores (micro y macro), criterios de selección, tipos de colaboración, presupuesto orientativo, brief y mensaje de primer contacto."],
+    ] },
+  { id: "bruno", room: "estudio", dept: "content", name: "Bruno", role: "Copywriter y estratega de contenidos", look: [1, "#5a3b22", 3, 85, "#3a3026"],
+    bio: "Escribe textos que venden y se leen: webs, anuncios, blog, newsletters, guiones y tono de marca.",
+    tools: ["Google Docs", "Hemingway", "Notion", "Substack", "Grammarly"],
+    skills: [
+      ["webcopy", "Textos de la web", "Web completa con el marco StoryBrand.", "Marco StoryBrand: cliente como héroe, problema (externo, interno, filosófico), marca como guía, plan en 3 pasos, llamada a la acción, éxito y fracaso. Entrega el texto final por secciones: hero, beneficios, prueba social, FAQ y cierre."],
+      ["ads", "Anuncios PAS y AIDA", "10 variantes de anuncio.", "5 anuncios con fórmula PAS (problema, agitación, solución) y 5 con AIDA, cada uno con titular, texto principal corto y largo y CTA. Indica el ángulo que prueba cada uno."],
+      ["newsletter", "Newsletter", "Email que se abre y se lee.", "3 asuntos alternativos con preheader, apertura con historia o dato, una sola idea, valor práctico, CTA único y posdata."],
+      ["blog", "Artículo SEO", "Artículo de 1.500 palabras optimizado.", "Palabra clave e intención, título y meta descripción, H2 y H3 con palabras clave secundarias, introducción que responde rápido, ejemplos, FAQ y enlazado interno sugerido."],
+      ["naming", "Naming y eslóganes", "Nombres de marca con razonamiento.", "20 nombres en 4 estilos (descriptivo, evocador, inventado, metafórico) con razonamiento, 3 favoritos con eslogan y comprobaciones a hacer (dominio, marca, redes)."],
+      ["voice", "Tono de voz", "Guía de voz de marca.", "Personalidad en 4 rasgos 'somos X, pero no Y', vocabulario sí y no, ejemplos antes y después, y adaptación por canal."],
+    ] },
+
+  { id: "kai", room: "lab", dept: "dev", name: "Kai", role: "Desarrollador full-stack", look: [0, "#101010", 4, 230, "#1d2433"],
+    bio: "Escribe código de producción: webs, apps, APIs y automatizaciones. Entrega código completo y listo para pegar.",
+    tools: ["TypeScript", "React / Next.js", "Node.js", "Python", "PostgreSQL", "Supabase", "GitHub", "Claude Code"],
+    skills: [
+      ["landing", "Landing page", "Web completa en un solo archivo HTML.", "Un único archivo HTML con CSS y JS integrados, responsive, accesible (contraste, etiquetas, foco), con SEO básico (title, meta, Open Graph), secciones hero, beneficios, prueba social, FAQ y formulario. Código completo, sin partes omitidas."],
+      ["api", "API y base de datos", "Esquema SQL y endpoints.", "Modelo de datos con SQL (tablas, claves, índices), lista de endpoints REST con método, ruta, entrada y salida en JSON, y la implementación en Node.js con TypeScript de los endpoints principales con validación y manejo de errores."],
+      ["script", "Automatización", "Script en Python o Node listo para ejecutar.", "Script completo y comentado, dependencias, variables de entorno, cómo ejecutarlo paso a paso y cómo programarlo (cron o GitHub Actions)."],
+      ["webapp", "Prototipo de app", "App React funcional en un archivo.", "App React en un único archivo (con CDN), estado local, diseño limpio y responsive, datos de ejemplo y lista de siguientes pasos para llevarla a producción."],
+      ["codereview", "Revisión de código", "Bugs, seguridad y rendimiento.", "Revisa el código que te pasen: bugs con línea y causa, problemas de seguridad, rendimiento y legibilidad, y entrega la versión corregida completa."],
+    ] },
+  { id: "ivan", room: "lab", dept: "dev", name: "Iván", role: "DevOps y QA", look: [1, "#6b4a2b", 2, 210, "#2a2a2a"],
+    bio: "Despliega, automatiza y prueba. Se asegura de que todo funcione, sea seguro y no se caiga.",
+    tools: ["GitHub Actions", "Docker", "Vercel", "Cloudflare", "Playwright", "Sentry"],
+    skills: [
+      ["cicd", "Pipeline CI/CD", "GitHub Actions listo para copiar.", "Archivo YAML completo de GitHub Actions con instalación, lint, tests, build y despliegue, caché, secretos necesarios y cómo activarlo."],
+      ["tests", "Plan de pruebas", "Casos de prueba y tests Playwright.", "Matriz de pruebas (funcional, regresión, móvil, accesibilidad) y tests de Playwright en TypeScript para los flujos críticos."],
+      ["security", "Seguridad OWASP", "Checklist del Top 10 aplicado.", "Repasa el OWASP Top 10 aplicado al proyecto, con estado, riesgo y corrección concreta; añade cabeceras de seguridad recomendadas."],
+      ["deploy", "Despliegue a producción", "Dominio, SSL, backups y costes.", "Guía paso a paso para desplegar en Vercel o Cloudflare, configurar dominio y DNS, SSL, variables de entorno, backups, monitorización con Sentry y coste mensual estimado."],
+    ] },
+  { id: "irene", room: "lab", dept: "seo", name: "Irene", role: "Especialista en SEO y datos", look: [2, "#0f0f0f", 3, 150, "#203030"],
+    bio: "Investiga qué busca tu cliente y mide qué funciona. Convierte los datos en decisiones.",
+    tools: ["Search Console", "GA4", "Ahrefs", "Semrush", "Looker Studio", "BigQuery"],
+    skills: [
+      ["keywords", "Estudio de palabras clave", "Mapa de keywords por intención.", "Tabla de 30 palabras clave con intención (informativa, comercial, transaccional), volumen y dificultad estimados, página asignada y prioridad; agrupadas en clusters temáticos."],
+      ["seoaudit", "Auditoría SEO técnica", "Checklist técnico y on-page.", "Revisa indexación, velocidad (Core Web Vitals), móvil, estructura de URLs, datos estructurados, enlazado interno, títulos y contenido duplicado; cada punto con prioridad y solución."],
+      ["dashboard", "Cuadro de mando", "KPIs con fórmulas y fuentes.", "Árbol de métricas desde la North Star, KPIs con fórmula, fuente (GA4, Stripe, redes), frecuencia y objetivo, y el diseño del dashboard en Looker Studio."],
+      ["abtest", "Test A/B", "Experimento bien diseñado.", "Hipótesis 'Si... entonces... porque...', variante, métrica principal y de control, tamaño de muestra y duración calculados, y criterio de decisión."],
+      ["local", "SEO local", "Google Business Profile y reseñas.", "Optimización completa del perfil de Google Business, categorías, fotos, publicaciones, estrategia de reseñas y citaciones locales."],
+    ] },
+  { id: "hugo", room: "lab", dept: "rnd", name: "Hugo", role: "Investigador de IA y automatización", look: [4, "#7a7a7a", 0, 200, "#262636"],
+    bio: "Encuentra la mejor herramienta para cada cosa y diseña agentes y automatizaciones que ahorran horas.",
+    tools: ["Claude", "Claude Code", "MCP", "Zapier", "Make", "n8n", "Python"],
+    skills: [
+      ["automation", "Mapa de automatizaciones", "Qué automatizar y con qué.", "Lista de procesos del negocio con frecuencia, horas al mes, herramienta recomendada (Zapier, Make, n8n o Claude), flujo paso a paso, coste y horas ahorradas; ordena por retorno."],
+      ["agentdesign", "Diseño de agente IA", "System prompt, herramientas y evaluación.", "Objetivo del agente, system prompt completo, herramientas o conectores necesarios, ejemplos de entrada y salida, casos límite y cómo evaluarlo."],
+      ["prompt", "Prompt profesional", "Prompt optimizado para cualquier tarea.", "Prompt con rol, contexto, tarea, restricciones, formato de salida y ejemplos; más una versión corta y consejos para iterarlo."],
+      ["market", "Investigación de mercado", "TAM, SAM, SOM y tendencias.", "Estimación de TAM, SAM y SOM con el cálculo explicado, actores principales, 5 tendencias con su implicación y oportunidades. Señala qué cifras son estimaciones a verificar."],
+      ["tools", "Comparativa de herramientas", "La mejor herramienta para cada necesidad.", "Tabla comparativa de 4-6 herramientas (precio, puntos fuertes, límites, integración) y recomendación final según el tamaño y presupuesto del proyecto."],
+    ] },
+
+  { id: "alex", room: "ventas", dept: "mkt", name: "Álex", role: "Director de marketing", look: [0, "#3a3a3a", 2, 60, "#2a2f3a"],
+    bio: "Diseña cómo te encuentra el cliente y cómo compra: posicionamiento, campañas, embudo y crecimiento.",
+    tools: ["Meta Ads", "Google Ads", "TikTok Ads", "HubSpot", "Klaviyo", "Looker Studio"],
+    skills: [
+      ["offer", "Oferta irresistible", "Método $100M Offers de Alex Hormozi.", "Aplica la ecuación de valor de Hormozi (resultado soñado × probabilidad percibida / tiempo × esfuerzo): lista los problemas del cliente, conviértelos en soluciones, añade bonus, garantía fuerte, escasez, urgencia y un nombre de oferta con la fórmula MAGIC."],
+      ["gtm", "Go-to-market", "Plan de lanzamiento con presupuesto.", "Cliente ideal (ICP), posicionamiento, canales priorizados con presupuesto y CAC objetivo por canal, calendario de lanzamiento por semanas y KPIs."],
+      ["paidads", "Campaña de pago", "Estructura de Meta y Google Ads.", "Estructura de campañas, conjuntos y anuncios; audiencias (frías, tibias, remarketing), 5 creatividades con copy, presupuesto diario, plan de tests y reglas de escalado."],
+      ["funnel", "Embudo completo", "Lead magnet, landing y emails.", "Lead magnet, landing de captación, secuencia de 5 emails (bienvenida, historia, valor, prueba, oferta) con asunto y texto, oferta de entrada y upsell."],
+      ["launch", "Lanzamiento PLF", "Product Launch Formula de Jeff Walker.", "Prelanzamiento con 3 contenidos (oportunidad, transformación, propiedad), apertura de carrito, cierre y emails de cada fase con fechas."],
+    ] },
+  { id: "rocio", room: "ventas", dept: "sales", name: "Rocío", role: "Directora de ventas", look: [2, "#1a1a1a", 4, 30, "#2a2020"],
+    bio: "Cierra acuerdos. Prospección, llamadas, propuestas y un pipeline ordenado.",
+    tools: ["Salesforce", "HubSpot CRM", "LinkedIn Sales Navigator", "Apollo", "Calendly"],
+    skills: [
+      ["outbound", "Secuencia outbound", "7 toques por email y LinkedIn.", "Secuencia de 7 toques en 14 días alternando email, LinkedIn y llamada, con texto exacto de cada mensaje personalizable, asunto y motivo del toque."],
+      ["spin", "Guion de llamada SPIN", "Venta consultiva paso a paso.", "Guion con preguntas de Situación, Problema, Implicación y Necesidad de solución, transición a la demo, cierre y siguientes pasos."],
+      ["objections", "Manual de objeciones", "Respuestas a las 10 objeciones típicas.", "Las 10 objeciones más probables (precio, tiempo, confianza, competencia...) con la técnica de respuesta (sentir-sentido-encontrado, aislar, reencuadrar) y texto exacto."],
+      ["proposal", "Propuesta comercial", "Propuesta que se firma.", "Resumen del problema del cliente, solución, entregables, plazos, inversión en 3 opciones, garantías, casos de éxito y próximo paso con fecha."],
+      ["pipeline", "Pipeline en CRM", "Etapas, criterios y previsión.", "Etapas del pipeline con criterio de entrada y salida, probabilidad por etapa, campos obligatorios, rutina semanal y cálculo de previsión de ventas."],
+    ] },
+  { id: "lola", room: "ventas", dept: "cx", name: "Lola", role: "Atención al cliente", look: [3, "#c46a3a", 1, 175, "#20303a"],
+    bio: "Cuida a cada cliente: respuestas, preguntas frecuentes, protocolos y satisfacción.",
+    tools: ["Zendesk", "Intercom", "WhatsApp Business", "Gmail", "Trustpilot"],
+    skills: [
+      ["faq", "Preguntas frecuentes", "FAQ completas por categorías.", "25 preguntas frecuentes agrupadas (compra, envío, pagos, producto, cuenta, devoluciones) con respuestas claras de máximo 3 frases."],
+      ["macros", "Respuestas tipo", "Plantillas para el día a día.", "15 plantillas de respuesta para email y WhatsApp con variables entre corchetes, tono cálido y resolutivo, y cuándo usar cada una."],
+      ["complaints", "Protocolo de quejas", "Método HEARD de Disney.", "Protocolo HEARD (Hear, Empathize, Apologize, Resolve, Diagnose) con frases exactas, niveles de escalado, compensaciones permitidas y tiempos de respuesta."],
+      ["nps", "Encuesta NPS", "Medir y mejorar la satisfacción.", "Encuesta NPS con pregunta de seguimiento, momento de envío, cómo calcularlo, plan de acción para detractores, pasivos y promotores, y programa de reseñas."],
+      ["chatbot", "Guion de chatbot", "Árbol de conversación para web o WhatsApp.", "Árbol de conversación con intents, mensajes exactos, botones, traspaso a humano y respuestas para cuando no entiende."],
+    ] },
+];
+
+/* Motor de la oficina pixel-art: dibuja salas, muebles y agentes que caminan, se sientan y trabajan.
+   Todo se dibuja con código en un canvas lógico de 448x256 px (mosaicos de 16 px) escalado sin suavizado. */
+const Office = (() => {
+  const T = 16, W = 28, H = 16, LW = W * T, LH = H * T, WALL = 4;
+  const SKINS = ["#f6d2b3", "#e9b58f", "#c98d62", "#8d5a3b", "#5e3b25"];
+  const PIX = '"Silkscreen", ui-monospace, monospace';
+
+  // Distribución de cada sala: mesas (x, y, ancho en mosaicos, agente) y mobiliario.
+  const LAYOUTS = {
+    central: {
+      wall: [["window", 2], ["window", 5], ["sign", 9], ["poster", 14, "#f2b84b"], ["clock", 17], ["shelf", 19], ["signsmall", 23, "COFFEE"]],
+      desks: [{ x: 11, y: 6, w: 4, a: "elena", boss: true }, { x: 2, y: 8, w: 2, a: "marco" }, { x: 6, y: 8, w: 2, a: "tomas" }, { x: 2, y: 12, w: 2, a: "carmen" }, { x: 6, y: 12, w: 2, a: "pablo" }],
+      items: [["counter", 21, 4, 6, 1], ["coffee", 23, 4], ["plant", 0, 4], ["plant", 27, 15], ["sofa", 17, 13, 3, 1], ["rug", 16, 11, 5, 4], ["table", 17, 11, 3, 1], ["cooler", 27, 5], ["plantsmall", 15, 6], ["meeting", 18, 7, 4, 2], ["printer", 9, 4], ["plant", 10, 15], ["plantsmall", 0, 15], ["beanbag", 23, 13]],
+      pois: [[23, 5], [25, 5], [18, 12], [27, 6], [1, 5], [14, 10], [17, 9], [10, 5]],
+    },
+    estudio: {
+      wall: [["sign", 2], ["frame", 7, "#ff8fb1"], ["frame", 9, "#7aa7ff"], ["frame", 11, "#4fd18b"], ["window", 15], ["shelf", 19], ["frame", 23, "#f2b84b"]],
+      desks: [{ x: 2, y: 7, w: 2, a: "dani", rig: true }, { x: 7, y: 7, w: 2, a: "lucia" }, { x: 2, y: 11, w: 2, a: "sofia" }, { x: 7, y: 11, w: 2, a: "bruno" }],
+      items: [["lightbox", 14, 8, 4, 2], ["easel", 20, 5], ["tripod", 23, 9], ["softbox", 25, 8], ["plant", 0, 4], ["plant", 27, 4], ["rug", 19, 11, 6, 4], ["sofa", 20, 13, 4, 1], ["plantsmall", 12, 14]],
+      pois: [[16, 10], [21, 6], [22, 12], [24, 11], [13, 6]],
+    },
+    lab: {
+      wall: [["sign", 2], ["board", 7], ["window", 13], ["window", 16], ["poster", 20, "#7aa7ff"], ["clock", 23]],
+      desks: [{ x: 2, y: 7, w: 2, a: "kai", dual: true }, { x: 7, y: 7, w: 2, a: "ivan", dual: true }, { x: 2, y: 11, w: 2, a: "irene" }, { x: 7, y: 11, w: 2, a: "hugo" }],
+      items: [["rack", 24, 4], ["rack", 25, 4], ["rack", 26, 4], ["beanbag", 15, 12], ["beanbag", 18, 13], ["rug", 14, 11, 6, 4], ["plant", 0, 4], ["plantsmall", 12, 6], ["cooler", 27, 9], ["printer", 21, 5]],
+      pois: [[9, 5], [25, 7], [16, 11], [27, 10], [21, 7]],
+    },
+    ventas: {
+      wall: [["sign", 2], ["chart", 7], ["window", 12], ["trophies", 16], ["window", 20], ["clock", 24]],
+      desks: [{ x: 2, y: 7, w: 2, a: "alex" }, { x: 7, y: 7, w: 2, a: "rocio" }, { x: 2, y: 11, w: 2, a: "lola", headset: true }],
+      items: [["meeting", 15, 8, 5, 2], ["plant", 0, 4], ["plant", 27, 4], ["plantsmall", 11, 13], ["sofa", 22, 13, 3, 1], ["rug", 21, 11, 5, 4], ["cooler", 27, 7], ["bell", 12, 6]],
+      pois: [[14, 9], [20, 9], [17, 11], [23, 12], [27, 8], [12, 7]],
+    },
+  };
+
+  // ---------- utilidades ----------
+  let seed = 1;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const shade = (hex, f) => {
+    const n = parseInt(hex.slice(1), 16);
+    let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const k = f < 0 ? 0 : 255, p = Math.abs(f);
+    r = Math.round((k - r) * p + r); g = Math.round((k - g) * p + g); b = Math.round((k - b) * p + b);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  };
+  const hsl = (h, s, l) => `hsl(${h} ${s}% ${l}%)`;
+
+  // ---------- sprites de personaje ----------
+  function drawPerson(ctx, a, x, y, o) {
+    // x, y = pies en px lógicos. o: {dir, frame, sit, work, t}
+    const [hs, hair, skinI, hue, pants] = a.look;
+    const skin = SKINS[skinI], shirt = hsl(hue, 55, 52), shirtD = hsl(hue, 55, 40);
+    const bx = Math.round(x) - 6, by = Math.round(y) - 22;
+    const R = (dx, dy, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(bx + dx, by + dy, w, h); };
+    const back = o.dir === "up" || o.sit;
+    const step = o.sit ? 0 : (o.frame % 4);
+    const bob = o.sit ? 0 : (step === 1 || step === 3 ? -1 : 0);
+    const ty = bob + (o.sit ? 3 : 0) + (o.sit && o.work && Math.floor(o.t * 6) % 2 ? 0 : 0);
+    // sombra
+    if (!o.sit) { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(bx + 2, by + 21, 8, 2); }
+    // piernas
+    if (!o.sit) {
+      const l = step === 1 ? 1 : 0, r = step === 3 ? 1 : 0;
+      R(3, 16 - l + ty, 2, 4 + l, pants); R(7, 16 - r + ty, 2, 4 + r, pants);
+      R(3, 20 + ty, 2, 1, "#1a1a1a"); R(7, 20 + ty, 2, 1, "#1a1a1a");
+    }
+    // cuerpo
+    R(2, 10 + ty, 8, 7, shirt); R(2, 16 + ty, 8, 1, shirtD);
+    // brazos
+    const sw = o.sit ? 0 : (step === 1 ? 1 : step === 3 ? -1 : 0);
+    if (o.sit && o.work) {
+      const tp = Math.floor(o.t * 8) % 2;
+      R(1, 11 + ty, 1, 4 - tp, shirtD); R(10, 11 + ty, 1, 3 + tp, shirtD);
+    } else { R(1, 11 + ty + sw, 1, 5, shirtD); R(10, 11 + ty - sw, 1, 5, shirtD); R(1, 16 + ty + sw, 1, 1, skin); R(10, 16 + ty - sw, 1, 1, skin); }
+    // cabeza
+    R(3, 3 + ty, 6, 7, skin); R(2, 5 + ty, 1, 3, skin); R(9, 5 + ty, 1, 3, skin);
+    // pelo
+    if (back) {
+      R(2, 2 + ty, 8, 7, hair);
+      if (hs === 2) R(3, 9 + ty, 6, 3, hair);
+      if (hs === 3) R(4, 0 + ty, 4, 2, hair);
+    } else {
+      R(3, 2 + ty, 6, 2, hair); R(2, 3 + ty, 1, 3, hair); R(9, 3 + ty, 1, 3, hair);
+      if (hs === 1) { R(3, 4 + ty, 3, 1, hair); }
+      if (hs === 2) { R(2, 3 + ty, 1, 7, hair); R(9, 3 + ty, 1, 7, hair); }
+      if (hs === 3) { R(4, 0 + ty, 4, 2, hair); }
+      if (hs === 4) { R(3, 1 + ty, 6, 1, hair); R(2, 2 + ty, 8, 1, shade(hair, .15)); }
+      const ex = o.dir === "left" ? -1 : o.dir === "right" ? 1 : 0;
+      const blink = Math.floor((o.t + a.blink) * 10) % 37 === 0;
+      if (!blink) { R(4 + ex, 6 + ty, 1, 1, "#1b1b1b"); R(7 + ex, 6 + ty, 1, 1, "#1b1b1b"); }
+      R(5 + ex, 8 + ty, 2, 1, shade(skin, -.25));
+    }
+    if (a.headset && o.sit) { R(2, 3 + ty, 1, 5, "#222"); R(9, 3 + ty, 1, 5, "#222"); R(2, 2 + ty, 8, 1, "#222"); }
+  }
+
+  // ---------- mobiliario ----------
+  function drawWall(ctx, room, L, t) {
+    const brick = room.brick;
+    ctx.fillStyle = shade(brick, -.35); ctx.fillRect(0, 0, LW, WALL * T);
+    for (let row = 0; row < (WALL * T) / 6; row++) {
+      const off = row % 2 ? 0 : 6;
+      for (let x = -12; x < LW; x += 12) {
+        seed = (row * 131 + x * 7 + 17) | 0 || 1; const v = rnd();
+        ctx.fillStyle = shade(brick, (v - .5) * .18);
+        ctx.fillRect(x + off, row * 6, 11, 5);
+      }
+    }
+    // zócalo y sombra
+    ctx.fillStyle = shade(brick, -.55); ctx.fillRect(0, WALL * T - 4, LW, 4);
+    ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(0, WALL * T, LW, 3);
+    // luces colgantes
+    for (let x = 24; x < LW; x += 64) {
+      ctx.fillStyle = "#222"; ctx.fillRect(x, 0, 1, 6);
+      ctx.fillStyle = "#ffe9a8"; ctx.fillRect(x - 2, 6, 5, 3);
+      ctx.fillStyle = "rgba(255,233,168,.07)"; ctx.beginPath(); ctx.moveTo(x - 2, 9); ctx.lineTo(x - 26, LH); ctx.lineTo(x + 28, LH); ctx.lineTo(x + 3, 9); ctx.fill();
+    }
+    for (const [type, tx, c] of L.wall) {
+      const x = tx * T;
+      if (type === "window") {
+        ctx.fillStyle = "#3b2b20"; ctx.fillRect(x, 10, 34, 34);
+        const sky = ctx.createLinearGradient(0, 12, 0, 42); sky.addColorStop(0, "#9fd3ff"); sky.addColorStop(1, "#dff1ff");
+        ctx.fillStyle = sky; ctx.fillRect(x + 2, 12, 30, 30);
+        ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.fillRect(x + 6 + ((t * 2) % 22), 18, 7, 2);
+        ctx.fillStyle = "#3b2b20"; ctx.fillRect(x + 16, 12, 2, 30); ctx.fillRect(x + 2, 26, 30, 2);
+        ctx.fillStyle = "#5a4533"; ctx.fillRect(x - 2, 43, 38, 3);
+      } else if (type === "sign") {
+        const txt = room.sign; ctx.font = `8px ${PIX}`; const w = ctx.measureText(txt).width + 14;
+        ctx.fillStyle = "#1c1917"; ctx.fillRect(x, 16, w, 18); ctx.fillStyle = "#3a332c"; ctx.fillRect(x + 1, 17, w - 2, 16);
+        ctx.fillStyle = room.accent; ctx.fillRect(x + 4, 30, w - 8, 1);
+        ctx.fillStyle = "#f4efe6"; ctx.textBaseline = "top"; ctx.fillText(txt, x + 7, 20);
+      } else if (type === "signsmall") {
+        ctx.font = `8px ${PIX}`; const w = ctx.measureText(c).width + 10;
+        ctx.fillStyle = "#2b2420"; ctx.fillRect(x, 10, w, 14);
+        ctx.fillStyle = "#f4efe6"; ctx.textBaseline = "top"; ctx.fillText(c, x + 5, 13);
+        ctx.fillStyle = "#f4efe6"; ctx.fillRect(x + w / 2 - 4, 26, 8, 6); ctx.fillRect(x + w / 2 + 4, 27, 2, 3);
+        const s = Math.floor(t * 3) % 3; ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect(x + w / 2 - 2 + s, 23 - s, 1, 2);
+      } else if (type === "poster") {
+        ctx.fillStyle = "#1c1917"; ctx.fillRect(x, 12, 24, 30); ctx.fillStyle = c; ctx.fillRect(x + 2, 14, 20, 26);
+        ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(x + 5, 18, 14, 2); ctx.fillRect(x + 5, 22, 10, 2);
+        ctx.fillStyle = "#fff"; ctx.fillRect(x + 8, 28, 8, 8);
+      } else if (type === "frame") {
+        ctx.fillStyle = "#e9e2d6"; ctx.fillRect(x, 14, 22, 26); ctx.fillStyle = c; ctx.fillRect(x + 3, 17, 16, 20);
+        ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.fillRect(x + 6, 21, 6, 6);
+      } else if (type === "clock") {
+        ctx.fillStyle = "#1c1917"; ctx.fillRect(x, 14, 16, 16); ctx.fillStyle = "#f4efe6"; ctx.fillRect(x + 2, 16, 12, 12);
+        const d = new Date(), m = d.getMinutes() / 60 * Math.PI * 2, h = (d.getHours() % 12) / 12 * Math.PI * 2;
+        ctx.strokeStyle = "#1c1917"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + 8, 22); ctx.lineTo(x + 8 + Math.sin(m) * 5, 22 - Math.cos(m) * 5);
+        ctx.moveTo(x + 8, 22); ctx.lineTo(x + 8 + Math.sin(h) * 3, 22 - Math.cos(h) * 3); ctx.stroke();
+      } else if (type === "shelf") {
+        ctx.fillStyle = "#5a4533"; ctx.fillRect(x, 26, 40, 3); ctx.fillRect(x, 42, 40, 3);
+        const cols = ["#c0563f", "#3e6bb0", "#e2b04a", "#4c9a6a", "#8a5bb5", "#d9d2c3"];
+        for (let i = 0; i < 9; i++) { ctx.fillStyle = cols[i % 6]; ctx.fillRect(x + 2 + i * 4, 17 + (i % 3), 3, 9 - (i % 3)); }
+        ctx.fillStyle = "#4c9a6a"; ctx.fillRect(x + 6, 36, 6, 6); ctx.fillStyle = "#b07a4a"; ctx.fillRect(x + 7, 38, 4, 4);
+        ctx.fillStyle = "#d9d2c3"; ctx.fillRect(x + 20, 34, 12, 8);
+      } else if (type === "board") {
+        ctx.fillStyle = "#9aa3ad"; ctx.fillRect(x, 10, 72, 36); ctx.fillStyle = "#f4f6f8"; ctx.fillRect(x + 2, 12, 68, 32);
+        ctx.fillStyle = "#3e6bb0"; ctx.fillRect(x + 6, 16, 18, 2); ctx.fillRect(x + 6, 21, 26, 1); ctx.fillRect(x + 6, 25, 22, 1);
+        ctx.fillStyle = "#c0563f"; ctx.fillRect(x + 40, 16, 10, 10); ctx.fillStyle = "#4c9a6a"; ctx.fillRect(x + 54, 20, 10, 10);
+        ctx.strokeStyle = "#1c1917"; ctx.beginPath(); ctx.moveTo(x + 50, 21); ctx.lineTo(x + 54, 25); ctx.stroke();
+        ctx.fillStyle = "#f2b84b"; ctx.fillRect(x + 8, 32, 8, 8); ctx.fillRect(x + 20, 33, 8, 8);
+      } else if (type === "chart") {
+        ctx.fillStyle = "#1c1917"; ctx.fillRect(x, 10, 56, 34); ctx.fillStyle = "#0f1a14"; ctx.fillRect(x + 2, 12, 52, 30);
+        const pts = [30, 27, 28, 22, 23, 17, 15]; ctx.strokeStyle = "#4fd18b"; ctx.beginPath();
+        pts.forEach((p, i) => i ? ctx.lineTo(x + 6 + i * 7, p + 6) : ctx.moveTo(x + 6, p + 6)); ctx.stroke();
+        ctx.fillStyle = "#4fd18b"; ctx.fillRect(x + 47, 19 + (Math.floor(t * 2) % 2), 2, 2);
+      } else if (type === "trophies") {
+        ctx.fillStyle = "#5a4533"; ctx.fillRect(x, 38, 44, 3);
+        for (let i = 0; i < 4; i++) { ctx.fillStyle = i % 2 ? "#cfd6dc" : "#f2b84b"; ctx.fillRect(x + 4 + i * 10, 28, 6, 6); ctx.fillRect(x + 6 + i * 10, 34, 2, 2); ctx.fillRect(x + 4 + i * 10, 36, 6, 2); }
+      }
+    }
+  }
+
+  function drawFloor(ctx, room) {
+    const f = room.floor;
+    for (let y = WALL * T; y < LH; y += 8) {
+      const row = (y / 8) | 0;
+      for (let x = 0, i = 0; x < LW; i++) {
+        seed = row * 97 + i * 13 + 5; const len = 24 + Math.floor(rnd() * 28);
+        ctx.fillStyle = shade(f, (rnd() - .5) * .12); ctx.fillRect(x, y, len, 7);
+        ctx.fillStyle = shade(f, -.22); ctx.fillRect(x, y + 7, len, 1); ctx.fillRect(x + len - 1, y, 1, 7);
+        x += len;
+      }
+    }
+  }
+
+  function furniture(L) {
+    // Lista de piezas con su y de profundidad para ordenarlas junto a los personajes.
+    const list = [];
+    for (const it of L.items) {
+      const [type, x, y, w = 1, h = 1] = it;
+      list.push({ type, x, y, w, h, z: type === "rug" ? -1 : (y + h) * T - 1 });
+    }
+    for (const d of L.desks) list.push({ type: "desk", x: d.x, y: d.y, w: d.w, h: 1, d, z: (d.y + 1) * T - 1 });
+    return list;
+  }
+
+  function drawItem(ctx, it, ctxInfo) {
+    const x = it.x * T, y = it.y * T, w = it.w * T, h = it.h * T, t = ctxInfo.t;
+    switch (it.type) {
+      case "rug": ctx.fillStyle = "#3a4a6a"; ctx.fillRect(x, y, w, h); ctx.fillStyle = "#4c5f86"; ctx.fillRect(x + 3, y + 3, w - 6, h - 6); ctx.fillStyle = "#3a4a6a"; ctx.fillRect(x + 6, y + 6, w - 12, h - 12); break;
+      case "desk": {
+        const d = it.d, ag = ctxInfo.agents[d.a], working = ag && ag.state === "work";
+        ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.fillRect(x + 2, y + 12, w - 2, 4);
+        ctx.fillStyle = d.boss ? "#6b4a2e" : "#b48a5a"; ctx.fillRect(x, y + 2, w, 10);
+        ctx.fillStyle = d.boss ? "#7d583a" : "#c99d6b"; ctx.fillRect(x, y + 2, w, 3);
+        ctx.fillStyle = d.boss ? "#4a321f" : "#8a6640"; ctx.fillRect(x + 1, y + 12, 2, 4); ctx.fillRect(x + w - 3, y + 12, 2, 4);
+        const mons = d.dual ? [x + w / 2 - 13, x + w / 2 + 1] : [x + w / 2 - 7];
+        for (const mx of mons) {
+          ctx.fillStyle = "#1c1f26"; ctx.fillRect(mx, y - 8, 12 + (d.rig ? 4 : 0), 9); ctx.fillRect(mx + 5, y + 1, 2, 2);
+          if (working) {
+            ctx.fillStyle = ctxInfo.accent; ctx.fillRect(mx + 1, y - 7, 10 + (d.rig ? 4 : 0), 7);
+            ctx.fillStyle = "rgba(10,16,32,.55)";
+            for (let i = 0; i < 3; i++) ctx.fillRect(mx + 2, y - 6 + i * 2, 2 + ((Math.floor(t * 5) + i * 3) % 7), 1);
+            ctx.fillStyle = ctxInfo.accent + "22"; ctx.fillRect(mx - 3, y - 10, 18 + (d.rig ? 4 : 0), 14);
+          } else { ctx.fillStyle = "#2c3240"; ctx.fillRect(mx + 1, y - 7, 10 + (d.rig ? 4 : 0), 7); }
+        }
+        ctx.fillStyle = "#d9d9d9"; ctx.fillRect(x + w / 2 - 4, y + 6, 8, 2);
+        ctx.fillStyle = "#f4efe6"; ctx.fillRect(x + 2, y + 5, 4, 3); ctx.fillStyle = "#b65f3a"; ctx.fillRect(x + w - 6, y + 4, 3, 4);
+        if (d.boss) { ctx.fillStyle = "#3e7d4f"; ctx.fillRect(x + w - 8, y - 4, 4, 6); ctx.fillStyle = "#f2b84b"; ctx.fillRect(x + 4, y + 4, 6, 1); }
+        // silla
+        ctx.fillStyle = "#2b2f3a"; ctx.fillRect(x + w / 2 - 5, y + 18, 10, 9); ctx.fillStyle = "#3a4050"; ctx.fillRect(x + w / 2 - 5, y + 18, 10, 2);
+        break;
+      }
+      case "counter": ctx.fillStyle = "#6b4a2e"; ctx.fillRect(x, y + 4, w, 12); ctx.fillStyle = "#e9e2d6"; ctx.fillRect(x, y + 2, w, 4);
+        for (let i = 0; i < it.w; i++) { ctx.fillStyle = "#5a3d25"; ctx.fillRect(x + i * T + 2, y + 8, 12, 6); } break;
+      case "coffee": ctx.fillStyle = "#2b2f3a"; ctx.fillRect(x + 2, y - 10, 12, 13); ctx.fillStyle = "#c0563f"; ctx.fillRect(x + 4, y - 8, 3, 2);
+        ctx.fillStyle = "#f4efe6"; ctx.fillRect(x + 6, y, 4, 2);
+        for (let i = 0; i < 3; i++) { const k = (t * 8 + i * 5) % 14; ctx.fillStyle = `rgba(255,255,255,${.5 - k / 30})`; ctx.fillRect(x + 7 + Math.round(Math.sin(t * 3 + i)), y - 2 - k, 1, 2); } break;
+      case "plant": ctx.fillStyle = "#8a5a3a"; ctx.fillRect(x + 4, y + 8, 8, 7); ctx.fillStyle = "#2f7a4a"; ctx.fillRect(x + 2, y - 2, 12, 10); ctx.fillStyle = "#3f9a5e"; ctx.fillRect(x + 5, y - 6, 6, 8); ctx.fillRect(x, y + 2, 4, 4); ctx.fillRect(x + 12, y, 4, 4); break;
+      case "plantsmall": ctx.fillStyle = "#c0563f"; ctx.fillRect(x + 5, y + 9, 6, 6); ctx.fillStyle = "#3f9a5e"; ctx.fillRect(x + 4, y + 3, 8, 6); ctx.fillRect(x + 6, y, 4, 4); break;
+      case "sofa": ctx.fillStyle = "#4a5f8a"; ctx.fillRect(x, y - 4, w, 8); ctx.fillStyle = "#5b72a3"; ctx.fillRect(x, y + 4, w, 9); ctx.fillStyle = "#3e5077"; ctx.fillRect(x - 2, y, 3, 13); ctx.fillRect(x + w - 1, y, 3, 13); break;
+      case "table": ctx.fillStyle = "#c99d6b"; ctx.fillRect(x, y + 2, w, 8); ctx.fillStyle = "#8a6640"; ctx.fillRect(x + 2, y + 10, 2, 4); ctx.fillRect(x + w - 4, y + 10, 2, 4);
+        ctx.fillStyle = "#f4efe6"; ctx.fillRect(x + 10, y + 3, 4, 3); ctx.fillRect(x + 26, y + 4, 6, 4); break;
+      case "cooler": ctx.fillStyle = "#cfe8ff"; ctx.fillRect(x + 4, y - 6, 8, 8); ctx.fillStyle = "#e9edf2"; ctx.fillRect(x + 3, y + 2, 10, 12); ctx.fillStyle = "#3e6bb0"; ctx.fillRect(x + 6, y + 5, 4, 2); break;
+      case "lightbox": ctx.fillStyle = "#c99d6b"; ctx.fillRect(x, y + 2, w, h - 4); ctx.fillStyle = "#f7f3e8"; ctx.fillRect(x + 4, y + 5, w - 8, h - 12);
+        ctx.fillStyle = "#ff8fb1"; ctx.fillRect(x + 10, y + 9, 10, 8); ctx.fillStyle = "#7aa7ff"; ctx.fillRect(x + 24, y + 11, 10, 10); ctx.fillStyle = "#4fd18b"; ctx.fillRect(x + 40, y + 8, 8, 12); break;
+      case "easel": ctx.fillStyle = "#8a5a3a"; ctx.fillRect(x + 2, y + 2, 2, 14); ctx.fillRect(x + 12, y + 2, 2, 14); ctx.fillRect(x + 7, y - 4, 2, 20);
+        ctx.fillStyle = "#f4efe6"; ctx.fillRect(x, y - 8, 16, 12); ctx.fillStyle = "#ff8fb1"; ctx.fillRect(x + 3, y - 5, 5, 5); ctx.fillStyle = "#7aa7ff"; ctx.fillRect(x + 8, y - 3, 5, 4); break;
+      case "tripod": ctx.fillStyle = "#222"; ctx.fillRect(x + 7, y - 2, 2, 14); ctx.fillRect(x + 3, y + 12, 10, 2); ctx.fillStyle = "#1c1f26"; ctx.fillRect(x + 3, y - 8, 10, 7); ctx.fillStyle = "#c0563f"; ctx.fillRect(x + 11, y - 7, 1, 1); ctx.fillStyle = "#3e6bb0"; ctx.fillRect(x + 1, y - 6, 2, 3); break;
+      case "softbox": ctx.fillStyle = "#222"; ctx.fillRect(x + 7, y - 2, 2, 16); ctx.fillStyle = "#f7f3e8"; ctx.fillRect(x + 1, y - 14, 14, 12); ctx.fillStyle = "rgba(255,248,220,.12)"; ctx.fillRect(x - 10, y - 16, 36, 30); break;
+      case "rack": ctx.fillStyle = "#1c1f26"; ctx.fillRect(x + 1, y - 10, 14, 26); for (let i = 0; i < 6; i++) { ctx.fillStyle = "#2c3240"; ctx.fillRect(x + 3, y - 8 + i * 4, 10, 3);
+        ctx.fillStyle = (Math.floor(t * 4 + i * 1.7 + x) % 3) ? "#4fd18b" : "#1d3b2a"; ctx.fillRect(x + 11, y - 7 + i * 4, 1, 1); ctx.fillStyle = (Math.floor(t * 3 + i) % 4) ? "#7aa7ff" : "#1d2b45"; ctx.fillRect(x + 9, y - 7 + i * 4, 1, 1); } break;
+      case "beanbag": ctx.fillStyle = "#c0563f"; ctx.fillRect(x, y + 4, 16, 10); ctx.fillStyle = "#d86a50"; ctx.fillRect(x + 2, y + 2, 12, 6); break;
+      case "printer": ctx.fillStyle = "#d9d9d9"; ctx.fillRect(x, y + 2, 16, 10); ctx.fillStyle = "#9aa3ad"; ctx.fillRect(x + 2, y + 4, 12, 2); ctx.fillStyle = "#fff"; ctx.fillRect(x + 4, y - 2, 8, 4); break;
+      case "meeting": ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(x + 2, y + h - 2, w - 2, 4); ctx.fillStyle = "#e9e2d6"; ctx.fillRect(x, y + 2, w, h - 4); ctx.fillStyle = "#cfc6b6"; ctx.fillRect(x, y + h - 6, w, 4);
+        for (let i = 0; i < it.w; i++) { ctx.fillStyle = "#2b2f3a"; ctx.fillRect(x + i * T + 3, y - 4, 10, 5); ctx.fillRect(x + i * T + 3, y + h - 1, 10, 5); }
+        ctx.fillStyle = "#1c1f26"; ctx.fillRect(x + w / 2 - 8, y + 6, 16, 10); ctx.fillStyle = "#4fd18b"; ctx.fillRect(x + w / 2 - 6, y + 8, 12, 6); break;
+      case "bell": ctx.fillStyle = "#5a4533"; ctx.fillRect(x + 2, y + 10, 12, 4); ctx.fillStyle = "#f2b84b"; ctx.fillRect(x + 4, y + 4, 8, 6); ctx.fillRect(x + 7, y + 2, 2, 2); break;
+    }
+  }
+
+  // ---------- rejilla y caminos ----------
+  function buildGrid(L) {
+    const g = Array.from({ length: H }, (_, y) => Array.from({ length: W }, () => y < WALL));
+    const block = (x, y, w = 1, h = 1) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (g[j] && i >= 0 && i < W) g[j][i] = true; };
+    for (const d of L.desks) block(d.x, d.y, d.w, 1);
+    for (const [type, x, y, w = 1, h = 1] of L.items) if (type !== "rug") block(x, y, w, h);
+    return g;
+  }
+  function path(g, sx, sy, tx, ty) {
+    if (sx === tx && sy === ty) return [];
+    const key = (x, y) => y * W + x, prev = new Map([[key(sx, sy), -1]]), q = [[sx, sy]];
+    while (q.length) {
+      const [x, y] = q.shift();
+      if (x === tx && y === ty) break;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = key(nx, ny);
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || prev.has(k)) continue;
+        if (g[ny][nx] && !(nx === tx && ny === ty)) continue;
+        prev.set(k, key(x, y)); q.push([nx, ny]);
+      }
+    }
+    if (!prev.has(key(tx, ty))) return null;
+    const out = []; let k = key(tx, ty);
+    while (k !== key(sx, sy)) { out.unshift([k % W, (k / W) | 0]); k = prev.get(k); }
+    return out;
+  }
+
+  // ---------- escena ----------
+  function create(canvas, { agents, onPick, getState }) {
+    const ctx = canvas.getContext("2d");
+    let room = null, L = null, grid = null, items = [], actors = {}, raf = 0, last = 0, running = false, hover = null, selected = null;
+    const S = 3;
+    canvas.width = LW * S; canvas.height = LH * S;
+    agents.forEach((a, i) => { a.blink = i * 1.7; });
+
+    function setRoom(r) {
+      room = r; L = LAYOUTS[r.id]; grid = buildGrid(L); items = furniture(L); actors = {};
+      for (const d of L.desks) {
+        const a = agents.find(x => x.id === d.a); if (!a) continue;
+        const seatX = (d.x + d.w / 2) * T, seatY = (d.y + 1) * T + 14;
+        actors[a.id] = { a, d, seat: [seatX, seatY], seatTile: [Math.floor(d.x + d.w / 2 - .5), d.y + 1], x: seatX, y: seatY, tile: [Math.floor(d.x + d.w / 2 - .5), d.y + 1],
+          mode: "sit", wait: 2 + Math.random() * 8, route: [], dir: "up", frame: 0, ft: 0, state: "idle" };
+      }
+    }
+    function tileCenter([x, y]) { return [x * T + 8, y * T + 14]; }
+    function goTo(ac, tile, then) {
+      const p = path(grid, ac.tile[0], ac.tile[1], tile[0], tile[1]);
+      if (!p) return false;
+      ac.route = p; ac.mode = "walk"; ac.then = then; return true;
+    }
+    function update(dt, t) {
+      const st = getState();
+      for (const ac of Object.values(actors)) {
+        const want = st.status[ac.a.id] || "idle";
+        ac.state = want;
+        if (want !== "idle" && ac.mode !== "sit" && ac.then !== "sit") {
+          ac.route = []; goTo(ac, ac.seatTile, "sit") || Object.assign(ac, { mode: "sit", x: ac.seat[0], y: ac.seat[1] });
+        }
+        if (ac.mode === "sit") {
+          ac.dir = "up"; ac.x = ac.seat[0]; ac.y = ac.seat[1];
+          if (want === "idle") { ac.wait -= dt; if (ac.wait <= 0) {
+            const free = L.pois.filter(p => !grid[p[1]][p[0]]);
+            const target = free[Math.floor(Math.random() * free.length)];
+            ac.tile = [...ac.seatTile];
+            if (target && goTo(ac, target, "linger")) ac.mode = "walk"; else ac.wait = 6;
+          } }
+        } else if (ac.mode === "walk") {
+          const next = ac.route[0];
+          if (!next) {
+            if (ac.then === "sit") { ac.mode = "sit"; ac.wait = 8 + Math.random() * 14; }
+            else { ac.mode = "linger"; ac.wait = 3 + Math.random() * 5; ac.dir = "up"; }
+            continue;
+          }
+          let [tx, ty] = tileCenter(next);
+          if (ac.route.length === 1 && ac.then === "sit") [tx, ty] = ac.seat;
+          const dx = tx - ac.x, dy = ty - ac.y, dist = Math.hypot(dx, dy), sp = 34 * dt;
+          if (dist <= sp) { ac.x = tx; ac.y = ty; ac.tile = next; ac.route.shift(); }
+          else { ac.x += dx / dist * sp; ac.y += dy / dist * sp; }
+          ac.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up");
+          ac.ft += dt; if (ac.ft > .12) { ac.ft = 0; ac.frame++; }
+        } else if (ac.mode === "linger") {
+          ac.frame = 0; ac.wait -= dt;
+          if (ac.wait <= 0) { goTo(ac, ac.seatTile, "sit") || Object.assign(ac, { mode: "sit" }); }
+        }
+      }
+    }
+    function bubble(x, y, text, color) {
+      ctx.font = `8px ${PIX}`; const w = Math.min(ctx.measureText(text).width + 8, 110);
+      const bx = Math.round(Math.max(2, Math.min(LW - w - 2, x - w / 2))), by = Math.round(y);
+      ctx.fillStyle = "#0b1020"; ctx.fillRect(bx - 1, by - 1, w + 2, 13);
+      ctx.fillStyle = color; ctx.fillRect(bx, by, w, 11); ctx.fillRect(Math.round(x) - 1, by + 11, 3, 2);
+      ctx.save(); ctx.beginPath(); ctx.rect(bx, by, w, 11); ctx.clip();
+      ctx.fillStyle = "#0b1020"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 4, by + 2); ctx.restore();
+    }
+    function label(x, y, text, sel) {
+      ctx.font = `8px ${PIX}`; const w = ctx.measureText(text).width + 6;
+      const bx = Math.round(x - w / 2), by = Math.round(y);
+      ctx.fillStyle = sel ? room.accent : "rgba(11,16,32,.82)"; ctx.fillRect(bx, by, w, 10);
+      ctx.fillStyle = sel ? "#0b1020" : "#e7ecf7"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 3, by + 1);
+    }
+    function draw(t) {
+      ctx.setTransform(S, 0, 0, S, 0, 0); ctx.imageSmoothingEnabled = false;
+      drawFloor(ctx, room); drawWall(ctx, room, L, t);
+      const info = { t, agents: Object.fromEntries(Object.values(actors).map(ac => [ac.a.id, ac])), accent: room.accent };
+      const drawables = items.map(it => ({ z: it.z, f: () => drawItem(ctx, it, info) }));
+      for (const ac of Object.values(actors)) {
+        const sit = ac.mode === "sit";
+        drawables.push({ z: sit ? ac.y - 6 : ac.y, f: () => {
+          if (selected === ac.a.id) { ctx.fillStyle = room.accent + "66"; ctx.fillRect(Math.round(ac.x) - 8, Math.round(ac.y) - 2, 16, 4); }
+          drawPerson(ctx, ac.a, ac.x, ac.y, { dir: ac.dir, frame: ac.frame, sit, work: ac.state === "work", t });
+        } });
+      }
+      drawables.sort((a, b) => a.z - b.z).forEach(d => d.f());
+      // etiquetas y bocadillos encima de todo
+      const st = getState();
+      for (const ac of Object.values(actors)) {
+        label(ac.x, ac.y + 2, ac.a.name, selected === ac.a.id || hover === ac.a.id);
+        if (ac.state === "work") {
+          const dots = ".".repeat(1 + Math.floor(t * 3) % 3);
+          bubble(ac.x, ac.y - 40, (st.bubble[ac.a.id] || "Trabajando") + dots, room.accent);
+        } else if (ac.state === "queue") bubble(ac.x, ac.y - 40, "En cola", "#cfd6e4");
+        else if (ac.mode === "linger" && ac.wait > 2) bubble(ac.x, ac.y - 34, ["Café", "Idea!", "Hmm", "Ok"][(ac.a.blink | 0) % 4], "#e7ecf7");
+      }
+    }
+    function loop(now) {
+      if (!running) return;
+      const t = now / 1000, dt = Math.min(.05, t - (last || t)); last = t;
+      update(dt, t); draw(t);
+      raf = requestAnimationFrame(loop);
+    }
+    function pick(ev) {
+      const r = canvas.getBoundingClientRect();
+      const x = (ev.clientX - r.left) / r.width * LW, y = (ev.clientY - r.top) / r.height * LH;
+      let best = null, bd = 14;
+      for (const ac of Object.values(actors)) { const d = Math.hypot(ac.x - x, ac.y - 10 - y); if (d < bd) { bd = d; best = ac.a.id; } }
+      return best;
+    }
+    canvas.addEventListener("click", ev => { const id = pick(ev); if (id) onPick(id); });
+    canvas.addEventListener("mousemove", ev => { hover = pick(ev); canvas.style.cursor = hover ? "pointer" : "default"; });
+    canvas.addEventListener("mouseleave", () => { hover = null; });
+    return {
+      setRoom(r) { setRoom(r); if (!running) draw(performance.now() / 1000); },
+      select(id) { selected = id; },
+      start() { if (running) return; running = true; last = 0; raf = requestAnimationFrame(loop); },
+      stop() { running = false; cancelAnimationFrame(raf); },
+      drawStill() { draw(performance.now() / 1000); },
+    };
+  }
+
+  // Retrato pequeño de un agente como imagen (para listas y paneles).
+  const portraitCache = {};
+  function portrait(a) {
+    if (portraitCache[a.id]) return portraitCache[a.id];
+    const c = document.createElement("canvas"); c.width = 16 * 6; c.height = 16 * 6;
+    const x = c.getContext("2d"); x.imageSmoothingEnabled = false; x.setTransform(6, 0, 0, 6, 0, 0);
+    drawPerson(x, a, 8, 22, { dir: "down", frame: 0, sit: false, work: false, t: 0.3 });
+    return (portraitCache[a.id] = c.toDataURL());
+  }
+  function roomThumb(r) {
+    const c = document.createElement("canvas"); c.width = LW; c.height = LH;
+    const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+    const L = LAYOUTS[r.id]; drawFloor(x, r); drawWall(x, r, L, 0);
+    const info = { t: 0, agents: {}, accent: r.accent };
+    furniture(L).sort((a, b) => a.z - b.z).forEach(it => drawItem(x, it, info));
+    return c.toDataURL();
+  }
+  return { create, portrait, roomThumb, LAYOUTS };
+})();
+
+"use strict";
+/* ---------- Estado ---------- */
+const byId = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+const roomById = Object.fromEntries(ROOMS.map(r => [r.id, r]));
+const state = {
+  company: "Mi empresa",
+  brief: "Somos una empresa nueva. Describe tu proyecto en «Proyecto y ajustes»: qué vendéis, a quién, objetivos, tono de marca y presupuesto.",
+  tasks: [], runs: [], customSkills: [],
+  status: {}, bubble: {},
+  room: "central", view: "oficina", open: null,
+  comp: { target: "empresa", mode: "pro", skill: null, image: null },
+  dComp: { skill: null, mode: "pro" },
+  fTasks: "todos", fSkills: "todos", fDel: "todos",
+  run: null,
+};
+AGENTS.forEach(a => { state.status[a.id] = "idle"; });
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const fmtDate = ts => new Date(ts).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2800); }
+function md(s) { try { return DOMPurify.sanitize(marked.parse(s || "")); } catch { return "<pre>" + esc(s) + "</pre>"; } }
+const P = a => Office.portrait(a);
+
+/* ---------- Skills ---------- */
+function allSkills() {
+  const base = AGENTS.flatMap(a => a.skills.map(([k, name, desc, method]) => ({ id: a.id + "." + k, agentId: a.id, name, desc, method, custom: false })));
+  return base.concat(state.customSkills.map(s => ({ ...s, custom: true })));
+}
+const skillById = id => allSkills().find(s => s.id === id);
+const skillsOf = agentId => allSkills().filter(s => s.agentId === agentId);
+
+/* ---------- IA: Claude dentro de claude.ai, o API propia fuera ---------- */
+const AI = { sample: null, mode: "none", images: false };
+function settingsLocal() { try { return JSON.parse(localStorage.getItem("oficina.settings") || "{}"); } catch { return {}; } }
+function saveSettingsLocal(s) { try { localStorage.setItem("oficina.settings", JSON.stringify(s)); } catch {} }
+function aiReady() { return AI.mode === "sample" || !!settingsLocal().key; }
+function parseJSONLoose(text) {
+  try { return JSON.parse(text); } catch {}
+  const f = text.match(/```(?:json)?\s*([\s\S]*?)```/); if (f) { try { return JSON.parse(f[1]); } catch {} }
+  const i = text.indexOf("{"), j = text.lastIndexOf("}");
+  if (i >= 0 && j > i) { try { return JSON.parse(text.slice(i, j + 1)); } catch {} }
+  throw { code: "invalid_json", message: "Respuesta sin JSON" };
+}
+const fileToB64 = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); });
+
+async function ask(prompt, { onText, signal, json = false, image = null, quick = false } = {}) {
+  if (AI.mode === "sample") {
+    const opts = { signal, cache: false };
+    if (quick) opts.modelTier = "quick";
+    if (image && AI.images) opts.images = [image];
+    if (json) return AI.sample.json(prompt, opts);
+    const r = await AI.sample(prompt, { ...opts, onText });
+    return r.text;
+  }
+  const s = settingsLocal();
+  if (!s.key) throw { code: "no_ai" };
+  const content = [];
+  if (image) content.push({ type: "image", source: { type: "base64", media_type: image.type || "image/png", data: await fileToB64(image) } });
+  content.push({ type: "text", text: prompt });
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", signal,
+      headers: { "content-type": "application/json", "x-api-key": s.key, "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true", "anthropic-beta": "server-side-fallback-2026-07-01" },
+      body: JSON.stringify({ model: s.model || "claude-opus-5-5", max_tokens: 32000, stream: true, fallbacks: "default",
+        output_config: { effort: quick ? "low" : "medium" }, messages: [{ role: "user", content }] }),
+    });
+  } catch (e) { throw { code: e?.name === "AbortError" ? "cancelled" : "upstream_error", message: String(e?.message || e) }; }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
+  }
+  // Lectura del flujo SSE: acumula los fragmentos de texto y comprueba el motivo de parada.
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = "", text = "", stop = null;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        const line = chunk.split("\n").find(l => l.startsWith("data:")); if (!line) continue;
+        let ev; try { ev = JSON.parse(line.slice(5)); } catch { continue; }
+        if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") { text += ev.delta.text; if (!json) onText?.({ text, delta: ev.delta.text }); }
+        else if (ev.type === "message_delta" && ev.delta?.stop_reason) stop = ev.delta.stop_reason;
+        else if (ev.type === "error") throw { code: "upstream_error", message: ev.error?.message || "Error del servicio", text };
+      }
+    }
+  } catch (e) { if (e?.name === "AbortError") throw { code: "cancelled", text }; throw e?.code ? e : { code: "upstream_error", message: String(e?.message || e), text }; }
+  if (stop === "refusal") throw { code: "refused" };
+  if (!text.trim()) throw { code: "empty_completion" };
+  return json ? parseJSONLoose(text) : text;
+}
+function errText(e) {
+  return ({ not_granted: "No se ha permitido usar Claude en esta página.", rate_limited: "Demasiadas peticiones seguidas. Prueba en un rato.",
+    refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Proyecto y ajustes.",
+    bad_key: "La clave de API no es válida.", invalid_json: "No se pudo leer el plan. Vuelve a intentarlo.",
+    sampling_disabled: "Claude no está disponible en esta cuenta.", cancelled: "Detenido.", image_rejected: "La imagen no es válida; prueba con otra.",
+    prompt_too_large: "El encargo es demasiado largo; divídelo." })[e?.code] || ("No se pudo completar: " + (e?.message || "error desconocido"));
+}
+
+/* ---------- Cola: máximo 3 agentes llamando a la IA a la vez ---------- */
+const slots = { max: 3, used: 0, q: [] };
+function acquire(signal) {
+  return new Promise((res, rej) => {
+    const go = () => { slots.used++; res(); };
+    if (slots.used < slots.max) return go();
+    const item = { go };
+    slots.q.push(item);
+    signal?.addEventListener("abort", () => { const i = slots.q.indexOf(item); if (i >= 0) { slots.q.splice(i, 1); rej({ code: "cancelled" }); } }, { once: true });
+  });
+}
+function release() { slots.used--; const n = slots.q.shift(); if (n) n.go(); }
+
+/* ---------- Prompts ---------- */
+function roster() { return AGENTS.map(a => `- ${a.id}: ${a.name}, ${a.role} (${DEPTS[a.dept]}). Skills: ${skillsOf(a.id).map(s => s.id + " «" + s.name + "»").join(", ")}`).join("\n"); }
+function recentWork(limit = 6, exclude) {
+  const done = state.tasks.filter(t => t.status === "done" && t.id !== exclude).sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+  if (!done.length) return "Todavía no hay trabajo entregado.";
+  return done.map(t => `• ${byId[t.agentId].name} (${byId[t.agentId].role}), «${t.order}»:\n${finalPart(t.result).slice(0, 800)}${t.result.length > 800 ? "…" : ""}`).join("\n\n");
+}
+function finalPart(text) { const m = /^##\s*Entrega final[^\n]*\n?/im.exec(text || ""); return m ? text.slice(m.index + m[0].length) : (text || ""); }
+function persona(a) {
+  return `Eres ${a.name}, ${a.role} (${DEPTS[a.dept]}) en la empresa «${state.company}». Trabajas en una oficina con otros agentes especializados de primer nivel.
+Tu perfil: ${a.bio}
+Herramientas que dominas: ${a.tools.join(", ")}.
+Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
+
+PROYECTO DE LA EMPRESA:
+${state.brief}
+
+TRABAJO RECIENTE DEL EQUIPO (para ser coherente y no repetir):
+${recentWork(6)}`;
+}
+const RULES = (a) => `Cómo entregar:
+- En español, en Markdown, con la calidad de un profesional senior de primer nivel en tu área. Nada genérico: concreto y aplicable a este proyecto.
+- Si es código, el código completo sin omitir partes; si es un guion, entero y con tiempos; si es un plan, con fases, fechas y responsables; si son números, en tablas.
+- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso, porque no puedes manejarla tú directamente.
+- Si te falta un dato, asume algo razonable, dilo en una línea y sigue.`;
+function planStepsPrompt(a, order, skill) {
+  return `${persona(a)}
+
+ENCARGO (de ${"{from}"}):
+${order}
+${skill ? `\nMÉTODO A SEGUIR, skill «${skill.name}»:\n${skill.method}\n` : ""}
+Antes de trabajar, planifica. Divide el encargo en 3 a 6 pasos de trabajo concretos y ordenados, como lo haría un experto de tu área${skill ? " siguiendo el método indicado" : ""}.
+Responde SOLO con JSON: {"pasos": ["título corto del paso 1", "..."]}`;
+}
+function execPrompt(a, t, skill) {
+  const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
+  return `${persona(a)}
+${t.extra ? "\nCONTEXTO:\n" + t.extra + "\n" : ""}
+ENCARGO (de ${t.from}):
+${t.order}
+${skill ? `\nMÉTODO A SEGUIR, skill «${skill.name}»:\n${skill.method}\n` : ""}${t.hasImage ? "\nSe adjunta una imagen de referencia: analízala y úsala en el trabajo.\n" : ""}${plan}
+
+${RULES(a)}
+- Cierra con una línea «Siguiente paso sugerido: …».`;
+}
+function companyPlanPrompt(order, kind) {
+  const intro = kind === "auto"
+    ? "Nadie te ha dado una orden nueva. Decide qué es lo más valioso que puede hacer el equipo AHORA para avanzar el proyecto, teniendo en cuenta lo ya entregado. No repitas trabajo hecho."
+    : `El propietario de la empresa te da este encargo:\n«${order}»`;
+  return `Eres Elena, directora general de «${state.company}». Diriges una oficina de agentes especializados.
+
+PROYECTO:
+${state.brief}
+
+EQUIPO (usa exactamente estos identificadores de agente y de skill):
+${roster()}
+
+TRABAJO YA ENTREGADO:
+${recentWork(8)}
+
+${intro}
+
+Organiza el trabajo en 1 a 3 fases. Las tareas de una misma fase se hacen en paralelo; cada fase puede apoyarse en lo entregado en las anteriores (por ejemplo: primero estrategia y oferta, después contenidos, al final piezas y anuncios). Entre 2 y 7 tareas en total, asignadas a los agentes más adecuados, cada una concreta, entregable de una vez y autosuficiente. Si una skill del agente encaja, indícala.
+Responde SOLO con JSON:
+{"resumen": "una frase con el enfoque", "fases": [{"nombre": "Fase 1: …", "tareas": [{"agente": "id", "tarea": "instrucción concreta", "skill": "id de skill o vacío"}]}]}`;
+}
+function reportPrompt(run, results) {
+  return `Eres Elena, directora general de «${state.company}». Tu equipo acaba de terminar ${run.kind === "auto" ? "una ronda de trabajo autónoma" : "este encargo: «" + run.order + "»"}.
+Enfoque: ${run.resumen}
+
+ENTREGAS:
+${results.map(r => `### ${byId[r.agentId].name} (${byId[r.agentId].role}): ${r.order}\n${finalPart(r.result).slice(0, 2200)}`).join("\n\n")}
+
+Escribe en español, en Markdown, un informe ejecutivo breve para el propietario: qué se ha hecho, decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay, y los 3 siguientes pasos con su responsable.`;
+}
+
+/* ---------- Ejecución de tareas ---------- */
+function newTask(o) {
+  const t = { id: uid(), agentId: o.agentId, order: o.order, from: o.from || "Tú", skillId: o.skillId || null, mode: o.mode || "pro", runId: o.runId || null,
+    extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0 };
+  state.tasks.push(t); return t;
+}
+function setAgent(agentId) {
+  const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
+  const active = mine.find(t => t.phase !== "cola");
+  state.status[agentId] = active ? "work" : mine.length ? "queue" : "idle";
+  if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
+  else delete state.bubble[agentId];
+}
+async function runTask(o) {
+  const a = byId[o.agentId], t = newTask(o), skill = t.skillId ? skillById(t.skillId) : null;
+  setAgent(a.id); bump(t);
+  try {
+    await acquire(o.signal);
+    try {
+      if (t.mode === "pro") {
+        t.phase = "plan"; setAgent(a.id); bump(t);
+        const raw = await ask(planStepsPrompt(a, t.order, skill).replace("{from}", t.from), { json: true, signal: o.signal, quick: true });
+        t.steps = (Array.isArray(raw?.pasos) ? raw.pasos : []).map(String).filter(Boolean).slice(0, 6);
+      }
+      t.phase = "exec"; setAgent(a.id); bump(t);
+      let lastPaint = 0;
+      t.result = await ask(execPrompt(a, t, skill), { signal: o.signal, image: o.image || null, onText: ({ text }) => {
+        t.result = text;
+        if (t.steps.length) {
+          let m, k = 0; const re = /^##\s*(\d+)[.)]/gm; while ((m = re.exec(text))) k = Math.max(k, +m[1]);
+          if (/^##\s*Entrega final/im.test(text)) k = t.steps.length;
+          if (k !== t.step) { t.step = Math.min(k, t.steps.length); setAgent(a.id); }
+        }
+        const now = Date.now(); if (now - lastPaint > 300) { lastPaint = now; bump(t); }
+      } });
+      t.status = "done"; t.step = t.steps.length;
+    } finally { release(); }
+  } catch (e) {
+    t.status = "error"; t.result = (e?.text ? e.text + "\n\n" : "") + "> " + errText(e);
+  }
+  t.phase = "fin"; setAgent(a.id); bump(t); await store.saveTask(t);
+  return t;
+}
+
+async function runCompany(order, kind) {
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  if (state.run) { toast("La empresa ya está con un encargo. Puedes detenerlo o esperar."); return; }
+  const ctl = new AbortController();
+  const run = { id: uid(), kind, order, resumen: "Elena está preparando el plan…", fases: [], status: "work", createdAt: Date.now(), ctl };
+  state.run = run; state.runs.push(run);
+  state.status.elena = "work"; state.bubble.elena = kind === "auto" ? "Decidiendo" : "Repartiendo";
+  paintAll();
+  try {
+    await acquire(ctl.signal);
+    let raw; try { raw = await ask(companyPlanPrompt(order, kind), { json: true, signal: ctl.signal }); } finally { release(); }
+    const fases = (Array.isArray(raw?.fases) ? raw.fases : []).map((f, i) => ({
+      nombre: String(f?.nombre || `Fase ${i + 1}`),
+      tareas: (Array.isArray(f?.tareas) ? f.tareas : []).filter(x => byId[x?.agente] && x?.tarea)
+        .map(x => ({ agente: String(x.agente), tarea: String(x.tarea), skill: skillById(String(x.skill || ""))?.agentId === x.agente ? String(x.skill) : null, estado: "pend", taskId: null })),
+    })).filter(f => f.tareas.length).slice(0, 3);
+    if (!fases.length) throw { code: "invalid_json" };
+    run.resumen = String(raw.resumen || ""); run.fases = fases;
+    state.status.elena = "idle"; delete state.bubble.elena; paintAll();
+    const extra = `Encargo general: ${kind === "auto" ? "ronda autónoma decidida por Dirección" : order}\nEnfoque de Dirección: ${run.resumen}\nReparto completo: ${fases.map(f => f.nombre + ": " + f.tareas.map(x => byId[x.agente].name + " → " + x.tarea).join(" | ")).join(" // ")}`;
+    const results = [];
+    for (const f of fases) {
+      if (ctl.signal.aborted) break;
+      await Promise.all(f.tareas.map(async x => {
+        x.estado = "work"; paintAll();
+        const t = await runTask({ agentId: x.agente, order: x.tarea, from: kind === "auto" ? "Ronda autónoma" : "Dirección", skillId: x.skill, mode: "pro", runId: run.id, extra, signal: ctl.signal,
+          _onCreate: null });
+        x.taskId = t.id; x.estado = t.status; results.push(t); paintAll();
+      }));
+    }
+    const ok = results.filter(r => r.status === "done");
+    if (ok.length && !ctl.signal.aborted) {
+      const rep = await runTaskRaw("elena", kind === "auto" ? "Informe de la ronda autónoma" : "Informe: " + order, reportPrompt(run, ok), run.id, ctl.signal);
+      run.reportId = rep.id;
+    }
+    run.status = ctl.signal.aborted ? "error" : "done";
+    toast(ctl.signal.aborted ? "Encargo detenido." : "El equipo ha terminado. Tienes el informe de Elena.");
+  } catch (e) {
+    run.status = "error"; run.resumen = errText(e); toast(errText(e));
+  } finally {
+    delete run.ctl; state.run = null;
+    state.status.elena = "idle"; delete state.bubble.elena;
+    AGENTS.forEach(a => setAgent(a.id));
+    await store.saveRun(run); paintAll();
+  }
+}
+async function runTaskRaw(agentId, order, prompt, runId, signal) {
+  const t = newTask({ agentId, order, from: "Dirección", mode: "rapido", runId }); t.phase = "exec";
+  setAgent(agentId); state.bubble[agentId] = "Redactando informe"; bump(t);
+  try { await acquire(signal); try { t.result = await ask(prompt, { signal, onText: ({ text }) => { t.result = text; bump(t); } }); t.status = "done"; } finally { release(); } }
+  catch (e) { t.status = "error"; t.result = "> " + errText(e); }
+  t.phase = "fin"; setAgent(agentId); bump(t); await store.saveTask(t); return t;
+}
+
+/* ---------- Pintado ---------- */
+let paintQueued = false;
+const changed = new Set();
+function bump(t) { t.v = (t.v || 0) + 1; changed.add(t.id); schedule(); }
+function schedule() { if (paintQueued) return; paintQueued = true; requestAnimationFrame(() => { paintQueued = false; paintAll(); }); }
+function paintAll() {
+  paintCounts(); paintTeam(); paintLive(); paintRun();
+  if (state.view === "encargos") paintTasks();
+  if (state.view === "entregables") paintDeliverables();
+  if (state.open) refreshDrawerTasks();
+  changed.clear();
+}
+function paintCounts() {
+  const work = AGENTS.filter(a => state.status[a.id] !== "idle").length;
+  $("#sIdle").textContent = AGENTS.length - work; $("#sWork").textContent = work;
+  $("#nWork").textContent = work ? work + " ●" : "";
+  $("#nTasks").textContent = state.tasks.length || "";
+  $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
+  $("#nSkills").textContent = allSkills().length;
+  for (const r of ROOMS) {
+    const n = AGENTS.filter(a => a.room === r.id && state.status[a.id] !== "idle").length;
+    const total = AGENTS.filter(a => a.room === r.id).length;
+    document.querySelectorAll(`[data-room-n="${r.id}"]`).forEach(el => el.textContent = el.closest(".rt") ? (n ? n + " trabajando" : total + " personas") : (n ? n + " ●" : String(total)));
+  }
+  $("#btnAuto").textContent = state.run ? "Detener" : "Ronda autónoma";
+  $("#btnAuto").classList.toggle("stop", !!state.run);
+}
+function statusDot(id) { const s = state.status[id]; return `<span class="dot ${s === "work" ? "work" : s === "queue" ? "queue" : ""}"></span>`; }
+function paintTeam() {
+  $("#team").innerHTML = AGENTS.filter(a => a.room === state.room).map(a => `<button class="mate" type="button" data-agent="${a.id}">
+    <img class="px" src="${P(a)}" alt=""><div><b>${statusDot(a.id)}${esc(a.name)}</b><span>${esc(state.bubble[a.id] || a.role)}</span></div></button>`).join("");
+}
+function progressOf(t) {
+  if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Listo" : "Error" };
+  if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
+  if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
+  if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k}/${t.steps.length} · ${t.steps[k - 1] || ""}` }; }
+  return { pct: 40, ind: true, txt: t.result ? "Escribiendo" : "Pensando" };
+}
+function jobHTML(t) {
+  const a = byId[t.agentId], p = progressOf(t);
+  return `<button class="job" type="button" data-task="${t.id}"><img class="px" src="${P(a)}" alt="">
+    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${esc(a.name)} · ${esc(p.txt)}</div>
+    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</div></button>`;
+}
+function paintLive() {
+  const live = state.tasks.filter(t => t.status === "work").sort((a, b) => a.createdAt - b.createdAt);
+  $("#liveCount").textContent = live.length;
+  $("#liveList").innerHTML = live.length ? live.map(jobHTML).join("") : `<p class="empty">Nadie trabaja ahora mismo. Haz un encargo arriba o lanza una ronda autónoma.</p>`;
+  const recent = state.tasks.filter(t => t.status !== "work").sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+  $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí aparecerá lo último que entregue el equipo.</p>`;
+}
+function paintRun() {
+  const box = $("#runBox"), r = state.run || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
+  if (!r) { box.hidden = true; return; }
+  box.hidden = false;
+  const lbl = { pend: "pendiente", work: "en curso", done: "hecho", error: "error" };
+  box.innerHTML = `<h3>${r.kind === "auto" ? "RONDA AUTÓNOMA" : "PLAN DE DIRECCIÓN"} <span class="st ${r.status}">${lbl[r.status]}</span></h3>
+    <p>${esc(r.resumen)}</p>
+    ${(r.fases || []).map(f => `<div class="ph">${esc(f.nombre)}</div><ol>${f.tareas.map(x => `<li><b>${esc(byId[x.agente]?.name)}</b>: ${esc(x.tarea)} <span class="st ${x.estado}">${lbl[x.estado] || ""}</span></li>`).join("")}</ol>`).join("")}
+    ${r.reportId ? `<div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn sm" type="button" data-task="${r.reportId}">Leer el informe de Elena</button></div>` : ""}`;
+}
+function taskRowHTML(t) {
+  const a = byId[t.agentId], p = progressOf(t), sk = t.skillId ? skillById(t.skillId) : null;
+  return `<button class="card trow" type="button" data-task="${t.id}"><img class="px" src="${P(a)}" alt="">
+    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${esc(a.name)} · ${esc(a.role)}${sk ? " · " + esc(sk.name) : ""} · ${fmtDate(t.createdAt)} · ${esc(t.from)}</div>
+    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</div>
+    <span class="st ${t.status}">${t.status === "work" ? esc(p.txt.split(" · ")[0]) : t.status === "done" ? "hecho" : "error"}</span></button>`;
+}
+function filterChips(el, key, opts) {
+  el.innerHTML = opts.map(([v, l]) => `<button class="f" type="button" data-f="${key}" data-v="${v}" aria-pressed="${state[key] === v}">${esc(l)}</button>`).join("");
+}
+function paintTasks() {
+  filterChips($("#taskFilters"), "fTasks", [["todos", "Todos"], ["work", "En marcha"], ["done", "Hechos"], ["error", "Con error"], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
+  const f = state.fTasks;
+  const list = state.tasks.filter(t => f === "todos" || t.status === f || (f.startsWith("room:") && byId[t.agentId].room === f.slice(5))).sort((a, b) => b.createdAt - a.createdAt);
+  $("#taskList").innerHTML = list.length ? list.map(taskRowHTML).join("") : `<p class="empty">No hay encargos con este filtro.</p>`;
+}
+const EXAMPLES = [
+  { agentId: "dani", order: "Reel de lanzamiento de 30 s", result: "**0:00-0:03** Plano detalle del producto con luz dura lateral, golpe de bajo en el corte…" },
+  { agentId: "sofia", order: "Calendario de 4 semanas para Instagram y TikTok", result: "| Día | Red | Formato | Idea | CTA |\n|---|---|---|---|---|\n| Lun | TikTok | Reel | «3 errores que…» | Guardar |" },
+  { agentId: "alex", order: "Oferta irresistible con el método Hormozi", result: "**Resultado soñado:** … **Bonus:** … **Garantía:** 30 días o te devolvemos el dinero…" },
+];
+const thumbs = {};
+function paintDeliverables() {
+  filterChips($("#delFilters"), "fDel", [["todos", "Todo"], ...ROOMS.map(r => [r.id, r.name])]);
+  const done = state.tasks.filter(t => t.status === "done" && (state.fDel === "todos" || byId[t.agentId].room === state.fDel)).sort((a, b) => b.createdAt - a.createdAt);
+  const list = done.length ? done : (state.tasks.some(t => t.status === "done") ? [] : EXAMPLES.map(x => ({ ...x, example: true, createdAt: Date.now() })));
+  $("#delGrid").innerHTML = list.length ? list.map(t => {
+    const a = byId[t.agentId], r = roomById[a.room]; thumbs[r.id] ||= Office.roomThumb(r);
+    const plain = finalPart(t.result).replace(/[#*|`>_-]+/g, " ").replace(/\s+/g, " ").trim();
+    return `<button class="card del" type="button" ${t.example ? "" : `data-task="${t.id}"`}>
+      <div class="cover" style="background-image:url(${thumbs[r.id]})"><img class="px" src="${P(a)}" alt=""><div><b>${esc(a.name)}</b><span>${esc(a.role)}</span></div></div>
+      <div class="body"><div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 220))}</div>
+      <div class="m" style="font-size:11px;color:var(--ink-3);margin-top:auto">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></div></button>`;
+  }).join("") : `<p class="empty">Todavía no hay entregables en esta sala.</p>`;
+  if (!done.length && list.length) $("#delGrid").insertAdjacentHTML("afterbegin", `<p class="empty" style="grid-column:1/-1">Así se verán tus entregables cuando el equipo termine su primer trabajo:</p>`);
+}
+function paintSkills() {
+  filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Mías"], ...ROOMS.map(r => [r.id, r.name])]);
+  const f = state.fSkills;
+  const list = allSkills().filter(s => f === "todos" || (f === "custom" ? s.custom : byId[s.agentId].room === f));
+  $("#skillGrid").innerHTML = list.map(s => { const a = byId[s.agentId]; return `<article class="card sk${s.custom ? " custom" : ""}">
+    <div class="top"><img class="px" src="${P(a)}" alt=""><div><h4>${esc(s.name)}</h4><div class="who">${esc(a.name)} · ${esc(DEPTS[a.dept])}</div></div></div>
+    <p>${esc(s.desc)}</p><details><summary>Cómo lo hace</summary><p style="margin-top:6px">${esc(s.method)}</p></details>
+    <div class="acts"><button class="btn sm" type="button" data-use="${s.id}">Usar</button>${s.custom ? `<button class="btn ghost sm" type="button" data-delskill="${s.id}">Borrar</button>` : ""}</div></article>`; }).join("") || `<p class="empty">Aún no has creado skills propias.</p>`;
+}
+
+/* ---------- Sala ---------- */
+let scene = null;
+function paintRooms() {
+  $("#roomsNav").innerHTML = `<span class="h">SALAS</span>` + ROOMS.map(r => `<button class="nl" type="button" data-room="${r.id}" aria-current="${state.room === r.id && state.view === "oficina"}"><span class="sw" style="background:${r.accent}"></span>${esc(r.name)}<span class="n" data-room-n="${r.id}"></span></button>`).join("");
+  $("#roomTabs").innerHTML = ROOMS.map(r => { thumbs[r.id] ||= Office.roomThumb(r); return `<button class="rt" type="button" data-room="${r.id}" aria-pressed="${state.room === r.id}"><img src="${thumbs[r.id]}" alt=""><div><div>${esc(r.name)}</div><div class="n" data-room-n="${r.id}"></div></div></button>`; }).join("");
+  $("#stageName").textContent = roomById[state.room].name;
+  paintCounts();
+}
+function centerStage() { const w = $(".canvaswrap"); if (w && w.scrollWidth > w.clientWidth) w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; }
+function setRoom(id) { state.room = id; scene?.setRoom(roomById[id]); paintRooms(); paintTeam(); }
+
+/* ---------- Navegación ---------- */
+const VIEWS = ["oficina", "encargos", "skills", "entregables"];
+function go(view) {
+  if (!VIEWS.includes(view)) view = "oficina";
+  state.view = view;
+  VIEWS.forEach(v => { $("#v-" + v).hidden = v !== view; });
+  document.querySelectorAll(".nl[data-view]").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === view)));
+  if (view === "oficina") scene?.start(); else scene?.stop();
+  if (view === "encargos") paintTasks();
+  if (view === "skills") paintSkills();
+  if (view === "entregables") paintDeliverables();
+  paintRooms();
+  if (location.hash.slice(1) !== view) history.replaceState(null, "", "#" + view);
+  window.scrollTo({ top: 0 });
+}
+window.addEventListener("hashchange", () => go(location.hash.slice(1)));
+
+/* ---------- Compositor ---------- */
+function paintTargets() {
+  $("#target").innerHTML = `<option value="empresa">Toda la empresa (Elena reparte)</option>` + ROOMS.map(r =>
+    `<optgroup label="${esc(r.name)}">${AGENTS.filter(a => a.room === r.id).map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(a.role)}</option>`).join("")}</optgroup>`).join("");
+  $("#target").value = state.comp.target;
+}
+function paintComposer() {
+  const c = state.comp;
+  document.querySelectorAll("#composer [data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === c.mode)));
+  const slot = $("#skillSlot");
+  if (c.target === "empresa") slot.innerHTML = "";
+  else {
+    const list = skillsOf(c.target);
+    slot.innerHTML = `<label for="skillSel" hidden>Skill</label><select id="skillSel"><option value="">Sin skill concreta</option>${list.map(s => `<option value="${s.id}" ${c.skill === s.id ? "selected" : ""}>Skill: ${esc(s.name)}</option>`).join("")}</select>`;
+  }
+  $("#btnAttach").hidden = !(AI.images || AI.mode === "none") || !!c.image;
+  $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">✕</button></span>` : "";
+  const sk = c.skill ? skillById(c.skill) : null;
+  $("#cmd").placeholder = c.target === "empresa" ? "Nuevo encargo para toda la empresa. Ej.: «Lanzamos zapatillas veganas en enero: plan completo, web y 10 reels»"
+    : sk ? `${byId[c.target].name} usará «${sk.name}»: ${sk.desc} Añade los detalles.` : `¿Qué necesitas de ${byId[c.target].name}?`;
+}
+$("#target").addEventListener("change", e => { state.comp.target = e.target.value; state.comp.skill = null; paintComposer(); });
+$("#skillSlot").addEventListener("change", e => { if (e.target.id === "skillSel") { state.comp.skill = e.target.value || null; paintComposer(); } });
+$("#btnAttach").addEventListener("click", () => $("#fileIn").click());
+$("#fileIn").addEventListener("change", e => { const f = e.target.files?.[0]; if (f) { state.comp.image = f; paintComposer(); } e.target.value = ""; });
+$("#composer").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = $("#cmd").value.trim(), c = state.comp;
+  if (!v && !c.skill) { $("#cmd").focus(); return; }
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  const order = v || skillById(c.skill).name;
+  $("#cmd").value = ""; autosize();
+  if (c.target === "empresa") runCompany(order, "order");
+  else {
+    const a = byId[c.target];
+    if (a.room !== state.room) setRoom(a.room);
+    runTask({ agentId: c.target, order, from: "Tú", skillId: c.skill, mode: c.mode, image: c.image });
+    toast(`${a.name} se pone con ello.`);
+  }
+  c.image = null; paintComposer();
+});
+function autosize() { const t = $("#cmd"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; }
+$("#cmd").addEventListener("input", autosize);
+$("#cmd").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); $("#composer").requestSubmit(); } });
+$("#btnAuto").addEventListener("click", () => { if (state.run) { state.run.ctl?.abort(); return; } runCompany("", "auto"); });
+
+/* ---------- Panel del agente ---------- */
+function openAgent(id, focusTask) {
+  state.open = id; scene?.select(id);
+  const a = byId[id], r = roomById[a.room], dc = state.dComp;
+  if (dc.agent !== id) { dc.agent = id; dc.skill = null; }
+  const tasks = state.tasks.filter(t => t.agentId === id).sort((x, y) => y.createdAt - x.createdAt);
+  $("#drawer").innerHTML = `
+    <div class="d-head"><img class="px" src="${P(a)}" alt="">
+      <div style="min-width:0"><h2 id="dName">${esc(a.name)}</h2><p>${esc(a.role)} · ${esc(r.name)}</p>
+      <p style="font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-top:3px" id="dStatus"></p></div>
+      <button class="btn ghost sm x" type="button" id="dClose">Cerrar</button></div>
+    <div class="d-body">
+      <p style="margin:0;color:var(--ink-2)">${esc(a.bio)}</p>
+      <div><p class="lbl">HERRAMIENTAS</p><div class="tools">${a.tools.map(s => `<span class="tool">${esc(s)}</span>`).join("")}</div></div>
+      <div><p class="lbl">SKILLS · elige una para tu encargo</p><div class="minisk">${skillsOf(id).map(s => `<button type="button" data-dskill="${s.id}" aria-pressed="${dc.skill === s.id}"><b>${esc(s.name)}</b>${esc(s.desc)}</button>`).join("")}</div></div>
+      <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">NUEVO ENCARGO PARA ${esc(a.name.toUpperCase())}</p>
+        <label for="dText" hidden>Encargo</label>
+        <textarea id="dText" placeholder="${dc.skill ? esc("Usará «" + skillById(dc.skill).name + "». Añade los detalles del encargo.") : "¿Qué necesitas de " + esc(a.name) + "?"}"></textarea>
+        <div class="crow"><div class="seg" role="group" aria-label="Profundidad"><button type="button" data-dmode="rapido" aria-pressed="${dc.mode === "rapido"}">Rápido</button><button type="button" data-dmode="pro" aria-pressed="${dc.mode === "pro"}">Profundo</button></div>
+        <span class="grow"></span><button class="btn" type="submit">Encargar a ${esc(a.name)}</button></div></form>
+      <div><p class="lbl">TRABAJO (${tasks.length})</p><div id="dTasks">${tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`}</div></div>
+    </div>`;
+  paintDStatus();
+  $("#drawer").hidden = false; $("#scrim").hidden = false;
+  if (focusTask) $("#drawer").querySelector(`[data-tid="${focusTask}"]`)?.scrollIntoView({ block: "start" });
+}
+function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; const s = state.status[state.open]; el.innerHTML = `${statusDot(state.open)} ${s === "work" ? esc(state.bubble[state.open] || "Trabajando") : s === "queue" ? "En cola" : "Disponible"}`; }
+function drawerTaskHTML(t) {
+  const sk = t.skillId ? skillById(t.skillId) : null, p = progressOf(t);
+  const steps = t.steps.length ? `<div class="steps">${t.steps.map((s, i) => `<div class="s ${i + 1 < (t.step || 0) || t.status === "done" ? "done" : i + 1 === (t.step || 1) && t.status === "work" && t.phase === "exec" ? "cur" : ""}">${i + 1 < (t.step || 0) || t.status === "done" ? "✓" : i + 1 === (t.step || 1) && t.status === "work" ? "▸" : "·"} ${esc(s)}</div>`).join("")}</div>` : "";
+  const body = t.status === "work" && !t.result ? `<div class="thinking">${esc(p.txt)}…</div>` : `<div class="md">${md(t.result)}</div>`;
+  const others = AGENTS.filter(x => x.id !== t.agentId);
+  const acts = t.status === "done" ? `<div class="task-acts">
+      <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
+      <button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
+      <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)} · ${esc(x.role)}</option>`).join("")}</select>
+      <label for="hi-${t.id}" hidden>Instrucción</label><input id="hi-${t.id}" placeholder="Qué debe hacer con esto">
+      <button class="btn sm" type="button" data-handoff="${t.id}">Enviar</button>
+      <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>`
+    : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
+  return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
+    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="meta">${fmtDate(t.createdAt)} · ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</span><span class="st ${t.status}">${t.status === "work" ? esc(p.txt.split(" · ")[0]) : t.status === "done" ? "hecho" : "error"}</span></div>
+    ${steps}${body}${acts}</article>`;
+}
+function refreshDrawerTasks() {
+  paintDStatus();
+  const box = $("#dTasks"); if (!box) return;
+  const tasks = state.tasks.filter(t => t.agentId === state.open).sort((x, y) => y.createdAt - x.createdAt);
+  const ids = [...box.querySelectorAll("[data-tid]")].map(e => e.dataset.tid);
+  if (ids.join() !== tasks.map(t => t.id).join()) { box.innerHTML = tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`; return; }
+  for (const t of tasks) if (changed.has(t.id)) { const el = box.querySelector(`[data-tid="${t.id}"]`); if (el && el.dataset.v !== String(t.v)) el.outerHTML = drawerTaskHTML(t); }
+}
+function closeAgent() { state.open = null; scene?.select(null); $("#drawer").hidden = true; $("#scrim").hidden = true; }
+document.addEventListener("submit", e => {
+  if (e.target.id !== "dOrder") return;
+  e.preventDefault();
+  const id = state.open, v = $("#dText").value.trim(), dc = state.dComp;
+  if (!v && !dc.skill) { $("#dText").focus(); return; }
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  runTask({ agentId: id, order: v || skillById(dc.skill).name, from: "Tú", skillId: dc.skill, mode: dc.mode });
+  dc.skill = null; openAgent(id);
+});
+
+/* ---------- Clics ---------- */
+document.addEventListener("click", async e => {
+  const el = sel => e.target.closest(sel);
+  let b;
+  if ((b = el("[data-view]"))) return go(b.dataset.view);
+  if ((b = el("[data-go]"))) return go(b.dataset.go);
+  if ((b = el("[data-room]"))) { if (state.view !== "oficina") go("oficina"); return setRoom(b.dataset.room); }
+  if ((b = el("[data-agent]"))) return openAgent(b.dataset.agent);
+  if ((b = el("[data-task]"))) { const t = state.tasks.find(x => x.id === b.dataset.task); if (t) openAgent(t.agentId, t.id); return; }
+  if (el("[data-settings]")) return openSettings();
+  if (el("#dClose") || e.target === $("#scrim")) return closeAgent();
+  if (el("#rmImg")) { state.comp.image = null; return paintComposer(); }
+  if ((b = el("[data-mode]"))) { state.comp.mode = b.dataset.mode; return paintComposer(); }
+  if ((b = el("[data-dmode]"))) { state.dComp.mode = b.dataset.dmode; document.querySelectorAll("[data-dmode]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); return; }
+  if ((b = el("[data-dskill]"))) { const dc = state.dComp; dc.skill = dc.skill === b.dataset.dskill ? null : b.dataset.dskill; const txt = $("#dText").value; openAgent(state.open); $("#dText").value = txt; $("#dText").focus(); return; }
+  if ((b = el("[data-f]"))) { state[b.dataset.f] = b.dataset.v; return b.dataset.f === "fSkills" ? paintSkills() : b.dataset.f === "fTasks" ? paintTasks() : paintDeliverables(); }
+  if ((b = el("[data-use]"))) { const s = skillById(b.dataset.use); state.comp = { ...state.comp, target: s.agentId, skill: s.id }; go("oficina"); setRoom(byId[s.agentId].room); paintTargets(); paintComposer(); $("#cmd").focus(); return; }
+  if ((b = el("[data-delskill]"))) { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; } state.customSkills = state.customSkills.filter(s => s.id !== b.dataset.delskill); await store.deleteSkill(b.dataset.delskill); paintSkills(); paintCounts(); return; }
+  if ((b = el("[data-copy]"))) { const t = state.tasks.find(x => x.id === b.dataset.copy); try { await navigator.clipboard.writeText(t.result); toast("Copiado."); } catch { toast("No se pudo copiar; selecciona el texto a mano."); } return; }
+  if ((b = el("[data-dl]"))) return download(state.tasks.find(x => x.id === b.dataset.dl));
+  if ((b = el("[data-improve]"))) {
+    const t = state.tasks.find(x => x.id === b.dataset.improve);
+    runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+      extra: `Este es tu trabajo anterior:\n${t.result.slice(0, 12000)}\n\nRevísalo con ojo crítico de experto exigente: señala en 3-5 puntos qué falla o es mejorable y entrega la versión mejorada completa.` });
+    toast(`${byId[t.agentId].name} revisa su trabajo.`); return;
+  }
+  if ((b = el("[data-handoff]"))) {
+    const t = state.tasks.find(x => x.id === b.dataset.handoff), to = $("#ho-" + t.id).value, ins = $("#hi-" + t.id).value.trim();
+    if (!to) { toast("Elige a quién se lo pasas."); $("#ho-" + t.id).focus(); return; }
+    runTask({ agentId: to, order: ins || `Continúa el trabajo de ${byId[t.agentId].name}: ${t.order}`, from: byId[t.agentId].name, mode: "pro",
+      extra: `${byId[t.agentId].name} (${byId[t.agentId].role}) te pasa este trabajo para que lo uses como base:\n${t.result.slice(0, 12000)}` });
+    toast(`Pasado a ${byId[to].name}.`); return;
+  }
+  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: t.extra }); return; }
+  if ((b = el("[data-del]"))) {
+    if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
+    const id = b.dataset.del; state.tasks = state.tasks.filter(x => x.id !== id); await store.deleteTask(id); paintAll(); return;
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open) closeAgent(); });
+
+async function download(t) {
+  if (!t) return;
+  const filename = `${byId[t.agentId].name}-${t.order.slice(0, 40).replace(/[^\p{L}\p{N}]+/gu, "-")}.md`;
+  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dls) { try { await dls.save({ filename, data: t.result }); } catch { toast("Descarga cancelada."); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t.result], { type: "text/markdown" })); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ---------- Ajustes y skills propias ---------- */
+function openSettings() {
+  $("#fCompany").value = state.company; $("#fBrief").value = state.brief;
+  const s = settingsLocal(); $("#fKey").value = s.key || ""; $("#fModel").value = s.model || "claude-opus-5-5";
+  $("#keyFields").hidden = AI.mode === "sample";
+  $("#settings").showModal();
+}
+$("#settings").addEventListener("close", async () => {
+  if ($("#settings").returnValue !== "save") return;
+  state.company = $("#fCompany").value.trim() || "Mi empresa";
+  state.brief = $("#fBrief").value.trim() || state.brief;
+  if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
+  paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
+});
+$("#btnNewSkill").addEventListener("click", () => {
+  $("#kAgent").innerHTML = AGENTS.map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(a.role)}</option>`).join("");
+  ["kName", "kDesc", "kMethod"].forEach(i => $("#" + i).value = "");
+  $("#skillDlg").showModal();
+});
+$("#skillDlg").addEventListener("close", async () => {
+  if ($("#skillDlg").returnValue !== "save") return;
+  const name = $("#kName").value.trim(), method = $("#kMethod").value.trim();
+  if (!name || !method) { toast("La skill necesita nombre y método."); return; }
+  const s = { id: "c." + uid(), agentId: $("#kAgent").value, name, desc: $("#kDesc").value.trim() || name, method, createdAt: Date.now() };
+  state.customSkills.push(s); await store.saveSkill(s); state.fSkills = "custom"; paintSkills(); paintCounts(); toast("Skill creada.");
+});
+function paintHeader() {
+  $("#coName").textContent = state.company;
+  $("#coTitle").textContent = state.company;
+  $("#briefLine").textContent = state.brief.length > 140 ? state.brief.slice(0, 140) + "…" : state.brief;
+}
+function updateBanner() {
+  const b = $("#aiBanner");
+  if (aiReady()) { b.hidden = true; return; }
+  b.hidden = false;
+  b.innerHTML = AI.mode === "pending" ? "Conectando con Claude…" : `Para que los agentes trabajen, abre esta app dentro de Claude o añade tu clave de API en <b>Proyecto y ajustes</b>.`;
+}
+
+/* ---------- Almacenamiento: base de datos del artifact o este navegador ---------- */
+const store = {
+  db: null, base: null,
+  async init() {
+    try {
+      if (window.claude?.use) {
+        const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+        const id = db && user ? await user.id() : null;
+        if (db && id) { this.db = db; this.base = db.doc(`data/users/${id}/office`); }
+      }
+    } catch {}
+    if (this.db) {
+      try {
+        const s = await this.base.get();
+        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; }
+        const [tq, rq, sq] = await Promise.all([
+          this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
+          this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
+          this.base.collection("skills").get()]);
+        mergeTasks(tq.docs.map(d => d.data())); mergeRuns(rq.docs.map(d => d.data())); state.customSkills = sq.docs.map(d => d.data()).filter(s => byId[s.agentId]);
+      } catch { this.db = null; }
+    }
+    if (!this.db) {
+      try { const s = JSON.parse(localStorage.getItem("oficina.v2") || "null");
+        if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
+    }
+    paintHeader(); paintAll(); if (state.view !== "oficina") go(state.view);
+  },
+  async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
+  async del(col, id) { if (this.db) { try { await this.base.collection(col).doc(id).delete(); return; } catch {} } this.local(); },
+  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief }).catch(() => this.local()); this.local(); },
+  saveTask(t) { const { v, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); return this.put("tasks", rec); },
+  deleteTask(id) { return this.del("tasks", id); },
+  saveRun(r) { const { ctl, ...rec } = r; return this.put("runs", JSON.parse(JSON.stringify(rec))); },
+  saveSkill(s) { return this.put("skills", s); },
+  deleteSkill(id) { return this.del("skills", id); },
+  local() {
+    try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
+      tasks: state.tasks.filter(t => t.status !== "work").slice(-150).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+  },
+};
+function mergeTasks(list) {
+  const have = new Set(state.tasks.map(t => t.id));
+  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, status: t.status === "work" ? "error" : t.status, v: 0 });
+}
+function mergeRuns(list) { const have = new Set(state.runs.map(r => r.id)); for (const r of list) if (r?.id && !have.has(r.id)) state.runs.push({ ...r, status: r.status === "work" ? "error" : r.status }); }
+
+/* ---------- Arranque ---------- */
+function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }
+async function boot() {
+  try { await Promise.race([document.fonts.load('8px "Silkscreen"'), new Promise(r => setTimeout(r, 1500))]); } catch {}
+  scene = Office.create($("#scene"), { agents: AGENTS, onPick: id => openAgent(id), getState: () => state });
+  paintTargets(); paintComposer(); paintHeader();
+  setRoom(state.room);
+  go(location.hash.slice(1) || "oficina");
+  centerStage();
+  tick(); setInterval(tick, 30000);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) scene.stop(); else if (state.view === "oficina") scene.start(); });
+  AI.mode = window.claude?.use ? "pending" : "none"; updateBanner();
+  if (window.claude?.use) {
+    const s = await window.claude.use("sample").catch(() => null);
+    if (s) { AI.sample = s; AI.mode = "sample"; try { AI.images = !!(await s.limits())?.images; } catch {} } else AI.mode = "none";
+  }
+  if (AI.mode === "none") AI.images = true; // con clave propia la API acepta imágenes
+  updateBanner(); paintComposer();
+  store.init();
+}
+boot();
+
+</script>
