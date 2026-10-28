@@ -2,33 +2,16 @@
 
 Una empresa virtual en tu móvil y tu ordenador: una planta de oficina con 15 agentes de IA, cada uno en su puesto y especializado en un departamento. Les das órdenes, Dirección las reparte, o dejas que el equipo trabaje solo.
 
-## Departamentos y agentes
+## Qué hay dentro
 
-| Departamento | Agente | Especialidad |
-|---|---|---|
-| Dirección General | Elena | CEO: planifica, reparte el trabajo y escribe el informe ejecutivo |
-| Producto y Estrategia | Marco | Product manager |
-| Ingeniería | Kai, Iván | Full-stack · DevOps y QA |
-| Diseño | Lucía | Producto y marca |
-| Vídeo y Audiovisual | Dani | Edición profesional, color, sonido, guion |
-| Redes Sociales | Sofía | Social media manager |
-| Marketing y Ventas | Álex | CMO y ventas |
-| Contenidos y Copy | Bruno | Copywriter |
-| SEO y Analítica | Irene | SEO y datos |
-| I+D e IA | Hugo | Agentes y automatización |
-| Finanzas | Tomás | CFO |
-| Legal | Carmen | Asesora legal |
-| Personas y Cultura | Pablo | RR. HH. |
-| Atención al Cliente | Lola | Soporte |
+- **4 salas pixel-art** (Dirección, Estudio creativo, Ingeniería y datos, Comercial) dibujadas por código en un canvas: los agentes se sientan en su puesto, se levantan a por café, pasean y, cuando trabajan, la pantalla se enciende y aparece un bocadillo con el paso en el que van.
+- **16 agentes**: Elena (CEO), Marco (producto), Tomás (finanzas), Carmen (legal), Pablo (personas), Dani (vídeo), Lucía (diseño), Sofía (redes), Bruno (copy), Kai (full-stack), Iván (DevOps/QA), Irene (SEO y datos), Hugo (IA y automatización), Álex (marketing), Rocío (ventas) y Lola (atención al cliente).
+- **80 skills**: métodos profesionales reales (ecuación de valor de Hormozi, StoryBrand, PAS/AIDA, JTBD, RICE, OKR, SPIN, HEARD, heurísticas de Nielsen, árbol de nodos de DaVinci, OWASP…). Puedes crear las tuyas.
+- **Encargos por pasos**: en modo *Profundo* el agente planifica 3-6 pasos y los ejecuta en orden; el panel *En marcha* muestra «Paso 3/5».
+- **Orden a la empresa**: Elena organiza fases (las tareas de una fase van en paralelo y las siguientes usan lo anterior) y cierra con un informe ejecutivo.
+- **Ronda autónoma**, **traspasos** entre agentes («pasar a Dani el guion de Bruno»), **revisar y mejorar**, imágenes de referencia, copiar y descargar en Markdown.
 
-Cada agente tiene su lista de herramientas (DaVinci Resolve, Figma, Meta Ads, GA4…) y skills, que se le pasan en cada tarea. La plantilla vive en `AGENTS` y `DEPTS` dentro de `src/app.html`: añadir un agente es añadir un objeto.
-
-## Cómo funciona
-
-- **Orden a la empresa**: Elena devuelve un plan (JSON) con 2–5 tareas, las ejecutan los agentes (dos a la vez) y Elena cierra con un informe.
-- **Orden directa**: toca un avatar y encarga algo solo a ese agente.
-- **Ronda autónoma**: Elena decide qué es lo más útil a continuación según el proyecto y lo ya entregado.
-- Todos leen la descripción del proyecto y las últimas entregas del equipo, así trabajan de forma coherente.
+La plantilla vive en `src/data.js` (salas, agentes, skills) y el motor pixel-art en `src/office.js`.
 
 ## Dónde se ejecuta
 
@@ -38,6 +21,6 @@ Cada agente tiene su lista de herramientas (DaVinci Resolve, Figma, Meta Ads, GA
 ## Desarrollo
 
 ```bash
-python3 build.py          # regenera public/index.html desde src/app.html
+python3 build.py          # genera build/oficina.html (artifact) y public/index.html (PWA)
 python3 -m http.server -d public 8080
 ```
