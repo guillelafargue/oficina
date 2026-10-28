@@ -129,12 +129,24 @@ function persona(a) {
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
 Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
-${a.refs?.length ? `Trabajas con el criterio de los mayores referentes de tu especialidad y aplicas sus ideas cuando encajan: ${a.refs.map(([n, i]) => `${n} (${i})`).join("; ")}.\n` : ""}${memoryBlock(a)}
+${canonBlock(a)}${memoryBlock(a)}
 PROYECTO DE LA EMPRESA:
 ${state.brief}
 
 TRABAJO RECIENTE DEL EQUIPO (para ser coherente y no repetir):
 ${recentWork(6)}`;
+}
+// Conocimiento a fondo de los referentes del puesto: obras y principios concretos, no solo el nombre.
+function canonBlock(a) {
+  if (!a.refs?.length) return "";
+  const list = a.refs.map(([n, i]) => {
+    const c = CANON[n];
+    return c ? `### ${n}: ${c[0]}\n${c[1].map(p => "- " + p).join("\n")}` : `### ${n}\n- ${i}`;
+  }).join("\n\n");
+  return `\nCONOCIMIENTO DE TUS REFERENTES. Lo dominas como si fueras su mejor discípulo y lo aplicas en cada entrega. Estas son las claves de su obra; además, usa todo lo que sabes de sus libros, charlas y casos, y cita el marco que aplicas cuando aporte:\n\n${list}\n`;
+}
+function canonChecks(a) {
+  return (a.refs || []).flatMap(([n]) => (CANON[n]?.[1] || []).slice(0, 2).map(p => `- ${n}: ${p}`)).join("\n");
 }
 const RULES = (a) => `Cómo entregar:
 - En español, en Markdown, con la calidad de un profesional senior de primer nivel en tu área. Nada genérico: concreto y aplicable a este proyecto.
@@ -362,6 +374,9 @@ ENCARGO: ${t.order}${skill ? `\nMÉTODO PEDIDO: ${skill.name}` : ""}
 
 ENTREGA:
 ${body}
+
+PRINCIPIOS DE TUS REFERENTES CON LOS QUE DEBES MEDIRLA (¿los aplica donde tocaba?):
+${canonChecks(a) || "(ninguno)"}
 
 LO QUE YA HABÍAS APRENDIDO:
 ${memOf(a.id).map(x => "- " + x.text).join("\n") || "(nada todavía)"}
@@ -698,7 +713,7 @@ function openAgent(id, focusTask) {
     <div class="d-body">
       <p class="d-bio">${esc(a.bio)} <span>Trabaja con ${esc(a.tools.join(", "))}.</span></p>
       ${brainHTML(a)}
-      ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => `<li><b>${esc(n)}</b> ${esc(i)}</li>`).join("")}</ul></div>` : ""}
+      ${a.refs?.length ? `<div><p class="lbl">Referentes que aplica</p><ul class="refs">${a.refs.map(([n, i]) => { const c = CANON[n]; return c ? `<li><details><summary><b>${esc(n)}</b> ${esc(i)}</summary><p class="note">${esc(c[0])}</p><ul>${c[1].map(p => `<li>${esc(p)}</li>`).join("")}</ul></details></li>` : `<li><b>${esc(n)}</b> ${esc(i)}</li>`; }).join("")}</ul></div>` : ""}
       <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">Nuevo encargo</p>
         <label for="dText" hidden>Encargo</label>
         <textarea id="dText" placeholder="${dc.skill ? esc("Con «" + skillById(dc.skill).name + "». Añade los detalles.") : "Describe lo que necesitas"}"></textarea>
