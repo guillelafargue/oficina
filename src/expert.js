@@ -1,0 +1,300 @@
+/* Conocimiento experto de cada puesto: referentes mundiales de su especialidad y skills ampliadas.
+   Las skills se inspiran en las bibliotecas públicas más usadas (anthropics/skills, obra/superpowers,
+   coreyhaines31/marketingskills y otras) y en los métodos de los propios referentes.
+   Formato de skill: [clave, nombre, para qué sirve, método, fuente]. */
+const EXPERT = {
+  elena: {
+    refs: [
+      ["Andy Grove", "gestión de alto rendimiento: output del equipo, reuniones 1:1 y OKR originales"],
+      ["Peter Drucker", "eficacia del directivo: hacer lo correcto antes que hacerlo bien"],
+      ["Jeff Bezos", "decisiones de tipo 1 y tipo 2, memos de 6 páginas, obsesión por el cliente"],
+      ["Ray Dalio", "principios explícitos, transparencia radical y diagnóstico de problemas"],
+      ["Jim Collins", "el erizo, el volante y la gente adecuada en el autobús"],
+      ["Patrick Lencioni", "las 5 disfunciones de un equipo y la claridad organizativa"],
+    ],
+    skills: [
+      ["xmemo", "Memo de 6 páginas", "Documento narrativo para decidir, al estilo Amazon.", "Escribe en prosa, sin viñetas: contexto, tesis, datos, alternativas descartadas y por qué, plan, riesgos, preguntas frecuentes y qué decisión se pide. Debe poder leerse en 20 minutos y defenderse solo.", "Amazon (Jeff Bezos)"],
+      ["xprfaq", "PR/FAQ al revés", "Imagina el comunicado del lanzamiento antes de construir.", "Redacta la nota de prensa del día del lanzamiento (titular, problema, solución, cita del cliente, cómo empezar) y 10 preguntas frecuentes internas y externas difíciles con respuesta honesta.", "Amazon Working Backwards"],
+      ["xflywheel", "Volante de crecimiento", "Encuentra el ciclo que se refuerza solo.", "Identifica 4-6 eslabones causales del negocio que se alimentan entre sí, dibújalos como ciclo, señala el eslabón más débil y propón 3 acciones para acelerarlo con su métrica.", "Jim Collins"],
+      ["xmeeting", "Sistema de reuniones", "Ritmo operativo semanal, mensual y trimestral.", "Diseña el calendario de reuniones (diaria corta, semanal táctica, mensual estratégica, trimestral fuera de la oficina) con agenda fija, duración, asistentes, entradas y salidas de cada una.", "Patrick Lencioni, Andy Grove"],
+      ["xprinciples", "Principios de la empresa", "Reglas de decisión explícitas.", "Escribe 10-12 principios en formato «cuando X, hacemos Y porque Z», con un ejemplo real de aplicación y el error que evita cada uno.", "Ray Dalio"],
+      ["xbrainstorm", "Lluvia de ideas guiada", "Explora opciones antes de decidir.", "Primero preguntas para entender el objetivo, después 3 enfoques con pros y contras, recomendación argumentada y diseño mínimo validable. No pases a ejecutar hasta tener el enfoque claro.", "obra/superpowers: brainstorming"],
+      ["xplan", "Plan de ejecución detallado", "Plan por tareas pequeñas y verificables.", "Divide el objetivo en tareas de 2-5 minutos de esfuerzo humano o de un entregable claro, cada una con responsable, criterio de terminado y forma de verificarlo. Ordena por dependencias.", "obra/superpowers: writing-plans"],
+    ],
+  },
+  marco: {
+    refs: [
+      ["Marty Cagan", "equipos de producto empoderados y discovery continuo (Inspired)"],
+      ["Teresa Torres", "árbol de oportunidades y entrevistas semanales con clientes"],
+      ["Clayton Christensen", "jobs to be done e innovación disruptiva"],
+      ["Shreyas Doshi", "palancas de impacto, tareas LNO y pensamiento de producto"],
+      ["Lenny Rachitsky", "métricas de crecimiento y benchmarks de producto"],
+      ["Melissa Perri", "salir de la trampa de construir funcionalidades"],
+    ],
+    skills: [
+      ["xost", "Árbol de oportunidades", "Del resultado deseado a experimentos concretos.", "Define el resultado de negocio, ramifica oportunidades (necesidades del cliente con evidencia), soluciones por oportunidad y un experimento de suposición por solución. Elige la rama a atacar y por qué.", "Teresa Torres"],
+      ["xassump", "Mapa de suposiciones", "Qué tiene que ser cierto para que funcione.", "Lista suposiciones de deseabilidad, viabilidad, factibilidad y usabilidad; puntúalas por importancia y evidencia; diseña la prueba más barata para las 3 más arriesgadas.", "Marty Cagan, David Bland"],
+      ["xnorth", "Métrica estrella", "Una métrica que alinea a todo el equipo.", "Propón 3 candidatas a North Star, elige una con criterios (refleja valor al cliente, predice ingresos, accionable), y desglósala en 3-5 métricas de entrada con responsable.", "Amplitude North Star Playbook"],
+      ["xroadmap", "Roadmap por resultados", "Ahora, después, más adelante.", "Roadmap en tres columnas (ahora, siguiente, más adelante) con problemas a resolver en lugar de funcionalidades, resultado esperado, confianza y qué lo movería de columna.", "ProdPad, Janna Bastow"],
+      ["xpricingux", "Experimento de precio", "Validar disposición a pagar.", "Encuesta Van Westendorp con las 4 preguntas, cómo leer los resultados, y un test de página de precios falsa con métricas de decisión.", "Madhavan Ramanujam (Monetizing Innovation)"],
+      ["xretention", "Análisis de retención", "Curvas de cohortes y momento aha.", "Define activación, momento aha y hábito; plantilla de cohortes semanales; cómo detectar la curva que se aplana; 5 palancas para mejorarla.", "Lenny Rachitsky, Casey Winters"],
+      ["xspec", "Especificación técnica", "De requisito a diseño implementable.", "Contexto, objetivos y no objetivos, diseño propuesto con diagrama en texto, alternativas, plan de migración, observabilidad, plan de pruebas y preguntas abiertas.", "Google design docs"],
+    ],
+  },
+  tomas: {
+    refs: [
+      ["Aswath Damodaran", "valoración de empresas y narrativa con números"],
+      ["Warren Buffett", "ventaja competitiva duradera y disciplina de capital"],
+      ["Brad Feld", "términos de inversión (Venture Deals)"],
+      ["David Skok", "economía SaaS: LTV, CAC y payback"],
+      ["Mike Michalowicz", "Profit First: el beneficio primero"],
+    ],
+    skills: [
+      ["xvaluation", "Valoración de la empresa", "Cuánto vale y por qué.", "Cuenta la narrativa del negocio y tradúcela a supuestos (crecimiento, márgenes, reinversión, riesgo). DCF simplificado en tabla, contraste con múltiplos comparables y rango de valoración con sensibilidad.", "Aswath Damodaran"],
+      ["xsaas", "Métricas SaaS", "LTV, CAC, payback, churn y regla del 40.", "Calcula en tabla MRR, crecimiento, churn bruto y neto, ARPU, LTV, CAC, LTV/CAC, payback y regla del 40. Señala qué métrica está en zona roja y qué hacer.", "David Skok"],
+      ["xprofit", "Profit First", "Reparto del dinero que entra.", "Define cuentas (ingresos, beneficio, sueldo del fundador, impuestos, gastos operativos), porcentajes objetivo y actuales según facturación, plan de ajuste trimestral y calendario de transferencias.", "Mike Michalowicz"],
+      ["xtermsheet", "Revisión de term sheet", "Entender una oferta de inversión.", "Explica cláusula a cláusula (valoración pre y post, liquidación preferente, antidilución, consejo, vesting, derechos de veto), señala las peligrosas y propone contraoferta razonable.", "Brad Feld (Venture Deals)"],
+      ["xbreakeven", "Punto de equilibrio", "Cuánto hay que vender para no perder.", "Separa costes fijos y variables, calcula margen de contribución, unidades y facturación de equilibrio, y tabla de escenarios pesimista, base y optimista.", "Contabilidad de gestión"],
+      ["xxlsx", "Hoja de cálculo lista para usar", "Modelo con fórmulas que puedes copiar.", "Entrega la hoja como tablas con columnas definidas y las fórmulas exactas de cada celda clave (sintaxis de Excel y Google Sheets), supuestos en una pestaña aparte y comprobaciones de cuadre.", "anthropics/skills: xlsx"],
+    ],
+  },
+  carmen: {
+    refs: [
+      ["Reglamento General de Protección de Datos (RGPD)", "privacidad por diseño y bases de legitimación"],
+      ["Ley de Servicios de la Sociedad de la Información (LSSI)", "obligaciones de webs y comunicaciones comerciales en España"],
+      ["Reglamento europeo de IA (AI Act)", "obligaciones según el nivel de riesgo de los sistemas de IA"],
+      ["Lawrence Lessig", "propiedad intelectual y licencias abiertas"],
+      ["Ken Adams", "redacción contractual clara (A Manual of Style for Contract Drafting)"],
+    ],
+    skills: [
+      ["xgdpr", "Auditoría RGPD", "Cumplimiento de protección de datos.", "Registro de actividades de tratamiento en tabla (finalidad, base legal, datos, plazos, encargados), análisis de transferencias internacionales, derechos de los usuarios, brechas y lista de tareas priorizada.", "RGPD"],
+      ["xnda", "Acuerdo de confidencialidad", "NDA mutuo o unilateral.", "Redacta un NDA con definición precisa de información confidencial, exclusiones, obligaciones, duración, devolución, jurisdicción y penalización, con lenguaje claro al estilo Ken Adams.", "Ken Adams"],
+      ["xaiact", "Cumplimiento AI Act", "Uso de IA conforme a la normativa europea.", "Clasifica cada uso de IA de la empresa por nivel de riesgo, enumera obligaciones aplicables (transparencia, supervisión humana, documentación) y propone textos de aviso a usuarios.", "Reglamento (UE) 2024/1689"],
+      ["xpartners", "Pacto de socios", "Reglas entre fundadores.", "Cláusulas clave: reparto, vesting con cliff, buena y mala salida, arrastre y acompañamiento, no competencia, toma de decisiones y resolución de bloqueos. Explica cada una en lenguaje llano.", "Práctica de venture capital"],
+      ["xip", "Propiedad intelectual", "Proteger marca, código y contenidos.", "Inventario de activos, quién es titular de cada uno, cesiones necesarias de empleados y freelancers, licencias de terceros a revisar y licencia recomendada para lo que publiques.", "Lawrence Lessig, Creative Commons"],
+      ["xcontractreview", "Revisión de contrato ajeno", "Detecta riesgos antes de firmar.", "Tabla cláusula, riesgo (alto, medio, bajo), por qué y redacción alternativa propuesta. Termina con las 3 cláusulas que no se deben firmar tal cual.", "Práctica de asesoría"],
+    ],
+  },
+  pablo: {
+    refs: [
+      ["Laszlo Bock", "decisiones de personas basadas en datos (Work Rules!)"],
+      ["Patty McCord", "cultura de libertad y responsabilidad de Netflix"],
+      ["Kim Scott", "franqueza radical: importar personalmente y desafiar directamente"],
+      ["Amy Edmondson", "seguridad psicológica en equipos"],
+      ["Geoff Smart", "selección con el método Who (scorecard y entrevistas Topgrading)"],
+    ],
+    skills: [
+      ["xscorecard", "Scorecard del puesto", "Define el éxito antes de contratar.", "Misión del puesto en una frase, 3-5 resultados medibles a 12 meses y 6-8 competencias imprescindibles con cómo detectarlas en entrevista.", "Geoff Smart (Who)"],
+      ["xfeedback", "Conversación de feedback", "Franqueza radical bien hecha.", "Guion con el modelo SBI (situación, comportamiento, impacto), preguntas para escuchar, acuerdo de siguiente paso y frases a evitar. Versión para feedback positivo y para correctivo.", "Kim Scott, Center for Creative Leadership"],
+      ["xperf", "Evaluación de desempeño", "Ciclo justo y útil.", "Formulario de autoevaluación y del responsable, escala anclada en comportamientos, calibración entre equipos y plan de desarrollo individual.", "Laszlo Bock"],
+      ["xsalary", "Banda salarial", "Política retributiva transparente.", "Niveles, rangos por nivel con fuentes de mercado, criterios para subir de nivel, componente variable y cómo comunicarlo.", "Buffer, GitLab handbook"],
+      ["xsafety", "Seguridad psicológica", "Diagnóstico y plan del equipo.", "Encuesta de 7 preguntas de Amy Edmondson, interpretación, y 5 rituales concretos para mejorarla (retros sin culpa, preguntas del líder, etc.).", "Amy Edmondson"],
+      ["xcomms", "Comunicación interna", "Mensajes al equipo que se entienden.", "Formatos 3P (progreso, planes, problemas), boletín interno, actualización de dirección y preguntas frecuentes, con tono directo y concreto.", "anthropics/skills: internal-comms"],
+    ],
+  },
+  dani: {
+    refs: [
+      ["Walter Murch", "la regla de seis del montaje: emoción, historia, ritmo"],
+      ["Thelma Schoonmaker", "montaje con ritmo y tensión dramática"],
+      ["Roger Deakins", "fotografía e iluminación cinematográfica"],
+      ["MrBeast", "retención en YouTube: gancho, ritmo y recompensas constantes"],
+      ["Casey Neistat", "storytelling personal y vlog"],
+      ["Peter Mckinnon", "transiciones, B-roll y estética de creador"],
+    ],
+    skills: [
+      ["xmurch", "Montaje con la regla de seis", "Decide cada corte por emoción, historia y ritmo.", "Para cada corte del guion indica por qué se corta según la regla de seis de Murch (emoción, historia, ritmo, mirada, plano 2D, espacio 3D), duración de plano y efecto buscado.", "Walter Murch"],
+      ["xretain", "Guion de retención MrBeast", "Que nadie se vaya del vídeo.", "Gancho en 0-5 s con promesa visual, re-gancho cada 30-60 s, escalada de apuestas, recompensa final y título y miniatura pensados antes del guion. Marca en qué segundo se espera cada caída de audiencia y cómo evitarla.", "MrBeast production guide"],
+      ["xshotlist", "Lista de planos de rodaje", "Plan de grabación para el equipo.", "Tabla con número, escena, tipo de plano, lente, movimiento de cámara, luz, sonido, duración y notas. Agrupa por localización para rodar rápido.", "Práctica de producción"],
+      ["xlight", "Esquema de iluminación", "Luz cinematográfica con poco equipo.", "Esquema de tres puntos o luz motivada para cada escena, posición y temperatura de cada luz, alternativa con luz natural y referencia visual.", "Roger Deakins"],
+      ["xsound", "Diseño de sonido", "Audio profesional.", "Plan de pistas (voz, ambiente, efectos, música), cadena de procesado de voz (reducción de ruido, EQ, compresión, normalización a -14 LUFS para redes), y momentos de silencio dramático.", "Práctica de postproducción"],
+      ["xthumb", "Miniatura y título", "Lo que hace que hagan clic.", "10 títulos con curiosidad y claridad, 3 conceptos de miniatura (composición, emoción del rostro, texto de 3 palabras máximo, contraste) y cómo hacer test A/B.", "MrBeast, Paddy Galloway"],
+      ["xpodcast", "Episodio de podcast en vídeo", "Grabar, cortar y repartir en clips.", "Escaleta del episodio, preguntas, plan de cámaras, y lista de 8 clips verticales con minuto de inicio, gancho y texto en pantalla.", "Práctica de creadores"],
+    ],
+  },
+  lucia: {
+    refs: [
+      ["Dieter Rams", "10 principios del buen diseño: menos, pero mejor"],
+      ["Paula Scher", "identidad tipográfica audaz"],
+      ["Massimo Vignelli", "sistemas de diseño y retícula"],
+      ["Don Norman", "diseño centrado en las personas y affordances"],
+      ["Jony Ive", "diseño industrial y simplicidad"],
+      ["Refactoring UI (Adam Wathan y Steve Schoger)", "jerarquía, espaciado y color prácticos"],
+    ],
+    skills: [
+      ["xdesignsys", "Sistema de diseño", "Tokens, componentes y reglas.", "Tokens de color con contraste AA verificado, escala tipográfica, espaciado en múltiplos de 4, radios, sombras, y especificación de 10 componentes base con estados (normal, hover, foco, desactivado, error).", "Massimo Vignelli, Brad Frost (Atomic Design)"],
+      ["xfrontend", "Interfaz distintiva", "Pantallas que no parecen una plantilla.", "Elige una dirección estética clara y justificada, tipografía con carácter, paleta limitada con un acento, composición con jerarquía fuerte y detalles intencionados. Entrega HTML y CSS listos, evitando gradientes genéricos y estilos por defecto.", "anthropics/skills: frontend-design"],
+      ["xbrandbook", "Manual de marca", "Cómo usar la marca sin romperla.", "Logotipo y usos correctos e incorrectos, área de respeto, paleta con valores HEX, RGB y CMYK, tipografías, iconografía, fotografía, tono visual y 6 aplicaciones de ejemplo.", "anthropics/skills: brand-guidelines"],
+      ["xrefactor", "Pulido visual", "Mejorar una interfaz existente.", "Revisa jerarquía, espaciado, contraste, alineación y densidad con las reglas de Refactoring UI; entrega lista priorizada de cambios con antes y después en CSS.", "Refactoring UI"],
+      ["xposter", "Pieza gráfica", "Cartel, portada o anuncio.", "Concepto en una frase, retícula, jerarquía de lectura en 3 niveles, tipografía, paleta y composición detallada. Entrega en SVG o HTML cuando sea posible.", "anthropics/skills: canvas-design, Paula Scher"],
+      ["xa11y", "Accesibilidad WCAG", "Diseño que todos pueden usar.", "Auditoría WCAG 2.2 AA: contraste, tamaño de objetivos táctiles, foco visible, orden de lectura, textos alternativos y formularios. Tabla de problemas con severidad y solución.", "W3C WCAG"],
+      ["xpackaging", "Packaging", "Envase que vende en el lineal.", "Jerarquía del frontal (marca, producto, beneficio), información obligatoria, materiales, sostenibilidad y 3 conceptos con descripción visual.", "Práctica de diseño de packaging"],
+    ],
+  },
+  sofia: {
+    refs: [
+      ["Gary Vaynerchuk", "volumen de contenido nativo por plataforma y modelo pilar"],
+      ["Brendan Kane", "ganchos y crecimiento de un millón de seguidores"],
+      ["Justin Welsh", "sistema de contenido de creador en solitario"],
+      ["Jonah Berger", "por qué se comparte algo: STEPPS (Contagious)"],
+      ["Chris Do", "contenido educativo de valor y marca personal"],
+    ],
+    skills: [
+      ["xpillar", "Contenido pilar a 30 piezas", "Un contenido largo convertido en un mes.", "A partir de una pieza larga, extrae 30 piezas nativas por plataforma (reels, carruseles, hilos, stories, posts de LinkedIn) con gancho, formato y día de publicación.", "Gary Vaynerchuk"],
+      ["xstepps", "Contenido para compartir", "Diseñado para que se difunda.", "Evalúa la idea con STEPPS (moneda social, disparadores, emoción, público, valor práctico, historias) y reescríbela para puntuar alto en al menos 4.", "Jonah Berger"],
+      ["xsocialcontent", "Contenido social por plataforma", "Adaptado a cada red.", "Versiona el mismo mensaje para Instagram, TikTok, LinkedIn, X y YouTube Shorts respetando formato, longitud, tono y llamada a la acción de cada una.", "coreyhaines31/marketingskills: social-content"],
+      ["xugc", "Campaña UGC", "Que los clientes creen por ti.", "Mecánica, brief para creadores con guion de 3 tomas, derechos de uso, incentivos, hashtag y plan de reutilización en anuncios.", "Práctica de growth"],
+      ["xanalytics", "Informe mensual de redes", "Qué funcionó y qué repetir.", "Tabla por red con alcance, interacción, guardados, compartidos, seguidores y clics; top 5 y bottom 5 piezas con hipótesis de por qué; 3 decisiones para el mes siguiente.", "Práctica de social media"],
+      ["xlinkedin", "Marca personal en LinkedIn", "Autoridad del fundador.", "Perfil optimizado, 4 pilares de contenido, plantillas de post (historia, lección, lista, opinión), ritmo semanal y rutina de comentarios de 20 minutos.", "Justin Welsh"],
+    ],
+  },
+  bruno: {
+    refs: [
+      ["David Ogilvy", "publicidad que vende: el consumidor no es tonto"],
+      ["Eugene Schwartz", "niveles de consciencia y sofisticación del mercado (Breakthrough Advertising)"],
+      ["Gary Halbert", "cartas de venta y conocer al mercado hambriento"],
+      ["Joanna Wiebe", "copy basado en investigación de clientes (Copyhackers)"],
+      ["Ann Handley", "escribir con claridad y voz propia (Everybody Writes)"],
+      ["Donald Miller", "StoryBrand: el cliente es el héroe"],
+    ],
+    skills: [
+      ["xawareness", "Copy por nivel de consciencia", "El mensaje según lo que sabe el cliente.", "Define el nivel de consciencia del público (inconsciente, del problema, de la solución, del producto, muy consciente) y escribe titular y primer párrafo adaptados a cada nivel, indicando cuál usar dónde.", "Eugene Schwartz"],
+      ["xsalesletter", "Carta de ventas larga", "Página de ventas completa.", "Titular, subtítulo, historia, problema, agitación, solución, prueba, oferta apilada, garantía, escasez real, llamada a la acción y posdata. Basada en el lenguaje literal del cliente.", "Gary Halbert, Joanna Wiebe"],
+      ["xcopyedit", "Corrección de copy", "Siete pasadas de edición.", "Revisa en pasadas separadas: claridad, voz, so what, prueba, especificidad, emoción y fricción. Entrega el texto corregido y una tabla con los cambios y su motivo.", "coreyhaines31/marketingskills: copy-editing"],
+      ["xemailseq", "Secuencia de emails", "Bienvenida o venta automatizada.", "7 emails con asunto, preheader, objetivo, cuerpo completo y llamada a la acción, con lógica de envío por comportamiento.", "coreyhaines31/marketingskills: email-sequence"],
+      ["xogilvy", "Anuncio al estilo Ogilvy", "Titular que vende.", "20 titulares con beneficio y novedad, el mejor desarrollado con cuerpo de texto informativo, prueba concreta y firma de marca. Explica la elección.", "David Ogilvy"],
+      ["xcasestudy", "Caso de éxito", "Prueba social que convence.", "Estructura reto, solución y resultado con cifras, cita del cliente, titular con el resultado, versión larga para web y corta para redes y ventas.", "Práctica B2B"],
+      ["xcoauthor", "Documento en coautoría", "Redactar contigo paso a paso.", "Primero acuerda objetivo, lector y estructura; redacta sección a sección con preguntas al final de cada una; cierra con revisión de coherencia y resumen ejecutivo.", "anthropics/skills: doc-coauthoring"],
+    ],
+  },
+  kai: {
+    refs: [
+      ["Kent Beck", "desarrollo guiado por pruebas y diseño simple"],
+      ["Martin Fowler", "refactorización y arquitectura evolutiva"],
+      ["Robert C. Martin", "código limpio y principios SOLID"],
+      ["Dan Abramov", "React y modelos mentales de la interfaz"],
+      ["Guillermo Rauch", "la web rápida: Next.js y despliegue sin fricción"],
+      ["John Ousterhout", "módulos profundos y diseño de software (A Philosophy of Software Design)"],
+    ],
+    skills: [
+      ["xtdd", "Desarrollo con pruebas primero", "Rojo, verde, refactor.", "Para cada comportamiento: escribe la prueba que falla, el mínimo código que la pasa y refactoriza. Entrega pruebas y código completos y nunca código sin su prueba.", "obra/superpowers: test-driven-development, Kent Beck"],
+      ["xdebug", "Depuración sistemática", "Encontrar la causa raíz, no parchear.", "Reproduce el fallo, reúne evidencia, formula hipótesis, prueba de una en una, localiza la causa raíz, corrige y añade una prueba que lo evite. Nada de cambios al azar.", "obra/superpowers: systematic-debugging"],
+      ["xrefactorcode", "Refactorización segura", "Mejorar código sin romperlo.", "Identifica olores de código, elige refactorizaciones del catálogo de Fowler, aplica pasos pequeños con pruebas verdes entre cada uno y entrega el antes y después.", "Martin Fowler"],
+      ["xwebapp", "App web completa", "React, TypeScript y Tailwind.", "Estructura de carpetas, componentes, estado, llamadas a API, manejo de errores y carga, accesibilidad y código completo de cada archivo listo para ejecutar.", "anthropics/skills: web-artifacts-builder"],
+      ["xmcp", "Servidor MCP", "Conecta tus herramientas a la IA.", "Diseña las herramientas (nombre, descripción, parámetros con esquema), implementa el servidor MCP en TypeScript o Python, autenticación, errores y cómo probarlo con un cliente.", "anthropics/skills: mcp-builder"],
+      ["xarch", "Arquitectura del sistema", "Diseño que aguanta el crecimiento.", "Diagrama en texto de componentes, decisiones con ADR, modelo de datos, límites de módulos profundos, escalado, coste estimado y qué se deja para más adelante.", "John Ousterhout, Martin Fowler"],
+      ["xperfweb", "Rendimiento web", "Core Web Vitals en verde.", "Diagnóstico de LCP, INP y CLS, presupuesto de rendimiento, y lista de optimizaciones con impacto estimado (imágenes, fuentes, JS, caché, renderizado).", "web.dev (Google)"],
+    ],
+  },
+  ivan: {
+    refs: [
+      ["Gene Kim", "las tres vías de DevOps (The Phoenix Project)"],
+      ["Nicole Forsgren", "métricas DORA y Accelerate"],
+      ["Google SRE", "presupuestos de error y SLO"],
+      ["Kelsey Hightower", "Kubernetes y simplicidad operativa"],
+      ["Charity Majors", "observabilidad moderna"],
+    ],
+    skills: [
+      ["xslo", "SLO y presupuesto de error", "Fiabilidad medible.", "Define SLI por servicio, SLO con ventana, presupuesto de error, alertas por velocidad de consumo y política de qué hacer cuando se agota.", "Google SRE Book"],
+      ["xdora", "Métricas DORA", "Cómo de bien entrega el equipo.", "Mide frecuencia de despliegue, tiempo de entrega, tasa de fallos y tiempo de recuperación; compara con los niveles de élite y propone 5 mejoras.", "Nicole Forsgren (Accelerate)"],
+      ["xpostmortem", "Postmortem sin culpa", "Aprender de cada incidente.", "Resumen, impacto, cronología, causa raíz con los 5 porqués, qué salió bien, acciones con responsable y fecha. Tono sin culpables.", "Google SRE, Etsy"],
+      ["xwebtest", "Pruebas end-to-end", "Probar la web como un usuario.", "Escenarios críticos, scripts de Playwright completos con selectores robustos, capturas en fallos y cómo integrarlos en CI.", "anthropics/skills: webapp-testing"],
+      ["xobs", "Observabilidad", "Saber qué pasa en producción.", "Plan de logs estructurados, métricas y trazas con OpenTelemetry, cuadros de mando por servicio y 10 alertas útiles sin ruido.", "Charity Majors, OpenTelemetry"],
+      ["xverify", "Verificación antes de entregar", "Pruebas, no promesas.", "Antes de declarar algo terminado: lista de comandos de comprobación, salida esperada, criterios de aceptación y evidencia. Si algo no se ha podido verificar, dilo.", "obra/superpowers: verification-before-completion"],
+    ],
+  },
+  irene: {
+    refs: [
+      ["Rand Fishkin", "SEO, audiencia y SparkToro"],
+      ["Brian Dean", "técnica rascacielos y contenido enlazable"],
+      ["Aleyda Solís", "SEO internacional y técnico"],
+      ["Avinash Kaushik", "analítica orientada a decisiones"],
+      ["Lily Ray", "E-E-A-T y calidad del contenido"],
+      ["Kevin Indig", "SEO en la era de la búsqueda con IA"],
+    ],
+    skills: [
+      ["xprogseo", "SEO programático", "Cientos de páginas útiles desde datos.", "Elige el patrón de búsqueda, define la plantilla con secciones de valor real, fuentes de datos, enlazado interno, control de calidad contra contenido escaso y plan de indexación.", "coreyhaines31/marketingskills: programmatic-seo"],
+      ["xschema", "Datos estructurados", "Resultados enriquecidos en Google.", "JSON-LD completo para los tipos que apliquen (Organization, Product, FAQ, Article, LocalBusiness, BreadcrumbList), validación y dónde insertarlo.", "coreyhaines31/marketingskills: schema-markup"],
+      ["xgeo", "Visibilidad en buscadores con IA", "Aparecer en ChatGPT, Gemini y AI Overviews.", "Auditoría de entidades y menciones, contenido con respuestas directas y citables, datos propios, señales E-E-A-T y lista de fuentes donde conviene estar.", "Kevin Indig, Lily Ray"],
+      ["xskyscraper", "Contenido rascacielos", "La mejor página de su tema.", "Analiza las 10 primeras posiciones, define qué falta, esquema mejorado, recursos enlazables y plan de difusión para conseguir enlaces.", "Brian Dean"],
+      ["xtracking", "Plan de medición", "Eventos y conversiones bien medidos.", "Plan de etiquetado con eventos, parámetros y conversiones en GA4, convención de nombres, UTMs y verificación con DebugView.", "coreyhaines31/marketingskills: analytics-tracking"],
+      ["xinsight", "Informe de analítica", "De datos a decisiones.", "Para cada métrica: qué pasó, por qué (hipótesis con datos), y qué hacer. Usa el marco «so what» de Avinash Kaushik y termina con 3 acciones.", "Avinash Kaushik"],
+    ],
+  },
+  hugo: {
+    refs: [
+      ["Andrej Karpathy", "entender los modelos de lenguaje desde dentro"],
+      ["Andrew Ng", "flujos agénticos y aprendizaje automático aplicado"],
+      ["Simon Willison", "uso práctico y seguro de modelos, inyección de prompts"],
+      ["Anthropic", "guías de prompt engineering y construcción de agentes eficaces"],
+      ["Chip Huyen", "ingeniería de sistemas de IA en producción"],
+    ],
+    skills: [
+      ["xagents", "Agente eficaz", "Del flujo simple al agente.", "Empieza por el patrón más simple que funcione (cadena, enrutador, paralelización, orquestador con trabajadores, evaluador y optimizador) y justifica cuándo hace falta un agente autónomo. Define herramientas, bucle, límites y evaluación.", "Anthropic: Building effective agents"],
+      ["xevals", "Evaluación de IA", "Medir si el sistema funciona.", "Conjunto de 30 casos de prueba con entrada y salida esperada, métricas (exactitud, formato, seguridad), evaluador automático con rúbrica y cómo comparar versiones.", "Chip Huyen, Hamel Husain"],
+      ["xrag", "Sistema RAG", "Que la IA responda con tus documentos.", "Ingesta, troceado, embeddings, búsqueda híbrida, reordenado, prompt con citas, evaluación de recuperación y respuestas, y coste estimado.", "Chip Huyen"],
+      ["xskillmaker", "Crear una skill", "Empaqueta un método para reutilizarlo.", "Nombre, descripción que dispare bien, instrucciones paso a paso, ejemplos, recursos y casos de prueba para comprobar que la skill funciona.", "anthropics/skills: skill-creator"],
+      ["xinjection", "Seguridad de IA", "Protegerse de la inyección de prompts.", "Mapa de entradas no confiables, riesgos (exfiltración, acciones no deseadas), mitigaciones (separación de privilegios, confirmación humana, filtros) y pruebas de ataque.", "Simon Willison"],
+      ["xworkflow", "Flujo n8n o Make", "Automatización lista para montar.", "Disparador, nodos uno a uno con su configuración exacta, manejo de errores, reintentos, coste por ejecución y cómo probarlo.", "Práctica de automatización"],
+    ],
+  },
+  alex: {
+    refs: [
+      ["Philip Kotler", "fundamentos de marketing estratégico"],
+      ["Seth Godin", "la vaca púrpura y el mínimo público viable"],
+      ["Byron Sharp", "cómo crecen las marcas: disponibilidad mental y física"],
+      ["Alex Hormozi", "ofertas irresistibles y generación de leads ($100M Offers y Leads)"],
+      ["April Dunford", "posicionamiento (Obviously Awesome)"],
+      ["Rory Sutherland", "psicología del consumidor y alquimia"],
+    ],
+    skills: [
+      ["xposition", "Posicionamiento", "Dónde ganas y contra quién.", "Método de April Dunford: alternativas competitivas, atributos únicos, valor que habilitan, clientes que más lo aprecian, categoría de mercado y tendencias relevantes. Termina con la frase de posicionamiento.", "April Dunford"],
+      ["xpsych", "Psicología del marketing", "Sesgos que mueven decisiones.", "Aplica 10 principios (anclaje, prueba social, aversión a la pérdida, efecto señuelo, reciprocidad, autoridad, escasez, fluidez, coste hundido, compromiso) al caso con un ejemplo concreto de cada uno.", "coreyhaines31/marketingskills: marketing-psychology, Rory Sutherland"],
+      ["xcro", "Optimización de conversión", "Que la página convierta más.", "Auditoría de la página por claridad de propuesta, relevancia, fricción, ansiedad, distracción y urgencia. Lista priorizada por impacto con hipótesis de test A/B.", "coreyhaines31/marketingskills: page-cro"],
+      ["xleads", "Motor de leads Hormozi", "Los 4 métodos para conseguir clientes.", "Plan con contacto en frío, contenido gratuito, anuncios y referidos o afiliados: volumen diario, guion, imán de leads y métricas de cada uno.", "Alex Hormozi ($100M Leads)"],
+      ["xbrandgrowth", "Crecimiento de marca", "Disponibilidad mental y física.", "Activos distintivos de marca, momentos de compra a cubrir, alcance amplio frente a segmentación estrecha y plan de presupuesto 60/40 marca y rendimiento.", "Byron Sharp, Les Binet y Peter Field"],
+      ["xreferral", "Programa de referidos", "Que los clientes traigan clientes.", "Mecánica de doble recompensa, momento de pedirlo, mensajes, prevención de fraude, cálculo de coste por adquisición y métricas.", "coreyhaines31/marketingskills: referral-program"],
+      ["xpurplecow", "Idea notable", "Algo de lo que se hable.", "Mínimo público viable, 10 ideas notables (que la gente comente), filtro de viabilidad y la mejor desarrollada con plan de lanzamiento.", "Seth Godin"],
+    ],
+  },
+  rocio: {
+    refs: [
+      ["Neil Rackham", "SPIN Selling: preguntas de situación, problema, implicación y necesidad"],
+      ["Chris Voss", "negociación con empatía táctica (Never Split the Difference)"],
+      ["Aaron Ross", "prospección predecible (Predictable Revenue)"],
+      ["Matthew Dixon", "The Challenger Sale: enseñar, adaptar y tomar el control"],
+      ["Jeb Blount", "prospección fanática y disciplina comercial"],
+      ["Grant Cardone", "seguimiento persistente y volumen de actividad"],
+    ],
+    skills: [
+      ["xvoss", "Negociación Chris Voss", "Conseguir el sí sin ceder de más.", "Prepara la hoja de negociación: objetivo, etiquetas, preguntas calibradas («¿cómo…?», «¿qué…?»), espejos, auditoría de acusaciones, ancla y método Ackerman de concesiones 65-85-95-100.", "Chris Voss"],
+      ["xchallenger", "Venta Challenger", "Enseñar algo nuevo al cliente.", "Insight que reencuadra el problema del cliente, coste de no actuar con cifras, cómo nuestra solución encaja, y guion de reunión en 6 pasos (calentamiento, reencuadre, impacto racional, impacto emocional, nueva forma, solución).", "Matthew Dixon y Brent Adamson"],
+      ["xicp", "Cliente ideal y listas", "A quién vender primero.", "Perfil de cliente ideal (firmográficos, señales de compra, disparadores), buyer personas del comité, fuentes para construir la lista y puntuación de cuentas.", "Aaron Ross"],
+      ["xdiscovery", "Llamada de descubrimiento", "Calificar con MEDDICC.", "Guion con preguntas para métricas, comprador económico, criterios y proceso de decisión, dolor, campeón y competencia. Plantilla de notas y señales de que no hay oportunidad.", "MEDDICC (PTC)"],
+      ["xlinkedinsales", "Prospección en LinkedIn", "Social selling sin spam.", "Optimiza el perfil, secuencia de 5 toques (visita, comentario, conexión, valor, petición) con mensajes exactos y ritmo diario de 30 minutos.", "Jeb Blount, Justin Welsh"],
+      ["xclose", "Cierre y seguimiento", "No perder oportunidades por silencio.", "Técnicas de cierre honestas, plan de seguimiento de 8 toques en 21 días por canales distintos y email de ruptura que reactiva.", "Grant Cardone, Jeb Blount"],
+    ],
+  },
+  lola: {
+    refs: [
+      ["Tony Hsieh", "servicio que asombra (Zappos, Delivering Happiness)"],
+      ["Shep Hyken", "experiencia de cliente sorprendente"],
+      ["Disney Institute", "estándares de servicio y método HEARD"],
+      ["Horst Schulze", "excelencia del Ritz-Carlton"],
+      ["Fred Reichheld", "NPS y lealtad del cliente"],
+    ],
+    skills: [
+      ["xjourney", "Mapa del viaje del cliente", "Cada punto de contacto, mejorado.", "Fases (descubrimiento, compra, entrega, uso, renovación), emociones, puntos de dolor, momentos de la verdad y 10 mejoras priorizadas.", "Shep Hyken, Disney Institute"],
+      ["xwow", "Momentos wow", "Sorprender a bajo coste.", "15 gestos sorprendentes por fase con coste, a quién aplicarlo, quién lo ejecuta y cómo medir su efecto en reseñas y recompra.", "Tony Hsieh (Zappos)"],
+      ["xstandards", "Estándares de servicio", "El Ritz-Carlton de tu empresa.", "Credo, 12 estándares de servicio, lenguaje a usar y evitar, tiempos de respuesta por canal y sistema de empoderamiento con presupuesto por caso.", "Horst Schulze"],
+      ["xknowledge", "Base de conocimiento", "Que el cliente se ayude solo.", "Arquitectura de categorías, 20 artículos prioritarios con título por búsqueda real, plantilla de artículo, y cómo medir desvío de tickets.", "Práctica de soporte (Zendesk)"],
+      ["xchurn", "Prevención de bajas", "Recuperar clientes que se van.", "Señales de riesgo, flujo de cancelación con oferta según motivo, guion de llamada de retención y campaña de recuperación para los que ya se fueron.", "coreyhaines31/marketingskills, Fred Reichheld"],
+      ["xreviews", "Gestión de reseñas", "Más reseñas y mejores respuestas.", "Momentos para pedir reseña, mensajes, respuestas modelo a reseñas de 1 a 5 estrellas y plan para mejorar la puntuación media.", "Práctica de reputación online"],
+    ],
+  },
+};
+// Une el conocimiento experto con la plantilla
+for (const a of AGENTS) {
+  const x = EXPERT[a.id]; if (!x) continue;
+  a.refs = x.refs;
+  a.skills.push(...x.skills);
+}
