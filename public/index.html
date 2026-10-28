@@ -187,6 +187,9 @@ canvas#scene { display: block; width: 100%; height: auto; image-rendering: pixel
 .chk > span { min-width: 0; }
 .chk b { font-weight: 500; display: block; overflow-wrap: anywhere; }
 .chk b + span { display: block; font-size: 12.5px; color: var(--ink-3); }
+.ctx-report { margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid #c8741e; border-radius: 6px; font-size: 14px; color: var(--ink-2); }
+.ctx-report b { color: var(--ink); font-weight: 600; }
+.ctx-report details { margin-top: 8px; }
 .ctx-project { margin: 0 0 18px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .ctxg { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .ctxg-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
@@ -403,6 +406,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <input type="file" id="ctxDir" webkitdirectory multiple hidden>
     <label class="chk ctx-project" id="ctxProject" hidden><input type="checkbox" id="ctxProjectChk"><span><b>Dejar que lean los archivos de este proyecto de Claude</b><span>Los documentos que hayas subido al proyecto de Claude donde vive esta oficina (no el código de tu app: ese súbelo con «Subir una carpeta»). Claude te pedirá permiso la primera vez.</span></span></label>
     <p class="note" id="ctxBusy" hidden></p>
+    <div class="ctx-report" id="ctxReport" hidden></div>
     <div id="ctxList"></div>
   </section>
 
@@ -2639,7 +2643,7 @@ function paintCounts() {
   $("#nTasks").textContent = state.tasks.length || "";
   $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
   $("#nSkills").textContent = allSkills().length;
-  $("#nCtx").textContent = CTX.items.length || "";
+  $("#nCtx").textContent = ctxFiles(CTX.items) || "";
   for (const r of ROOMS) {
     const n = AGENTS.filter(a => a.room === r.id && state.status[a.id] !== "idle").length;
     const total = AGENTS.filter(a => a.room === r.id).length;
@@ -2774,8 +2778,11 @@ function paintSkills() {
 function paintContext() {
   const box = $("#ctxList"); if (!box) return;
   const srcs = ctxSources(), act = ctxActive();
-  $("#ctxSummary").textContent = CTX.items.length ? `${act.length} de ${CTX.items.length} archivos activos · ${fmtSize(ctxChars(act))} caracteres` : "";
+  $("#ctxSummary").textContent = CTX.items.length ? `${ctxFiles(act)} de ${ctxFiles(CTX.items)} archivos activos · ${fmtSize(ctxChars(act))} caracteres` : "";
   $("#ctxBusy").textContent = CTX.busy; $("#ctxBusy").hidden = !CTX.busy;
+  const rep = CTX.report && CTX.items.some(x => x.source === CTX.report.source) ? CTX.report : null;
+  $("#ctxReport").hidden = !rep;
+  if (rep) $("#ctxReport").innerHTML = `<b>De «${esc(rep.source)}» faltan ${rep.missing.length} de ${rep.files} archivos</b> porque ${esc(rep.why)}. Han entrado primero CLAUDE.md, README, la configuración y el código; lo que falta es lo menos importante. Puedes desactivar o quitar otros contextos y volver a subir la carpeta.<details><summary>Ver los que faltan</summary><ul class="ctxfiles">${rep.missing.slice(0, 400).map(n => `<li><span class="num">${esc(n)}</span></li>`).join("")}</ul></details>`;
   const pf = $("#ctxProject");
   pf.hidden = !(window.claude?.use);
   pf.querySelector("input").checked = CTX.projectFiles;
@@ -2783,7 +2790,7 @@ function paintContext() {
     const on = g.items.filter(x => x.active).length, kind = { github: "Repositorio de GitHub", carpeta: "Carpeta", archivos: "Archivos", texto: "Texto" }[g.kind] || "Contexto";
     const one = g.items.length === 1;
     return `<section class="ctxg"><div class="ctxg-h">
-        <label class="chk"><input type="checkbox" data-ctxsrc="${esc(g.source)}" ${on ? "checked" : ""}><span><b>${esc(g.source)}</b><span>${kind} · ${g.items.length} ${g.items.length === 1 ? "archivo" : "archivos"} · ${fmtSize(ctxChars(g.items))} · ${fmtDate(g.createdAt)}</span></span></label>
+        <label class="chk"><input type="checkbox" data-ctxsrc="${esc(g.source)}" ${on ? "checked" : ""}><span><b>${esc(g.source)}</b><span>${kind} · ${ctxFiles(g.items)} ${ctxFiles(g.items) === 1 ? "archivo" : "archivos"} · ${fmtSize(ctxChars(g.items))} · ${fmtDate(g.createdAt)}</span></span></label>
         <button class="btn ghost sm" type="button" data-ctxdel="${esc(g.source)}">Quitar</button></div>
       ${one ? `<p class="ctx-prev">${esc(g.items[0].text.slice(0, 220))}${g.items[0].text.length > 220 ? "…" : ""}</p>` : `<details><summary>Ver archivos</summary><ul class="ctxfiles">${g.items.map(x => `<li><label class="chk"><input type="checkbox" data-ctxone="${x.id}" ${x.active ? "checked" : ""}><span class="num">${esc(x.name)}</span></label><span class="num">${fmtSize(x.text.length)}</span></li>`).join("")}</ul></details>`}
     </section>`;
@@ -2835,7 +2842,7 @@ function paintComposer() {
   }
   $("#btnAttach").hidden = !(AI.images || AI.mode === "none") || !!c.image;
   $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">Quitar</button></span>` : "";
-  const na = ctxActive().length;
+  const na = ctxFiles(ctxActive());
   const srcs = [...new Set(ctxActive().map(x => x.source))], srcTxt = srcs.length > 2 ? `${srcs.slice(0, 2).join(", ")} y ${srcs.length - 2} más` : srcs.join(", ");
   $("#ctxSlot").innerHTML = na ? `<button type="button" class="attach" data-go="contexto" title="${esc(srcs.join(", "))}">Contexto: ${esc(srcTxt)} (${na} ${na === 1 ? "archivo" : "archivos"})</button>` : `<button type="button" class="attach" data-go="contexto">Sin contexto: añadir tu app</button>`;
   const sk = c.skill ? skillById(c.skill) : null;
@@ -3116,12 +3123,21 @@ function updateBanner() {
 }
 
 /* ---------- Contexto: documentos y código del propietario que leen todos los puestos ---------- */
-const CTX = { items: [], ver: 0, projectFiles: false, fileTools: null, busy: "" };
+const CTX = { items: [], ver: 0, projectFiles: false, fileTools: null, busy: "", report: null };
 const TEXT_EXT = /\.(txt|md|mdx|markdown|csv|tsv|json|jsonc|jsonl|ya?ml|toml|ini|cfg|conf|xml|svg|html?|css|scss|sass|less|js|jsx|ts|tsx|mjs|cjs|vue|svelte|astro|py|ipynb|rb|php|java|kt|kts|swift|go|rs|c|h|cc|cpp|hpp|cs|fs|sql|sh|bash|zsh|ps1|dart|lua|r|ex|exs|erl|scala|clj|gradle|prisma|graphql|gql|proto|tf|hcl|rst|tex|srt|vtt|env\.example|gitignore|dockerignore|editorconfig)$/i;
 const TEXT_NAME = /(^|\/)(Dockerfile|Makefile|Procfile|Gemfile|README|LICENSE|CHANGELOG|AGENTS|CLAUDE)(\.[a-z]+)?$/i;
 const SKIP_PATH = /(^|\/)(node_modules|\.git|\.svn|dist|build|\.next|\.nuxt|out|coverage|vendor|\.venv|venv|__pycache__|\.cache|\.idea|\.vscode|Pods|DerivedData|\.gradle|target|bin|obj)(\/|$)/;
 const SKIP_FILE = /(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb|composer\.lock|Cargo\.lock|poetry\.lock|\.min\.(js|css)|\.map|\.DS_Store)$/i;
-const CTX_MAX_FILE = 200000, CTX_MAX_TOTAL = 6e6, CTX_MAX_FILES = 600;
+// Cada documento del almacén admite 256 KiB: los archivos grandes se guardan en partes en vez de recortarse.
+const CTX_PART = 100000, CTX_MAX_TOTAL = 24e6, CTX_MAX_FILES = 4000;
+// Si no cabe todo, entra primero lo que más ayuda a entender la app.
+function ctxRank(name) {
+  const n = name.toLowerCase(), base = n.split("/").pop();
+  if (/^(claude|agents|readme|architecture|contributing)(\.[a-z]+)?$/.test(base) || /^(package\.json|tsconfig\.json|next\.config\.[a-z]+|capacitor\.config\.[a-z]+|app\.json)$/.test(base)) return 0;
+  if (/\.(ts|tsx|js|jsx|mjs|cjs|py|swift|kt|dart|go|rs|vue|svelte|astro|prisma|graphql|gql|rb|php|java|cs)$/.test(n) || /\.(md|mdx)$/.test(n)) return /(^|\/)(test|tests|__tests__|e2e|fixtures|mocks?|generated)(\/|$)|\.(test|spec|d)\.[a-z]+$/.test(n) ? 2 : 1;
+  if (/\.(sql|css|scss|html?|ya?ml|toml|sh)$/.test(n)) return 2;
+  return 3;
+}
 const STOP = new Set("para como esto esta este estos estas pero porque sobre entre desde hasta donde cuando quien cual cuales todo todos todas tiene tienen hacer hace sera seran puede pueden debe deben tambien mucho muchos poco cada otro otra otros otras nuestro nuestra vuestro their with that this from have will what which when where your about into than then them they were been more most some such only also just like make need quiero necesito favor".split(" "));
 const ctxActive = () => CTX.items.filter(x => x.active);
 const ctxChars = (list = CTX.items) => list.reduce((n, x) => n + (x.text?.length || 0), 0);
@@ -3172,34 +3188,44 @@ function ctxTools() {
     { name: "leer_archivo_contexto", description: "Lee un archivo del contexto por su ruta tal como aparece en la lista. Devuelve hasta 10.000 caracteres a partir de 'desde'.",
       inputSchema: { type: "object", properties: { ruta: { type: "string" }, desde: { type: "number" } }, required: ["ruta"] },
       execute: ({ ruta, desde = 0 }) => {
-        const act = ctxActive(), r = String(ruta || ""), it = act.find(x => x.name === r) || act.find(x => x.name.endsWith(r));
-        if (!it) throw new Error("No hay ningún archivo con esa ruta en el contexto.");
-        const from = Math.max(0, +desde || 0);
-        return { ruta: it.name, caracteres_totales: it.text.length, desde: from, texto: it.text.slice(from, from + 10000) };
+        const act = ctxActive(), r = String(ruta || "").replace(/ \[parte \d+ de \d+\]$/, ""), file = x => x.name.replace(/ \[parte \d+ de \d+\]$/, "");
+        const hit = act.find(x => file(x) === r) || act.find(x => file(x).endsWith(r));
+        if (!hit) throw new Error("No hay ningún archivo con esa ruta en el contexto.");
+        const text = act.filter(x => x.source === hit.source && file(x) === file(hit)).sort((a, b) => (+(/\[parte (\d+)/.exec(a.name)?.[1]) || 0) - (+(/\[parte (\d+)/.exec(b.name)?.[1]) || 0)).map(x => x.text).join(""), from = Math.max(0, +desde || 0);
+        return { ruta: file(hit), caracteres_totales: text.length, desde: from, texto: text.slice(from, from + 10000) };
       } });
   if (CTX.projectFiles && CTX.fileTools) t.push(...CTX.fileTools);
   return t;
 }
+const ctxFiles = list => new Set(list.map(x => x.name.replace(/ \[parte \d+ de \d+\]$/, ""))).size;
 function ctxSources() {
   const m = new Map();
   for (const x of CTX.items) { const g = m.get(x.source) || { source: x.source, kind: x.kind, items: [], createdAt: x.createdAt }; g.items.push(x); m.set(x.source, g); }
   return [...m.values()].sort((a, b) => b.createdAt - a.createdAt);
 }
 async function addCtx(entries, source, kind) {
-  // entries: [{name, text}]
-  let added = 0, skipped = 0, total = ctxChars();
-  const now = Date.now();
-  for (const e of entries) {
-    if (CTX.items.length >= CTX_MAX_FILES || total + e.text.length > CTX_MAX_TOTAL) { skipped++; continue; }
+  // entries: [{name, text}]. Los archivos grandes se parten; si no cabe todo, se avisa de forma permanente.
+  const parts = [];
+  for (const e of [...entries].sort((a, b) => ctxRank(a.name) - ctxRank(b.name) || a.name.localeCompare(b.name))) {
+    const n = Math.ceil(e.text.length / CTX_PART);
+    for (let k = 0; k < n; k++) parts.push({ name: n > 1 ? `${e.name} [parte ${k + 1} de ${n}]` : e.name, file: e.name, text: e.text.slice(k * CTX_PART, (k + 1) * CTX_PART) });
+  }
+  const keep = CTX.items.filter(x => x.source !== source);
+  let added = 0, total = ctxChars(keep), full = "";
+  const missing = new Set(), now = Date.now();
+  for (const e of parts) {
+    if (full || keep.length + added >= CTX_MAX_FILES || total + e.text.length > CTX_MAX_TOTAL) { missing.add(e.file); continue; }
     const old = CTX.items.find(x => x.source === source && x.name === e.name);
-    const x = { id: old?.id || "x" + uid(), source, kind, name: e.name, text: e.text.slice(0, CTX_MAX_FILE), active: true, createdAt: old?.createdAt || now };
-    try { await store.saveCtx(x); } catch { skipped++; break; }
+    const x = { id: old?.id || "x" + uid(), source, kind, name: e.name, text: e.text, active: true, createdAt: old?.createdAt || now };
+    try { await store.saveCtx(x); } catch (err) { full = err?.code === "quota_exceeded" ? "store" : "error"; missing.add(e.file); continue; }
     if (old) Object.assign(old, x); else CTX.items.push(x);
     total += x.text.length; added++;
-    if (added % 10 === 0) { CTX.busy = `Guardando ${added} de ${entries.length}…`; paintContext(); }
+    if (added % 10 === 0) { CTX.busy = `Guardando ${added} de ${parts.length}…`; paintContext(); }
   }
+  CTX.report = missing.size ? { source, files: entries.length, missing: [...missing], why: full === "store" ? "el almacén de la oficina se ha llenado" : full ? "hubo un error al guardar" : "se ha llegado al límite de contexto (24 M de caracteres)" } : null;
+  try { localStorage.setItem("oficina.ctxreport", JSON.stringify(CTX.report)); } catch {}
   CTX.busy = ""; CTX.ver++; paintContext(); paintCounts(); paintComposer();
-  toast(skipped ? `${added} añadidos. ${skipped} no caben en el límite del contexto.` : `${added} ${added === 1 ? "archivo añadido" : "archivos añadidos"} al contexto.`);
+  toast(missing.size ? `${entries.length - missing.size} de ${entries.length} archivos cargados. Faltan ${missing.size}: mira el aviso en Contexto.` : `${entries.length} ${entries.length === 1 ? "archivo añadido" : "archivos añadidos"} al contexto, completos.`);
 }
 const isTextPath = p => (TEXT_EXT.test(p) || TEXT_NAME.test(p)) && !SKIP_PATH.test(p) && !SKIP_FILE.test(p);
 async function readFiles(fileList) {
@@ -3296,7 +3322,15 @@ const store = {
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
         try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = d.data(); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
-        try { const cq = await this.base.collection("context").orderBy("createdAt", "asc").limit(1000).get(); CTX.items = cq.docs.map(d => d.data()).filter(x => x?.id); } catch {}
+        try {
+          const col = this.base.collection("context"), items = []; let last = "";
+          for (let i = 0; i < 10; i++) {
+            const q = await (last ? col.where("id", ">", last) : col).orderBy("id").limit(1000).get();
+            items.push(...q.docs.map(d => d.data()).filter(x => x?.id));
+            if (q.docs.length < 1000) break; last = items[items.length - 1].id;
+          }
+          CTX.items = items.sort((a, b) => a.createdAt - b.createdAt);
+        } catch { try { const cq = await this.base.collection("context").limit(1000).get(); CTX.items = cq.docs.map(d => d.data()).filter(x => x?.id); } catch {} }
         mergeTasks(tq.docs.map(d => d.data())); mergeRuns(rq.docs.map(d => d.data())); state.customSkills = sq.docs.map(d => d.data()).filter(s => byId[s.agentId]);
       } catch { this.db = null; }
     }
@@ -3306,6 +3340,7 @@ const store = {
       CTX.items = await idb.all();
       try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; loadBrainMeta(b); } } catch {}
     }
+    try { CTX.report = JSON.parse(localStorage.getItem("oficina.ctxreport") || "null"); } catch {}
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
