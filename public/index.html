@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f45e0"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Oficina</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: planta de oficina vista desde arriba; cada departamento es una sala con moqueta propia, y un panel de trabajo que se abre al tocar a un agente. */
+:root {
+  --bg: #e9ece6;
+  --floor: #f4f5f1;
+  --wall: #c9cfc4;
+  --ink: #1b221d;
+  --ink-2: #4c574f;
+  --ink-3: #7a857c;
+  --panel: #ffffff;
+  --line: #d6dbd2;
+  --accent: #2f45e0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e7ff;
+  --ok: #1f8a4c;
+  --warn: #b7791f;
+  --bad: #c0392b;
+  --room-l: 0.93;
+  --room-c: 0.035;
+  --desk: #d9c7a7;
+  --desk-edge: #b89f78;
+  --shadow: 0 1px 2px rgba(20,30,20,.06), 0 8px 24px rgba(20,30,20,.08);
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1311; --floor: #161b18; --wall: #2a322d; --ink: #e8ede9; --ink-2: #b2bcb5; --ink-3: #7f8b83;
+    --panel: #1b211e; --line: #2c3530; --accent: #8c9bff; --accent-ink: #0b0f2e; --accent-soft: #222a5a;
+    --ok: #4cc685; --warn: #e0a84a; --bad: #ff7b6b; --room-l: 0.27; --room-c: 0.03;
+    --desk: #5a4c37; --desk-edge: #3f3526; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1311; --floor: #161b18; --wall: #2a322d; --ink: #e8ede9; --ink-2: #b2bcb5; --ink-3: #7f8b83;
+  --panel: #1b211e; --line: #2c3530; --accent: #8c9bff; --accent-ink: #0b0f2e; --accent-soft: #222a5a;
+  --ok: #4cc685; --warn: #e0a84a; --bad: #ff7b6b; --room-l: 0.27; --room-c: 0.03;
+  --desk: #5a4c37; --desk-edge: #3f3526; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1320px; margin: 0 auto; }
+
+/* Cabecera */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in oklab, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: 12px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand h1 { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; margin: 0; }
+.brand .co { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
+.stats { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.dot.idle { background: var(--ok); } .dot.work { background: var(--accent); animation: pulse 1.2s infinite; } .dot.queue { background: var(--warn); }
+@keyframes pulse { 50% { opacity: .35; } }
+.iconbtn { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 7px 11px; font-size: 13px; color: var(--ink-2); }
+.iconbtn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+/* Barra de órdenes */
+.command { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding-block: 14px 6px; }
+.command textarea { resize: none; min-height: 48px; max-height: 160px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); line-height: 1.4; }
+.btn { border: 0; border-radius: 12px; padding: 0 18px; min-height: 48px; font-weight: 600; background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
+.btn.ghost { background: var(--panel); color: var(--ink); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.stop { background: var(--bad); color: #fff; }
+.hint { font-size: 12.5px; color: var(--ink-3); padding-bottom: 8px; }
+.hint b { color: var(--ink-2); font-weight: 600; }
+@media (max-width: 640px) {
+  .command { grid-template-columns: 1fr 1fr; }
+  .command textarea { grid-column: 1 / -1; }
+  .brand .co { display: none; }
+}
+
+/* Planta */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; padding-block: 8px 40px; }
+@media (max-width: 1040px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.floor { background: var(--floor); border: 1px solid var(--wall); border-radius: 18px; padding: 14px; box-shadow: var(--shadow);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 28px 28px; background-position: -1px -1px; }
+.floor-head { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 4px 10px; font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .rooms { grid-template-columns: 1fr 1fr; gap: 8px; } }
+.room { position: relative; border-radius: 12px; border: 2px solid color-mix(in oklab, oklch(var(--room-l) var(--room-c) var(--h)) 70%, var(--ink) 18%);
+  background: oklch(var(--room-l) var(--room-c) var(--h)); padding: 10px 10px 12px; min-width: 0; }
+.room.exec { grid-column: span 2; }
+@media (max-width: 520px) { .room.exec { grid-column: 1 / -1; } }
+.room-label { display: flex; justify-content: space-between; gap: 6px; align-items: baseline; margin-bottom: 6px; }
+.room-label h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 14px; letter-spacing: -0.005em; line-height: 1.2; }
+.room-label span { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+.room .door { position: absolute; bottom: -2px; left: 22px; width: 34px; height: 4px; background: var(--floor); }
+.desks { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-around; }
+.agent { position: relative; background: none; border: 0; padding: 4px 2px 0; width: 104px; display: flex; flex-direction: column; align-items: center; border-radius: 10px; }
+@media (max-width: 520px) { .agent { width: 84px; } }
+.agent:hover .av svg { transform: translateY(-2px); }
+.agent[aria-pressed="true"] { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+.av { position: relative; width: 84px; height: 76px; }
+@media (max-width: 520px) { .av { width: 70px; height: 64px; } }
+.av svg { width: 100%; height: 100%; transition: transform .2s; overflow: visible; }
+.agent .nm { font-weight: 600; font-size: 13px; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+.agent .rl { font-size: 11px; color: var(--ink-2); line-height: 1.25; text-align: center; min-height: 2.5em; }
+.bubble { position: absolute; top: -6px; right: -2px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px 10px 10px 2px; padding: 2px 7px; font-size: 10.5px; font-family: var(--f-mono); color: var(--ink-2); box-shadow: var(--shadow); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.agent.work .head { animation: bob 0.9s ease-in-out infinite; transform-origin: 32px 30px; }
+.agent.work .screen { fill: var(--accent); }
+.agent.work .hands { animation: type .25s steps(2) infinite; }
+@keyframes bob { 50% { transform: translateY(1.2px) rotate(-2deg); } }
+@keyframes type { 50% { transform: translateY(-1px); } }
+@media (prefers-reduced-motion: reduce) { .agent.work .head, .agent.work .hands, .dot.work { animation: none; } }
+
+/* Lateral: entregables */
+.side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0; }
+.card h3 { margin: 0 0 8px; font-family: var(--f-display); font-size: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card h3 small { font-family: var(--f-mono); font-weight: 400; font-size: 11px; color: var(--ink-3); }
+.brief { font-size: 13.5px; color: var(--ink-2); white-space: pre-wrap; }
+.feed { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow: auto; }
+.item { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--floor); text-align: left; width: 100%; }
+.item:hover { border-color: var(--ink-3); }
+.item .meta { display: flex; gap: 6px; align-items: center; font-size: 11.5px; color: var(--ink-3); font-family: var(--f-mono); flex-wrap: wrap; }
+.item .who { font-weight: 600; color: var(--ink); font-family: var(--f-body); font-size: 13px; }
+.item .what { font-size: 13px; color: var(--ink-2); margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tag { font-family: var(--f-mono); font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--ink); }
+.tag.ex { background: color-mix(in oklab, var(--warn) 22%, transparent); }
+.tag.err { background: color-mix(in oklab, var(--bad) 22%, transparent); }
+.empty { font-size: 13px; color: var(--ink-3); }
+
+/* Panel del agente */
+.scrim { position: fixed; inset: 0; background: rgba(10,14,12,.35); z-index: 20; }
+.drawer { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--panel); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+@media (max-width: 640px) { .drawer { top: 6vh; border-radius: 18px 18px 0 0; border-left: 0; padding-right: 0; } }
+.d-head { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.d-head .av { width: 64px; height: 58px; flex: none; }
+.d-head h2 { margin: 0; font-family: var(--f-display); font-size: 21px; font-weight: 800; letter-spacing: -0.015em; }
+.d-head p { margin: 0; font-size: 13px; color: var(--ink-2); }
+.d-head .x { margin-left: auto; align-self: flex-start; }
+.d-body { flex: 1; overflow: auto; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+.sec-t { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 0 0 6px; }
+.bio { font-size: 14px; color: var(--ink-2); margin: 0; }
+.skills { display: flex; flex-wrap: wrap; gap: 5px; }
+.skill { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--floor); }
+.skill.tool { border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { font-size: 12.5px; border: 1px dashed var(--ink-3); background: none; border-radius: 10px; padding: 5px 10px; color: var(--ink-2); text-align: left; }
+.quick button:hover { border-style: solid; color: var(--ink); }
+.order { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.order textarea { resize: vertical; min-height: 70px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--floor); }
+.order .btn { align-self: stretch; }
+.task { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.task-h { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--floor); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.task-h .o { font-size: 13px; font-weight: 600; min-width: 0; flex: 1 1 200px; }
+.task-h .acts { display: flex; gap: 6px; }
+.task-h .acts button { font-size: 12px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 3px 8px; }
+.md { padding: 10px 14px 14px; font-size: 14px; overflow-wrap: anywhere; min-width: 0; }
+.md h1, .md h2, .md h3 { font-family: var(--f-display); line-height: 1.2; margin: 1em 0 .4em; }
+.md h1 { font-size: 20px; } .md h2 { font-size: 17px; } .md h3 { font-size: 15px; }
+.md pre { background: var(--floor); border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow-x: auto; font-family: var(--f-mono); font-size: 12.5px; }
+.md code { font-family: var(--f-mono); font-size: .9em; }
+.md table { border-collapse: collapse; display: block; overflow-x: auto; font-size: 13px; }
+.md th, .md td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.md blockquote { margin: 0; padding-left: 10px; border-left: 3px solid var(--line); color: var(--ink-2); }
+.thinking { color: var(--ink-3); font-family: var(--f-mono); font-size: 13px; padding: 12px 14px; }
+
+/* Plan de dirección */
+.plan { border: 1px solid color-mix(in oklab, var(--accent) 35%, var(--line)); background: color-mix(in oklab, var(--accent-soft) 45%, var(--panel)); border-radius: 14px; padding: 12px 14px; }
+.plan ol { margin: 6px 0 0; padding-left: 20px; font-size: 13.5px; }
+.plan li { margin-bottom: 4px; }
+.plan li .st { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-left: 4px; }
+
+/* Ajustes */
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink); width: min(520px, calc(100% - 32px)); padding: 18px; box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(10,14,12,.4); }
+dialog h2 { margin: 0 0 4px; font-family: var(--f-display); font-size: 20px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.field input, .field textarea, .field select { padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--floor); }
+.field textarea { min-height: 110px; resize: vertical; }
+.field .note { font-size: 12px; color: var(--ink-3); }
+.row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 10px; font-size: 13.5px; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
+.banner { font-size: 13px; padding: 9px 12px; border-radius: 10px; background: color-mix(in oklab, var(--warn) 16%, var(--panel)); border: 1px solid color-mix(in oklab, var(--warn) 40%, var(--line)); color: var(--ink); margin-bottom: 8px; }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>Oficina</h1><span class="co" id="coName">—</span></div>
+    <div class="stats" aria-live="polite">
+      <span class="pill"><span class="dot idle"></span><span id="sIdle">0</span> disponibles</span>
+      <span class="pill"><span class="dot work"></span><span id="sWork">0</span> trabajando</span>
+      <span class="pill"><span id="sDone">0</span> entregas</span>
+      <button class="iconbtn" id="btnSettings" type="button">Proyecto y ajustes</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="aiBanner" class="banner" hidden></div>
+  <form class="command" id="cmdForm">
+    <label for="cmd" hidden>Orden para la empresa</label>
+    <textarea id="cmd" rows="1" placeholder="Orden para toda la empresa. Ej.: «Lanzamos zapatillas veganas en enero: prepara el plan completo»"></textarea>
+    <button class="btn" id="btnCmd" type="submit">Enviar orden</button>
+    <button class="btn ghost" id="btnAuto" type="button" title="Dirección decide qué hacer a continuación según el proyecto y el trabajo ya hecho">Ronda autónoma</button>
+  </form>
+  <p class="hint">Toca a cualquier agente para hablar solo con él. La orden general la recibe <b>Elena (Dirección)</b>, que asigna tareas a cada departamento; la <b>ronda autónoma</b> deja que el equipo avance solo con el proyecto.</p>
+
+  <div class="layout">
+    <section class="floor" aria-label="Planta de la oficina">
+      <div class="floor-head"><span>Planta 1 · Sede central</span><span id="clock"></span></div>
+      <div class="rooms" id="rooms"></div>
+    </section>
+    <aside class="side">
+      <div id="planBox"></div>
+      <div class="card">
+        <h3>Proyecto <button class="iconbtn" id="btnBrief" type="button">Editar</button></h3>
+        <div class="brief" id="briefText"></div>
+      </div>
+      <div class="card">
+        <h3>Entregables <small id="feedCount"></small></h3>
+        <div class="feed" id="feed"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dName"></section>
+
+<dialog id="settings">
+  <form method="dialog" id="setForm">
+    <h2>Proyecto y ajustes</h2>
+    <div class="field"><label for="fCompany">Nombre de tu empresa o marca</label><input id="fCompany" maxlength="80"></div>
+    <div class="field"><label for="fBrief">¿En qué trabaja la oficina?</label><textarea id="fBrief" maxlength="4000"></textarea>
+      <span class="note">Todos los agentes leen esto antes de cada tarea: qué vendes, a quién, tono de marca, objetivos.</span></div>
+    <div id="keyFields">
+      <div class="field"><label for="fKey">Clave de la API de Anthropic</label><input id="fKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+        <span class="note">Solo hace falta fuera de Claude. Se guarda en este navegador y se envía únicamente a api.anthropic.com.</span></div>
+      <div class="field"><label for="fModel">Modelo</label>
+        <select id="fModel"><option value="claude-opus-5-5">Claude Opus 5.5 (mejor calidad)</option><option value="claude-sonnet-5-5">Claude Sonnet 5.5 (equilibrado)</option><option value="claude-haiku-5-5">Claude Haiku 5.5 (rápido y barato)</option></select></div>
+    </div>
+    <div class="row">
+      <button class="btn ghost" value="cancel" type="submit">Cancelar</button>
+      <button class="btn" value="save" id="btnSave" type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script>
+"use strict";
+/* ---------- Plantilla de la empresa ---------- */
+const DEPTS = [
+  { id: "dir", name: "Dirección General", h: 265, exec: true },
+  { id: "prod", name: "Producto y Estrategia", h: 300 },
+  { id: "dev", name: "Ingeniería", h: 230 },
+  { id: "design", name: "Diseño", h: 340 },
+  { id: "video", name: "Vídeo y Audiovisual", h: 20 },
+  { id: "social", name: "Redes Sociales", h: 0 },
+  { id: "mkt", name: "Marketing y Ventas", h: 60 },
+  { id: "content", name: "Contenidos y Copy", h: 85 },
+  { id: "seo", name: "SEO y Analítica", h: 150 },
+  { id: "rnd", name: "I+D e Inteligencia Artificial", h: 200 },
+  { id: "fin", name: "Finanzas", h: 120 },
+  { id: "legal", name: "Legal", h: 40 },
+  { id: "people", name: "Personas y Cultura", h: 320 },
+  { id: "cx", name: "Atención al Cliente", h: 175 },
+];
+
+const AGENTS = [
+  { id: "elena", dept: "dir", name: "Elena", role: "Directora general (CEO)", look: [2, "#3b2a20", 0, 265],
+    bio: "Convierte objetivos en planes y reparte el trabajo entre departamentos. Revisa cada entrega y decide el siguiente paso.",
+    tools: ["OKR", "Notion", "Linear", "Asana", "Miro"],
+    skills: ["Planificación estratégica", "Delegación y priorización", "Análisis DAFO", "Roadmaps trimestrales", "Gestión de riesgos", "Informes ejecutivos", "Negociación"],
+    quick: ["Haz un plan de 90 días para el proyecto", "Resume lo que ha hecho el equipo y qué falta"] },
+  { id: "marco", dept: "prod", name: "Marco", role: "Product manager", look: [1, "#1d1d1d", 1, 300],
+    bio: "Define qué se construye y por qué. Escribe PRD, historias de usuario y prioriza el backlog con datos.",
+    tools: ["Linear", "Jira", "Figma", "Amplitude", "Productboard"],
+    skills: ["PRD y especificaciones", "Historias de usuario", "Priorización RICE/MoSCoW", "Discovery con clientes", "Métricas de producto", "Análisis de competencia", "Pricing"],
+    quick: ["Escribe el PRD de la primera versión", "Analiza 5 competidores y cómo diferenciarnos"] },
+  { id: "kai", dept: "dev", name: "Kai", role: "Desarrollador full-stack", look: [3, "#101010", 2, 230],
+    bio: "Escribe código de producción: webs, apps, APIs y automatizaciones. Entrega código completo y listo para pegar.",
+    tools: ["TypeScript", "React / Next.js", "Node.js", "Python", "PostgreSQL", "Supabase", "Git y GitHub", "Claude Code"],
+    skills: ["Arquitectura de software", "APIs REST y GraphQL", "Automatizaciones y scripts", "Integración de IA", "Revisión de código", "Rendimiento web"],
+    quick: ["Crea la landing page en HTML y CSS", "Diseña la base de datos y la API"] },
+  { id: "ivan", dept: "dev", name: "Iván", role: "DevOps y QA", look: [0, "#6b4a2b", 3, 210],
+    bio: "Despliega, automatiza y prueba. Se asegura de que todo funcione, sea seguro y no se caiga.",
+    tools: ["GitHub Actions", "Docker", "Vercel", "Cloudflare", "Playwright", "Sentry"],
+    skills: ["CI/CD", "Testing automatizado", "Seguridad web (OWASP)", "Monitorización", "Infraestructura como código", "Costes cloud"],
+    quick: ["Plan de despliegue y pruebas", "Checklist de seguridad antes de lanzar"] },
+  { id: "lucia", dept: "design", name: "Lucía", role: "Diseñadora de producto y marca", look: [1, "#a0522d", 4, 340],
+    bio: "Diseña identidad de marca, interfaces y piezas gráficas. Entrega especificaciones exactas: colores, tipografías, medidas y textos.",
+    tools: ["Figma", "Adobe Illustrator", "Photoshop", "Adobe Firefly", "Midjourney", "Canva", "Spline 3D"],
+    skills: ["Identidad visual y logotipos", "UX/UI y prototipos", "Sistemas de diseño", "Accesibilidad WCAG", "Packaging", "Dirección de arte", "Prompts de imagen IA"],
+    quick: ["Propón la identidad visual de la marca", "Diseña la pantalla de inicio de la app"] },
+  { id: "dani", dept: "video", name: "Dani", role: "Editor de vídeo profesional", look: [2, "#2a1a12", 5, 20],
+    bio: "Edición, color y sonido de nivel profesional. Escribe guiones, storyboards y planes de montaje plano a plano.",
+    tools: ["DaVinci Resolve Studio", "Adobe Premiere Pro", "After Effects", "Final Cut Pro", "CapCut", "Runway", "Descript", "iZotope RX", "Frame.io"],
+    skills: ["Guion y storyboard", "Montaje narrativo", "Etalonaje y color grading", "Motion graphics", "Diseño sonoro", "Subtitulado", "Formatos verticales (Reels, TikTok, Shorts)", "Vídeo con IA"],
+    quick: ["Guion y plan de montaje de un vídeo de 30 s", "Guía de color y estilo para todos los vídeos"] },
+  { id: "sofia", dept: "social", name: "Sofía", role: "Social media manager", look: [3, "#d4a24c", 6, 0],
+    bio: "Lleva tus redes: estrategia, calendario, publicaciones, comunidad y crecimiento en cada plataforma.",
+    tools: ["Instagram", "TikTok", "LinkedIn", "YouTube", "X", "Meta Business Suite", "Metricool", "Later"],
+    skills: ["Estrategia por plataforma", "Calendario editorial", "Copy para redes", "Tendencias y formatos virales", "Gestión de comunidad", "Colaboraciones con creadores", "Analítica social"],
+    quick: ["Calendario de publicaciones de 4 semanas", "10 ideas de Reels con gancho, guion y hashtags"] },
+  { id: "alex", dept: "mkt", name: "Álex", role: "Director de marketing y ventas", look: [0, "#3a3a3a", 7, 60],
+    bio: "Diseña cómo te encuentra el cliente y cómo compra: posicionamiento, campañas de pago, embudo y equipo comercial.",
+    tools: ["Google Ads", "Meta Ads", "TikTok Ads", "HubSpot", "Salesforce", "Klaviyo", "Looker Studio"],
+    skills: ["Posicionamiento y propuesta de valor", "Go-to-market", "Embudos de conversión", "Publicidad de pago", "Email marketing", "Guiones de venta", "Previsión de ventas"],
+    quick: ["Plan de lanzamiento con presupuesto", "Embudo de ventas completo con emails"] },
+  { id: "bruno", dept: "content", name: "Bruno", role: "Copywriter y estratega de contenidos", look: [1, "#5a3b22", 8, 85],
+    bio: "Escribe textos que venden y se leen: webs, anuncios, blog, newsletters, guiones y tono de marca.",
+    tools: ["Google Docs", "Hemingway", "Grammarly", "Notion", "Substack"],
+    skills: ["Copy de conversión (AIDA, PAS)", "Tono de voz de marca", "Storytelling", "Blog y artículos", "Newsletters", "Naming y eslóganes", "Guiones para vídeo y pódcast"],
+    quick: ["Textos completos de la web", "Propón 10 nombres y eslóganes"] },
+  { id: "irene", dept: "seo", name: "Irene", role: "Especialista en SEO y datos", look: [2, "#0f0f0f", 9, 150],
+    bio: "Investiga qué busca tu cliente y mide qué funciona. Convierte los datos en decisiones.",
+    tools: ["Google Search Console", "GA4", "Ahrefs", "Semrush", "Looker Studio", "BigQuery", "Python"],
+    skills: ["Investigación de palabras clave", "SEO técnico y on-page", "SEO local", "Arquitectura web", "KPIs y cuadros de mando", "Tests A/B", "Atribución"],
+    quick: ["Estudio de palabras clave y plan de contenidos SEO", "Define los KPIs y el cuadro de mando"] },
+  { id: "hugo", dept: "rnd", name: "Hugo", role: "Investigador de IA y automatización", look: [3, "#7a7a7a", 10, 200],
+    bio: "Encuentra la mejor herramienta para cada cosa y diseña agentes y automatizaciones que ahorran horas.",
+    tools: ["Claude", "Claude Code", "MCP", "Zapier", "Make", "n8n", "Python"],
+    skills: ["Diseño de agentes de IA", "Prompt engineering", "Automatización de procesos", "Evaluación de herramientas", "Investigación de mercado", "Vigilancia tecnológica"],
+    quick: ["Qué procesos podemos automatizar ya", "Investiga el mercado y tendencias del sector"] },
+  { id: "tomas", dept: "fin", name: "Tomás", role: "Director financiero (CFO)", look: [0, "#b8b8b8", 11, 120],
+    bio: "Números claros: presupuestos, precios, rentabilidad, caja y previsiones. Siempre con tablas.",
+    tools: ["Excel", "Google Sheets", "Holded", "Stripe", "Qonto"],
+    skills: ["Presupuestos", "Modelo financiero a 3 años", "Fijación de precios", "Unit economics (CAC, LTV)", "Flujo de caja", "Rondas de financiación", "Fiscalidad básica España"],
+    quick: ["Presupuesto del primer año", "Calcula precio, margen y punto de equilibrio"] },
+  { id: "carmen", dept: "legal", name: "Carmen", role: "Asesora legal", look: [1, "#2b1b14", 12, 40],
+    bio: "Contratos, privacidad y cumplimiento. Redacta documentos y señala riesgos. Recomienda validar con un abogado colegiado.",
+    tools: ["RGPD / LOPDGDD", "LSSI", "Ley de IA de la UE", "Plantillas contractuales"],
+    skills: ["Términos y condiciones", "Política de privacidad y cookies", "Contratos con proveedores", "Propiedad intelectual y marcas", "Protección de datos", "Revisión de riesgos"],
+    quick: ["Textos legales de la web", "Contrato tipo con colaboradores"] },
+  { id: "pablo", dept: "people", name: "Pablo", role: "Responsable de personas y cultura", look: [2, "#4a3020", 13, 320],
+    bio: "Atrae y cuida al talento: perfiles, ofertas, entrevistas, onboarding y cultura de equipo.",
+    tools: ["LinkedIn Recruiter", "Factorial", "Notion", "Typeform"],
+    skills: ["Definición de puestos", "Ofertas de empleo", "Entrevistas por competencias", "Onboarding", "Cultura y valores", "Planes de formación"],
+    quick: ["Oferta de empleo y guion de entrevista", "Manual de bienvenida para nuevos"] },
+  { id: "lola", dept: "cx", name: "Lola", role: "Atención al cliente", look: [3, "#c46a3a", 14, 175],
+    bio: "Cuida a cada cliente: respuestas, preguntas frecuentes, protocolos y satisfacción.",
+    tools: ["Zendesk", "Intercom", "WhatsApp Business", "Gmail", "Trustpilot"],
+    skills: ["Preguntas frecuentes", "Plantillas de respuesta", "Gestión de quejas", "Encuestas NPS", "Base de conocimiento", "Chatbots"],
+    quick: ["FAQ y respuestas tipo", "Protocolo para quejas y devoluciones"] },
+];
+
+const EXAMPLES = [
+  { agentId: "sofia", order: "10 ideas de Reels con gancho", result: "1. **«3 errores que comete todo el mundo con…»** — gancho en el primer segundo, texto en pantalla…", example: true },
+  { agentId: "dani", order: "Guion de 30 s para el lanzamiento", result: "**0:00–0:03** Plano detalle del producto, luz dura lateral, sonido de impacto…", example: true },
+];
+
+/* ---------- Estado ---------- */
+const state = {
+  company: "Mi empresa",
+  brief: "Somos una empresa nueva. Describe aquí tu proyecto en «Proyecto y ajustes»: qué vendéis, a quién, objetivos y tono de marca.",
+  tasks: [],            // {id, agentId, order, from, result, status, createdAt, runId}
+  status: {},           // agentId -> "idle" | "queue" | "work"
+  bubble: {},
+  plan: null,           // {resumen, tareas:[{agente, tarea, estado}], kind}
+  open: null,
+  running: null,        // AbortController de la ronda en curso
+};
+const byId = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+AGENTS.forEach(a => { state.status[a.id] = "idle"; });
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2600); }
+function md(s) { try { return DOMPurify.sanitize(marked.parse(s || "")); } catch { return "<pre>" + esc(s) + "</pre>"; } }
+
+/* ---------- Avatares ---------- */
+const SKINS = ["#f1c9a5", "#e0ac82", "#c68a5e", "#8d5a3b", "#5e3b25"];
+function avatar(a) {
+  const [hairStyle, hair, seed, hue] = a.look;
+  const skin = SKINS[seed % SKINS.length];
+  const shirt = `oklch(0.62 0.13 ${hue})`;
+  const hairs = [
+    `<path d="M20 27c0-9 5-14 12-14s12 5 12 14c-2-4-5-7-12-7s-10 3-12 7z" fill="${hair}"/>`,
+    `<path d="M19 30c-1-11 5-17 13-17s14 6 13 17c-1-2-1-6-4-8-3 2-10 3-15 1-3 2-5 4-7 7z" fill="${hair}"/>`,
+    `<path d="M18 40c-3-14 2-27 14-27s17 13 14 27c-1-5-2-12-4-16-5 3-14 3-20 0-2 4-3 11-4 16z" fill="${hair}"/>`,
+    `<circle cx="32" cy="12" r="6" fill="${hair}"/><path d="M20 28c0-9 5-14 12-14s12 5 12 14c-3-3-6-6-12-6s-9 3-12 6z" fill="${hair}"/>`,
+  ];
+  return `<svg viewBox="0 0 64 58" aria-hidden="true">
+    <ellipse cx="32" cy="55" rx="27" ry="3" fill="currentColor" opacity=".08"/>
+    <rect x="14" y="30" width="36" height="20" rx="8" fill="var(--wall)"/>
+    <g class="head">
+      <path d="M17 50c0-9 7-14 15-14s15 5 15 14z" fill="${shirt}"/>
+      <circle cx="32" cy="27" r="11" fill="${skin}"/>
+      ${hairs[hairStyle]}
+      <circle cx="28" cy="28" r="1.2" fill="#1b1b1b"/><circle cx="36" cy="28" r="1.2" fill="#1b1b1b"/>
+      <path d="M29 32.5q3 2 6 0" stroke="#1b1b1b" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>
+    <rect x="4" y="44" width="56" height="10" rx="2" fill="var(--desk)" stroke="var(--desk-edge)"/>
+    <g class="hands"><circle cx="22" cy="45" r="2.6" fill="${skin}"/><circle cx="42" cy="45" r="2.6" fill="${skin}"/></g>
+    <path d="M21 44l3-10h16l3 10z" fill="#3a4140"/>
+    <circle class="screen" cx="32" cy="39" r="2" fill="#8e9796"/>
+    <rect x="49" y="40" width="6" height="5" rx="1.5" fill="var(--panel)" stroke="var(--desk-edge)"/>
+  </svg>`;
+}
+
+/* ---------- Render de la planta ---------- */
+const STATUS_TXT = { idle: "Disponible", queue: "En cola", work: "Trabajando" };
+function renderRooms() {
+  $("#rooms").innerHTML = DEPTS.map(d => {
+    const team = AGENTS.filter(a => a.dept === d.id);
+    return `<div class="room${d.exec ? " exec" : ""}" style="--h:${d.h}">
+      <div class="room-label"><h2>${esc(d.name)}</h2><span>${team.length} ${team.length === 1 ? "puesto" : "puestos"}</span></div>
+      <div class="desks">${team.map(a => `
+        <button class="agent" type="button" data-agent="${a.id}" aria-pressed="false" aria-label="${esc(a.name)}, ${esc(a.role)}">
+          <div class="av">${avatar(a)}<span class="bubble" hidden></span></div>
+          <span class="nm"><span class="dot idle"></span>${esc(a.name)}</span>
+          <span class="rl">${esc(a.role)}</span>
+        </button>`).join("")}</div>
+      <span class="door"></span>
+    </div>`;
+  }).join("");
+}
+function paintStatus() {
+  let idle = 0, work = 0;
+  for (const a of AGENTS) {
+    const s = state.status[a.id];
+    if (s === "idle") idle++; else work++;
+    const el = document.querySelector(`[data-agent="${a.id}"]`);
+    if (!el) continue;
+    el.classList.toggle("work", s === "work");
+    el.querySelector(".dot").className = "dot " + (s === "work" ? "work" : s === "queue" ? "queue" : "idle");
+    el.setAttribute("aria-pressed", String(state.open === a.id));
+    const b = el.querySelector(".bubble");
+    const txt = s === "work" ? (state.bubble[a.id] || "Trabajando…") : s === "queue" ? "En cola" : "";
+    b.hidden = !txt; b.textContent = txt;
+  }
+  $("#sIdle").textContent = idle; $("#sWork").textContent = work;
+  $("#sDone").textContent = state.tasks.filter(t => t.status === "done").length;
+}
+function renderSide() {
+  $("#coName").textContent = state.company;
+  $("#briefText").textContent = state.brief;
+  const done = [...state.tasks].sort((a, b) => b.createdAt - a.createdAt);
+  $("#feedCount").textContent = done.length ? done.length + " en total" : "";
+  const list = done.length ? done : EXAMPLES;
+  $("#feed").innerHTML = (done.length ? "" : `<p class="empty">Aún no hay entregas. Así se verán cuando des la primera orden:</p>`) +
+    list.slice(0, 60).map(t => {
+      const a = byId[t.agentId];
+      const tag = t.example ? `<span class="tag ex">Ejemplo</span>` : t.status === "error" ? `<span class="tag err">Error</span>` : t.status === "work" ? `<span class="tag">En curso</span>` : t.from ? `<span class="tag">${esc(t.from)}</span>` : "";
+      return `<button class="item" type="button" data-open="${t.agentId}" ${t.id ? `data-task="${t.id}"` : ""}>
+        <div class="meta"><span class="who">${esc(a.name)}</span><span>${esc(a.role)}</span>${tag}</div>
+        <div class="what">${esc(t.order)}</div></button>`;
+    }).join("");
+  renderPlan();
+  paintStatus();
+}
+function renderPlan() {
+  const p = state.plan;
+  if (!p) { $("#planBox").innerHTML = ""; return; }
+  const st = { pend: "pendiente", work: "en curso", done: "hecho", error: "error" };
+  $("#planBox").innerHTML = `<div class="plan">
+    <h3 style="margin:0;font-family:var(--f-display);font-size:16px">${p.kind === "auto" ? "Ronda autónoma" : "Plan de Dirección"}</h3>
+    <p style="margin:4px 0 0;font-size:13.5px;color:var(--ink-2)">${esc(p.resumen)}</p>
+    <ol>${p.tareas.map(t => `<li><b>${esc(byId[t.agente]?.name || t.agente)}</b>: ${esc(t.tarea)}<span class="st">· ${st[t.estado] || ""}</span></li>`).join("")}</ol>
+    ${state.running ? `<div class="row" style="justify-content:flex-start;margin-top:8px"><button class="btn stop" type="button" id="btnStop" style="min-height:36px">Detener</button></div>` : ""}
+  </div>`;
+}
+
+/* ---------- Panel del agente ---------- */
+function openAgent(id, taskId) {
+  state.open = id;
+  const a = byId[id], d = DEPTS.find(x => x.id === a.dept);
+  const tasks = state.tasks.filter(t => t.agentId === id).sort((x, y) => y.createdAt - x.createdAt);
+  const dr = $("#drawer");
+  dr.innerHTML = `
+    <div class="d-head">
+      <div class="av">${avatar(a)}</div>
+      <div style="min-width:0"><h2 id="dName">${esc(a.name)}</h2><p>${esc(a.role)} · ${esc(d.name)}</p>
+        <p style="font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3)"><span class="dot ${state.status[id] === "work" ? "work" : state.status[id] === "queue" ? "queue" : "idle"}" style="display:inline-block;margin-right:5px"></span>${STATUS_TXT[state.status[id]]}</p></div>
+      <button class="iconbtn x" type="button" id="dClose" aria-label="Cerrar">Cerrar</button>
+    </div>
+    <div class="d-body">
+      <p class="bio">${esc(a.bio)}</p>
+      <div><p class="sec-t">Herramientas que domina</p><div class="skills">${a.tools.map(s => `<span class="skill tool">${esc(s)}</span>`).join("")}</div></div>
+      <div><p class="sec-t">Skills</p><div class="skills">${a.skills.map(s => `<span class="skill">${esc(s)}</span>`).join("")}</div></div>
+      <div><p class="sec-t">Dale una orden</p>
+        <form class="order" id="orderForm"><label for="orderText" hidden>Orden para ${esc(a.name)}</label>
+          <textarea id="orderText" placeholder="¿Qué necesitas de ${esc(a.name)}?"></textarea>
+          <button class="btn" type="submit">Encargar</button></form>
+        <div class="quick" style="margin-top:8px">${a.quick.map(q => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      </div>
+      <div><p class="sec-t">Trabajo entregado (${tasks.length})</p>
+        <div style="display:flex;flex-direction:column;gap:10px" id="taskList">${tasks.length ? tasks.map(taskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`}</div></div>
+    </div>`;
+  dr.hidden = false; $("#scrim").hidden = false;
+  paintStatus();
+  if (taskId) dr.querySelector(`[data-tid="${taskId}"]`)?.scrollIntoView({ block: "start" });
+  else dr.querySelector("#orderText").focus({ preventScroll: true });
+}
+function taskHTML(t) {
+  const when = new Date(t.createdAt).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  const body = t.status === "work" && !t.result ? `<div class="thinking">Pensando…</div>` : `<div class="md">${md(t.result)}</div>`;
+  return `<article class="task" data-tid="${t.id}">
+    <div class="task-h"><span class="o">${esc(t.order)}</span>
+      <span class="meta" style="font-family:var(--f-mono);font-size:11px;color:var(--ink-3)">${when}${t.from ? " · " + esc(t.from) : ""}${t.status === "error" ? " · error" : ""}</span>
+      <span class="acts">${t.status === "done" ? `<button type="button" data-copy="${t.id}">Copiar</button><button type="button" data-dl="${t.id}">Descargar</button>` : ""}${t.status !== "work" ? `<button type="button" data-del="${t.id}">Borrar</button>` : ""}</span></div>
+    ${body}</article>`;
+}
+function refreshDrawerTask(t) {
+  if (state.open !== t.agentId) return;
+  const el = document.querySelector(`[data-tid="${t.id}"]`);
+  if (el) el.outerHTML = taskHTML(t);
+  else openAgent(t.agentId);
+}
+function closeAgent() { state.open = null; $("#drawer").hidden = true; $("#scrim").hidden = true; paintStatus(); }
+
+/* ---------- IA: Claude dentro de claude.ai, o API propia fuera ---------- */
+const AI = { sample: null, mode: "none" };
+function settingsLocal() { try { return JSON.parse(localStorage.getItem("oficina.settings") || "{}"); } catch { return {}; } }
+function saveSettingsLocal(s) { try { localStorage.setItem("oficina.settings", JSON.stringify(s)); } catch {} }
+function aiReady() { return AI.mode === "sample" || !!settingsLocal().key; }
+function parseJSONLoose(text) {
+  try { return JSON.parse(text); } catch {}
+  const f = text.match(/```(?:json)?\s*([\s\S]*?)```/); if (f) { try { return JSON.parse(f[1]); } catch {} }
+  const i = text.indexOf("{"), j = text.lastIndexOf("}"); if (i >= 0 && j > i) return JSON.parse(text.slice(i, j + 1));
+  throw { code: "invalid_json", message: "Respuesta sin JSON" };
+}
+async function ask(prompt, { onText, signal, json = false } = {}) {
+  if (AI.mode === "sample") {
+    if (json) return AI.sample.json(prompt, { signal, cache: false });
+    const r = await AI.sample(prompt, { onText, signal, cache: false });
+    return r.text;
+  }
+  const s = settingsLocal();
+  if (!s.key) throw { code: "no_ai", message: "Añade tu clave de API en Proyecto y ajustes." };
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", signal,
+      headers: { "content-type": "application/json", "x-api-key": s.key, "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true", "anthropic-beta": "server-side-fallback-2026-07-01" },
+      body: JSON.stringify({ model: s.model || "claude-opus-5-5", max_tokens: 16000, fallbacks: "default",
+        output_config: { effort: "medium" }, messages: [{ role: "user", content: prompt }] }),
+    });
+  } catch (e) { throw { code: e?.name === "AbortError" ? "cancelled" : "upstream_error", message: String(e?.message || e) }; }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
+  if (data.stop_reason === "refusal") throw { code: "refused", message: "Claude ha declinado esta tarea." };
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  if (json) return parseJSONLoose(text);
+  onText?.({ text, delta: text });
+  return text;
+}
+function errText(e) {
+  return ({ not_granted: "No se ha permitido usar Claude en esta página.", rate_limited: "Demasiadas peticiones seguidas. Prueba en un rato.",
+    refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Proyecto y ajustes.",
+    bad_key: "La clave de API no es válida.", invalid_json: "Dirección no devolvió un plan legible. Vuelve a intentarlo.",
+    sampling_disabled: "Claude no está disponible en esta cuenta.", cancelled: "Detenido." })[e?.code] || ("No se pudo completar: " + (e?.message || "error desconocido"));
+}
+
+/* ---------- Prompts ---------- */
+function teamRoster() { return AGENTS.map(a => `- ${a.id}: ${a.name}, ${a.role} (${DEPTS.find(d => d.id === a.dept).name})`).join("\n"); }
+function recentWork(limit = 6, excludeId) {
+  const done = state.tasks.filter(t => t.status === "done" && t.id !== excludeId).sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+  if (!done.length) return "Todavía no hay trabajo entregado.";
+  return done.map(t => `• ${byId[t.agentId].name} (${byId[t.agentId].role}) — «${t.order}»:\n${t.result.slice(0, 700)}${t.result.length > 700 ? "…" : ""}`).join("\n\n");
+}
+function agentPrompt(a, order, from, extra) {
+  const d = DEPTS.find(x => x.id === a.dept);
+  return `Eres ${a.name}, ${a.role} del departamento de ${d.name} en la empresa «${state.company}». Trabajas en una oficina con otros agentes especializados.
+Tu perfil: ${a.bio}
+Herramientas que dominas: ${a.tools.join(", ")}.
+Tus skills: ${a.skills.join(", ")}.
+
+PROYECTO DE LA EMPRESA:
+${state.brief}
+
+TRABAJO RECIENTE DEL EQUIPO (úsalo para ser coherente y no repetir):
+${recentWork(6)}
+${extra ? "\nCONTEXTO DE DIRECCIÓN:\n" + extra + "\n" : ""}
+ORDEN RECIBIDA (de ${from}):
+${order}
+
+Cómo entregar:
+- Responde en español con el trabajo TERMINADO y listo para usar, en Markdown, con la calidad de un profesional senior de tu área.
+- Sé concreto: si es código, el código completo; si es un guion, el guion entero con tiempos; si es un plan, con fases, fechas y responsables; si son números, en tabla.
+- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso, porque no puedes manejarla tú directamente.
+- Si te falta un dato, asume algo razonable, dilo en una línea y sigue.
+- Termina con una línea: «Siguiente paso sugerido: …».`;
+}
+function planPrompt(order, kind) {
+  const intro = kind === "auto"
+    ? `Nadie te ha dado una orden nueva. Decide tú qué es lo más valioso que puede hacer el equipo AHORA para avanzar el proyecto, teniendo en cuenta lo ya entregado (no repitas tareas hechas).`
+    : `El propietario de la empresa te da esta orden:\n«${order}»`;
+  return `Eres Elena, directora general de «${state.company}». Diriges una oficina de agentes especializados.
+
+PROYECTO:
+${state.brief}
+
+EQUIPO (usa exactamente estos identificadores):
+${teamRoster()}
+
+TRABAJO YA ENTREGADO:
+${recentWork(8)}
+
+${intro}
+
+Reparte el trabajo entre 2 y 5 miembros del equipo (los más adecuados; no te asignes a ti misma salvo que haga falta). Cada tarea debe ser concreta, entregable de una vez y autosuficiente.
+Responde SOLO con JSON con esta forma:
+{"resumen": "una frase con el enfoque", "tareas": [{"agente": "id", "tarea": "instrucción concreta"}]}`;
+}
+function reportPrompt(plan, results) {
+  return `Eres Elena, directora general de «${state.company}». Tu equipo acaba de terminar este encargo: ${plan.kind === "auto" ? "una ronda de trabajo autónoma" : "«" + plan.order + "»"}.
+Enfoque: ${plan.resumen}
+
+ENTREGAS:
+${results.map(r => `### ${byId[r.agentId].name} (${byId[r.agentId].role}) — ${r.order}\n${r.result.slice(0, 2500)}`).join("\n\n")}
+
+Escribe en español un informe ejecutivo breve en Markdown para el propietario: qué se ha hecho, decisiones clave, qué necesita aprobar o aportar él, y los 3 siguientes pasos con su responsable.`;
+}
+
+/* ---------- Ejecución ---------- */
+async function runTask(agentId, order, from, { signal, extra } = {}) {
+  const t = { id: uid(), agentId, order, from, result: "", status: "work", createdAt: Date.now() };
+  state.tasks.push(t);
+  state.status[agentId] = "work"; state.bubble[agentId] = order.slice(0, 40);
+  renderSide(); refreshDrawerTask(t);
+  let last = 0;
+  try {
+    t.result = await ask(agentPrompt(byId[agentId], order, from, extra), {
+      signal,
+      onText: ({ text }) => { t.result = text; const now = Date.now(); if (now - last > 250) { last = now; refreshDrawerTask(t); } },
+    });
+    t.status = "done";
+  } catch (e) {
+    t.status = "error"; t.result = (e?.text ? e.text + "\n\n" : "") + "> " + errText(e);
+  }
+  state.status[agentId] = "idle"; delete state.bubble[agentId];
+  refreshDrawerTask(t); renderSide(); await store.saveTask(t);
+  return t;
+}
+
+async function runCompany(order, kind) {
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  if (state.running) { toast("El equipo ya está trabajando en una ronda."); return; }
+  const ctl = new AbortController(); state.running = ctl;
+  setBusy(true);
+  state.status.elena = "work"; state.bubble.elena = kind === "auto" ? "Decidiendo la siguiente ronda" : "Repartiendo la orden";
+  state.plan = { kind, order, resumen: "Elena está preparando el plan…", tareas: [] }; renderSide();
+  try {
+    const raw = await ask(planPrompt(order, kind), { json: true, signal: ctl.signal });
+    const tareas = (Array.isArray(raw?.tareas) ? raw.tareas : []).filter(t => byId[t?.agente] && t?.tarea).slice(0, 6)
+      .map(t => ({ agente: String(t.agente), tarea: String(t.tarea), estado: "pend" }));
+    if (!tareas.length) throw { code: "invalid_json" };
+    state.plan = { kind, order, resumen: String(raw.resumen || ""), tareas };
+    state.status.elena = "idle"; delete state.bubble.elena;
+    tareas.forEach(t => { if (state.status[t.agente] === "idle") state.status[t.agente] = "queue"; });
+    renderSide();
+    const extra = `Encargo general: ${kind === "auto" ? "ronda autónoma" : order}\nEnfoque de Dirección: ${state.plan.resumen}\nReparto: ${tareas.map(t => byId[t.agente].name + " → " + t.tarea).join(" | ")}`;
+    const results = [];
+    let next = 0;
+    const worker = async () => {
+      while (next < tareas.length && !ctl.signal.aborted) {
+        const t = tareas[next++]; t.estado = "work"; renderPlan();
+        const done = await runTask(t.agente, t.tarea, kind === "auto" ? "Ronda autónoma" : "Dirección", { signal: ctl.signal, extra });
+        t.estado = done.status === "done" ? "done" : "error"; results.push(done); renderPlan();
+      }
+    };
+    await Promise.all([worker(), worker()]);
+    const ok = results.filter(r => r.status === "done");
+    if (ok.length && !ctl.signal.aborted) {
+      const plan = state.plan;
+      await runTaskWithPrompt("elena", kind === "auto" ? "Informe de la ronda autónoma" : "Informe: " + order, "Dirección", reportPrompt(plan, ok), ctl.signal);
+    }
+    toast(ctl.signal.aborted ? "Ronda detenida." : "El equipo ha terminado. Tienes el informe de Elena.");
+  } catch (e) {
+    toast(errText(e));
+    if (state.plan) state.plan.resumen = errText(e);
+  } finally {
+    AGENTS.forEach(a => { if (state.status[a.id] !== "work") state.status[a.id] = "idle"; });
+    state.status.elena = "idle"; delete state.bubble.elena;
+    state.running = null; setBusy(false); renderSide();
+  }
+}
+async function runTaskWithPrompt(agentId, order, from, prompt, signal) {
+  const t = { id: uid(), agentId, order, from, result: "", status: "work", createdAt: Date.now() };
+  state.tasks.push(t); state.status[agentId] = "work"; state.bubble[agentId] = "Redactando el informe"; renderSide(); refreshDrawerTask(t);
+  try { t.result = await ask(prompt, { signal, onText: ({ text }) => { t.result = text; refreshDrawerTask(t); } }); t.status = "done"; }
+  catch (e) { t.status = "error"; t.result = "> " + errText(e); }
+  state.status[agentId] = "idle"; delete state.bubble[agentId]; refreshDrawerTask(t); renderSide(); await store.saveTask(t);
+}
+function setBusy(b) { $("#btnCmd").disabled = b; $("#btnAuto").disabled = b; }
+
+/* ---------- Almacenamiento: base de datos de Claude o este navegador ---------- */
+const store = {
+  db: null, base: null,
+  async init() {
+    try {
+      const [db, user] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]);
+      const id = db && user ? await user.id() : null;
+      if (db && id) { this.db = db; this.base = db.doc(`data/users/${id}/office`); }
+    } catch {}
+    if (this.db) {
+      try {
+        const s = await this.base.get();
+        if (s.exists) { const d = s.data(); state.company = d.company || state.company; state.brief = d.brief || state.brief; }
+        const q = await this.base.collection("tasks").orderBy("createdAt", "desc").limit(200).get();
+        mergeTasks(q.docs.map(d => d.data()));
+      } catch { this.db = null; }
+    }
+    if (!this.db) {
+      try { const s = JSON.parse(localStorage.getItem("oficina.state") || "null"); if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); } } catch {}
+    }
+    renderSide();
+  },
+  async saveMeta() {
+    if (this.db) { try { await this.base.set({ company: state.company, brief: state.brief }); return; } catch {} }
+    this.local();
+  },
+  async saveTask(t) {
+    const rec = { id: t.id, agentId: t.agentId, order: t.order, from: t.from || "", result: (t.result || "").slice(0, 120000), status: t.status, createdAt: t.createdAt };
+    if (this.db) { try { await this.base.collection("tasks").doc(t.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } }
+    this.local();
+  },
+  async deleteTask(id) {
+    if (this.db) { try { await this.base.collection("tasks").doc(id).delete(); return; } catch {} }
+    this.local();
+  },
+  local() {
+    try { localStorage.setItem("oficina.state", JSON.stringify({ company: state.company, brief: state.brief, tasks: state.tasks.filter(t => t.status !== "work").slice(-150) })); } catch {}
+  },
+};
+function mergeTasks(list) {
+  const have = new Set(state.tasks.map(t => t.id));
+  for (const t of list) if (t && t.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ ...t, status: t.status === "work" ? "error" : t.status });
+}
+
+/* ---------- Ajustes ---------- */
+function openSettings() {
+  $("#fCompany").value = state.company; $("#fBrief").value = state.brief;
+  const s = settingsLocal(); $("#fKey").value = s.key || ""; $("#fModel").value = s.model || "claude-opus-5-5";
+  $("#keyFields").hidden = AI.mode === "sample";
+  $("#settings").showModal();
+}
+$("#settings").addEventListener("close", async () => {
+  if ($("#settings").returnValue !== "save") return;
+  state.company = $("#fCompany").value.trim() || "Mi empresa";
+  state.brief = $("#fBrief").value.trim() || state.brief;
+  if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
+  renderSide(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
+});
+
+function updateBanner() {
+  const b = $("#aiBanner");
+  if (aiReady()) { b.hidden = true; return; }
+  b.hidden = false;
+  b.innerHTML = AI.mode === "pending" ? "Conectando con Claude…" : `Para que los agentes trabajen, abre esta app dentro de Claude o añade tu clave de API en <b>Proyecto y ajustes</b>.`;
+}
+
+/* ---------- Eventos ---------- */
+document.addEventListener("click", async e => {
+  const ag = e.target.closest("[data-agent]"); if (ag) return openAgent(ag.dataset.agent);
+  const op = e.target.closest("[data-open]"); if (op) return openAgent(op.dataset.open, op.dataset.task);
+  const q = e.target.closest("[data-q]"); if (q) { $("#orderText").value = q.dataset.q; $("#orderText").focus(); return; }
+  if (e.target.closest("#dClose") || e.target === $("#scrim")) return closeAgent();
+  if (e.target.closest("#btnStop")) { state.running?.abort(); return; }
+  const cp = e.target.closest("[data-copy]");
+  if (cp) { const t = state.tasks.find(x => x.id === cp.dataset.copy); try { await navigator.clipboard.writeText(t.result); toast("Copiado."); } catch { toast("No se pudo copiar; selecciona el texto a mano."); } return; }
+  const dl = e.target.closest("[data-dl]"); if (dl) return download(state.tasks.find(x => x.id === dl.dataset.dl));
+  const del = e.target.closest("[data-del]");
+  if (del) {
+    if (del.dataset.confirm !== "1") { del.dataset.confirm = "1"; del.textContent = "¿Seguro?"; return; }
+    const id = del.dataset.del; const t = state.tasks.find(x => x.id === id);
+    state.tasks = state.tasks.filter(x => x.id !== id); await store.deleteTask(id); renderSide(); if (t) openAgent(t.agentId); return;
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open) closeAgent(); });
+document.addEventListener("submit", e => {
+  if (e.target.id !== "orderForm") return;
+  e.preventDefault();
+  const v = $("#orderText").value.trim(); if (!v) return;
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  if (state.status[state.open] === "work") { toast(byId[state.open].name + " está terminando otra tarea."); return; }
+  $("#orderText").value = "";
+  runTask(state.open, v, "Tú");
+});
+$("#cmdForm").addEventListener("submit", e => { e.preventDefault(); const v = $("#cmd").value.trim(); if (!v) { $("#cmd").focus(); return; } $("#cmd").value = ""; runCompany(v, "order"); });
+$("#cmd").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#cmdForm").requestSubmit(); } });
+$("#cmd").addEventListener("input", e => { e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px"; });
+$("#btnAuto").addEventListener("click", () => runCompany("", "auto"));
+$("#btnSettings").addEventListener("click", openSettings);
+$("#btnBrief").addEventListener("click", openSettings);
+
+async function download(t) {
+  if (!t) return;
+  const filename = `${byId[t.agentId].name}-${t.order.slice(0, 40).replace(/[^\p{L}\p{N}]+/gu, "-")}.md`;
+  const dls = await window.claude?.use?.("downloads").catch(() => null);
+  if (dls) { try { await dls.save({ filename, data: t.result }); } catch { toast("Descarga cancelada."); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t.result], { type: "text/markdown" })); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }
+
+/* ---------- Arranque ---------- */
+renderRooms(); renderSide(); tick(); setInterval(tick, 30000);
+AI.mode = window.claude?.use ? "pending" : "none"; updateBanner();
+(async () => {
+  const s = window.claude?.use ? await window.claude.use("sample").catch(() => null) : null;
+  if (s) { AI.sample = s; AI.mode = "sample"; } else AI.mode = "none";
+  updateBanner();
+})();
+store.init();
+</script>
+
+<script>if(!window.claude&&"serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
+</body></html>
