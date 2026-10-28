@@ -338,16 +338,17 @@ const Office = (() => {
     function bubble(x, y, text, color) {
       ctx.font = `8px ${PIX}`; const w = Math.min(ctx.measureText(text).width + 8, 110);
       const bx = Math.round(Math.max(2, Math.min(LW - w - 2, x - w / 2))), by = Math.round(y);
-      ctx.fillStyle = "#0b1020"; ctx.fillRect(bx - 1, by - 1, w + 2, 13);
-      ctx.fillStyle = color; ctx.fillRect(bx, by, w, 11); ctx.fillRect(Math.round(x) - 1, by + 11, 3, 2);
+      ctx.fillStyle = "rgba(20,20,18,.55)"; ctx.fillRect(bx, by + 1, w + 1, 12);
+      ctx.fillStyle = "#fbfaf7"; ctx.fillRect(bx, by, w, 11); ctx.fillRect(Math.round(x) - 1, by + 11, 3, 2);
+      ctx.fillStyle = color; ctx.fillRect(bx, by, 2, 11);
       ctx.save(); ctx.beginPath(); ctx.rect(bx, by, w, 11); ctx.clip();
-      ctx.fillStyle = "#0b1020"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 4, by + 2); ctx.restore();
+      ctx.fillStyle = "#1d1d1b"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 5, by + 2); ctx.restore();
     }
     function label(x, y, text, sel) {
       ctx.font = `8px ${PIX}`; const w = ctx.measureText(text).width + 6;
       const bx = Math.round(x - w / 2), by = Math.round(y);
-      ctx.fillStyle = sel ? room.accent : "rgba(11,16,32,.82)"; ctx.fillRect(bx, by, w, 10);
-      ctx.fillStyle = sel ? "#0b1020" : "#e7ecf7"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 3, by + 1);
+      ctx.fillStyle = sel ? "#fbfaf7" : "rgba(24,24,22,.72)"; ctx.fillRect(bx, by, w, 10);
+      ctx.fillStyle = sel ? "#1d1d1b" : "#f1efe9"; ctx.textBaseline = "top"; ctx.fillText(text, bx + 3, by + 1);
     }
     function draw(t) {
       ctx.setTransform(S, 0, 0, S, 0, 0); ctx.imageSmoothingEnabled = false;
@@ -369,8 +370,7 @@ const Office = (() => {
         if (ac.state === "work") {
           const dots = ".".repeat(1 + Math.floor(t * 3) % 3);
           bubble(ac.x, ac.y - 40, (st.bubble[ac.a.id] || "Trabajando") + dots, room.accent);
-        } else if (ac.state === "queue") bubble(ac.x, ac.y - 40, "En cola", "#cfd6e4");
-        else if (ac.mode === "linger" && ac.wait > 2) bubble(ac.x, ac.y - 34, ["Café", "Idea!", "Hmm", "Ok"][(ac.a.blink | 0) % 4], "#e7ecf7");
+        } else if (ac.state === "queue") bubble(ac.x, ac.y - 40, "En cola", "#9a968c");
       }
     }
     function loop(now) {

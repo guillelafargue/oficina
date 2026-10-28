@@ -4,7 +4,7 @@ const byId = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 const roomById = Object.fromEntries(ROOMS.map(r => [r.id, r]));
 const state = {
   company: "Mi empresa",
-  brief: "Somos una empresa nueva. Describe tu proyecto en «Proyecto y ajustes»: qué vendéis, a quién, objetivos, tono de marca y presupuesto.",
+  brief: "Somos una empresa nueva. Describe tu proyecto en «Ajustes»: qué vendéis, a quién, objetivos, tono de marca y presupuesto.",
   tasks: [], runs: [], customSkills: [],
   status: {}, bubble: {},
   room: "central", view: "oficina", open: null,
@@ -96,7 +96,7 @@ async function ask(prompt, { onText, signal, json = false, image = null, quick =
 }
 function errText(e) {
   return ({ not_granted: "No se ha permitido usar Claude en esta página.", rate_limited: "Demasiadas peticiones seguidas. Prueba en un rato.",
-    refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Proyecto y ajustes.",
+    refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Ajustes.",
     bad_key: "La clave de API no es válida.", invalid_json: "No se pudo leer el plan. Vuelve a intentarlo.",
     sampling_disabled: "Claude no está disponible en esta cuenta.", cancelled: "Detenido.", image_rejected: "La imagen no es válida; prueba con otra.",
     prompt_too_large: "El encargo es demasiado largo; divídelo." })[e?.code] || ("No se pudo completar: " + (e?.message || "error desconocido"));
@@ -116,15 +116,15 @@ function acquire(signal) {
 function release() { slots.used--; const n = slots.q.shift(); if (n) n.go(); }
 
 /* ---------- Prompts ---------- */
-function roster() { return AGENTS.map(a => `- ${a.id}: ${a.name}, ${a.role} (${DEPTS[a.dept]}). Skills: ${skillsOf(a.id).map(s => s.id + " «" + s.name + "»").join(", ")}`).join("\n"); }
+function roster() { return AGENTS.map(a => `- ${a.id}: ${a.role} (${DEPTS[a.dept]}). Skills: ${skillsOf(a.id).map(s => s.id + " «" + s.name + "»").join(", ")}`).join("\n"); }
 function recentWork(limit = 6, exclude) {
   const done = state.tasks.filter(t => t.status === "done" && t.id !== exclude).sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
   if (!done.length) return "Todavía no hay trabajo entregado.";
-  return done.map(t => `• ${byId[t.agentId].name} (${byId[t.agentId].role}), «${t.order}»:\n${finalPart(t.result).slice(0, 800)}${t.result.length > 800 ? "…" : ""}`).join("\n\n");
+  return done.map(t => `• ${byId[t.agentId].role}, «${t.order}»:\n${finalPart(t.result).slice(0, 800)}${t.result.length > 800 ? "…" : ""}`).join("\n\n");
 }
 function finalPart(text) { const m = /^##\s*Entrega final[^\n]*\n?/im.exec(text || ""); return m ? text.slice(m.index + m[0].length) : (text || ""); }
 function persona(a) {
-  return `Eres ${a.name}, ${a.role} (${DEPTS[a.dept]}) en la empresa «${state.company}». Trabajas en una oficina con otros agentes especializados de primer nivel.
+  return `Eres el agente especialista en ${a.role} (${DEPTS[a.dept]}) de la empresa «${state.company}». Trabajas en una oficina con otros agentes especializados de primer nivel.
 Tu perfil: ${a.bio}
 Herramientas que dominas: ${a.tools.join(", ")}.
 Tus métodos: ${skillsOf(a.id).map(s => s.name).join(", ")}.
@@ -164,7 +164,7 @@ function companyPlanPrompt(order, kind) {
   const intro = kind === "auto"
     ? "Nadie te ha dado una orden nueva. Decide qué es lo más valioso que puede hacer el equipo AHORA para avanzar el proyecto, teniendo en cuenta lo ya entregado. No repitas trabajo hecho."
     : `El propietario de la empresa te da este encargo:\n«${order}»`;
-  return `Eres Elena, directora general de «${state.company}». Diriges una oficina de agentes especializados.
+  return `Eres la Dirección general de «${state.company}». Diriges una oficina de agentes especializados.
 
 PROYECTO:
 ${state.brief}
@@ -182,11 +182,11 @@ Responde SOLO con JSON:
 {"resumen": "una frase con el enfoque", "fases": [{"nombre": "Fase 1: …", "tareas": [{"agente": "id", "tarea": "instrucción concreta", "skill": "id de skill o vacío"}]}]}`;
 }
 function reportPrompt(run, results) {
-  return `Eres Elena, directora general de «${state.company}». Tu equipo acaba de terminar ${run.kind === "auto" ? "una ronda de trabajo autónoma" : "este encargo: «" + run.order + "»"}.
+  return `Eres la Dirección general de «${state.company}». Tu equipo acaba de terminar ${run.kind === "auto" ? "una ronda de trabajo autónoma" : "este encargo: «" + run.order + "»"}.
 Enfoque: ${run.resumen}
 
 ENTREGAS:
-${results.map(r => `### ${byId[r.agentId].name} (${byId[r.agentId].role}): ${r.order}\n${finalPart(r.result).slice(0, 2200)}`).join("\n\n")}
+${results.map(r => `### ${byId[r.agentId].role}: ${r.order}\n${finalPart(r.result).slice(0, 2200)}`).join("\n\n")}
 
 Escribe en español, en Markdown, un informe ejecutivo breve para el propietario: qué se ha hecho, decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay, y los 3 siguientes pasos con su responsable.`;
 }
@@ -239,7 +239,7 @@ async function runCompany(order, kind) {
   if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
   if (state.run) { toast("La empresa ya está con un encargo. Puedes detenerlo o esperar."); return; }
   const ctl = new AbortController();
-  const run = { id: uid(), kind, order, resumen: "Elena está preparando el plan…", fases: [], status: "work", createdAt: Date.now(), ctl };
+  const run = { id: uid(), kind, order, resumen: "Dirección está preparando el plan…", fases: [], status: "work", createdAt: Date.now(), ctl };
   state.run = run; state.runs.push(run);
   state.status.elena = "work"; state.bubble.elena = kind === "auto" ? "Decidiendo" : "Repartiendo";
   paintAll();
@@ -271,7 +271,7 @@ async function runCompany(order, kind) {
       run.reportId = rep.id;
     }
     run.status = ctl.signal.aborted ? "error" : "done";
-    toast(ctl.signal.aborted ? "Encargo detenido." : "El equipo ha terminado. Tienes el informe de Elena.");
+    toast(ctl.signal.aborted ? "Encargo detenido." : "El equipo ha terminado. Tienes el informe de Dirección.");
   } catch (e) {
     run.status = "error"; run.resumen = errText(e); toast(errText(e));
   } finally {
@@ -304,104 +304,108 @@ function paintAll() {
 function paintCounts() {
   const work = AGENTS.filter(a => state.status[a.id] !== "idle").length;
   $("#sIdle").textContent = AGENTS.length - work; $("#sWork").textContent = work;
-  $("#nWork").textContent = work ? work + " ●" : "";
+  $("#nWork").textContent = work || "";
   $("#nTasks").textContent = state.tasks.length || "";
   $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
   $("#nSkills").textContent = allSkills().length;
   for (const r of ROOMS) {
     const n = AGENTS.filter(a => a.room === r.id && state.status[a.id] !== "idle").length;
     const total = AGENTS.filter(a => a.room === r.id).length;
-    document.querySelectorAll(`[data-room-n="${r.id}"]`).forEach(el => el.textContent = el.closest(".rt") ? (n ? n + " trabajando" : total + " personas") : (n ? n + " ●" : String(total)));
+    document.querySelectorAll(`[data-room-n="${r.id}"]`).forEach(el => { el.textContent = n ? `${n}/${total}` : String(total); el.classList.toggle("on", !!n); });
   }
-  $("#btnAuto").textContent = state.run ? "Detener" : "Ronda autónoma";
+  $("#btnAuto").textContent = state.run ? "Detener ronda" : "Ronda autónoma";
   $("#btnAuto").classList.toggle("stop", !!state.run);
 }
 function statusDot(id) { const s = state.status[id]; return `<span class="dot ${s === "work" ? "work" : s === "queue" ? "queue" : ""}"></span>`; }
+function statusText(id) { const s = state.status[id]; return s === "work" ? (state.bubble[id] || "Trabajando") : s === "queue" ? "En cola" : "Disponible"; }
 function paintTeam() {
   $("#team").innerHTML = AGENTS.filter(a => a.room === state.room).map(a => `<button class="mate" type="button" data-agent="${a.id}">
-    <img class="px" src="${P(a)}" alt=""><div><b>${statusDot(a.id)}${esc(a.name)}</b><span>${esc(state.bubble[a.id] || a.role)}</span></div></button>`).join("");
+    <img class="px" src="${P(a)}" alt=""><div style="min-width:0"><b>${esc(a.name)}${statusDot(a.id)}</b><span>${state.status[a.id] === "idle" ? esc(a.role) : esc(statusText(a.id))}</span></div></button>`).join("");
 }
 function progressOf(t) {
-  if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Listo" : "Error" };
+  if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Terminado" : "Error" };
   if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
   if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
-  if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k}/${t.steps.length} · ${t.steps[k - 1] || ""}` }; }
+  if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k} de ${t.steps.length}`, step: t.steps[k - 1] || "" }; }
   return { pct: 40, ind: true, txt: t.result ? "Escribiendo" : "Pensando" };
 }
+function statusLabel(t) { return t.status === "work" ? progressOf(t).txt : t.status === "done" ? "Terminado" : "Error"; }
 function jobHTML(t) {
   const a = byId[t.agentId], p = progressOf(t);
-  return `<button class="job" type="button" data-task="${t.id}"><img class="px" src="${P(a)}" alt="">
-    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${esc(a.name)} · ${esc(p.txt)}</div>
-    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</div></button>`;
+  return `<button class="job" type="button" data-task="${t.id}"><div class="t">${esc(t.order)}</div>
+    <div class="m"><b>${esc(a.name)}</b><span>·</span><span class="st ${t.status}">${esc(p.txt)}</span>${t.status !== "work" ? `<span>·</span><span>${fmtDate(t.createdAt)}</span>` : ""}</div>
+    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</button>`;
 }
 function paintLive() {
   const live = state.tasks.filter(t => t.status === "work").sort((a, b) => a.createdAt - b.createdAt);
   $("#liveCount").textContent = live.length;
-  $("#liveList").innerHTML = live.length ? live.map(jobHTML).join("") : `<p class="empty">Nadie trabaja ahora mismo. Haz un encargo arriba o lanza una ronda autónoma.</p>`;
+  $("#liveList").innerHTML = live.length ? live.map(jobHTML).join("") : `<p class="empty">Nadie está trabajando ahora. Haz un encargo o lanza una ronda autónoma.</p>`;
   const recent = state.tasks.filter(t => t.status !== "work").sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
-  $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí aparecerá lo último que entregue el equipo.</p>`;
+  $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí verás lo último que se ha entregado.</p>`;
 }
 function paintRun() {
   const box = $("#runBox"), r = state.run || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
   if (!r) { box.hidden = true; return; }
   box.hidden = false;
-  const lbl = { pend: "pendiente", work: "en curso", done: "hecho", error: "error" };
-  box.innerHTML = `<h3>${r.kind === "auto" ? "RONDA AUTÓNOMA" : "PLAN DE DIRECCIÓN"} <span class="st ${r.status}">${lbl[r.status]}</span></h3>
+  const lbl = { pend: "Pendiente", work: "En curso", done: "Hecho", error: "Error" };
+  box.innerHTML = `<h3 class="h3">${r.kind === "auto" ? "Ronda autónoma" : "Plan de Dirección"} <span class="st ${r.status}">${lbl[r.status]}</span></h3>
     <p>${esc(r.resumen)}</p>
-    ${(r.fases || []).map(f => `<div class="ph">${esc(f.nombre)}</div><ol>${f.tareas.map(x => `<li><b>${esc(byId[x.agente]?.name)}</b>: ${esc(x.tarea)} <span class="st ${x.estado}">${lbl[x.estado] || ""}</span></li>`).join("")}</ol>`).join("")}
-    ${r.reportId ? `<div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn sm" type="button" data-task="${r.reportId}">Leer el informe de Elena</button></div>` : ""}`;
+    ${(r.fases || []).map(f => `<div class="ph">${esc(f.nombre)}</div><ol>${f.tareas.map(x => `<li><b>${esc(byId[x.agente]?.name)}</b>: ${esc(x.tarea)} <span class="st ${x.estado}">${lbl[x.estado] ? "· " + lbl[x.estado].toLowerCase() : ""}</span></li>`).join("")}</ol>`).join("")}
+    ${r.reportId ? `<div class="row" style="justify-content:flex-start;margin-top:12px"><button class="btn sm" type="button" data-task="${r.reportId}">Leer el informe</button></div>` : ""}`;
 }
 function taskRowHTML(t) {
-  const a = byId[t.agentId], p = progressOf(t), sk = t.skillId ? skillById(t.skillId) : null;
-  return `<button class="card trow" type="button" data-task="${t.id}"><img class="px" src="${P(a)}" alt="">
-    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${esc(a.name)} · ${esc(a.role)}${sk ? " · " + esc(sk.name) : ""} · ${fmtDate(t.createdAt)} · ${esc(t.from)}</div>
-    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</div>
-    <span class="st ${t.status}">${t.status === "work" ? esc(p.txt.split(" · ")[0]) : t.status === "done" ? "hecho" : "error"}</span></button>`;
+  const a = byId[t.agentId], sk = t.skillId ? skillById(t.skillId) : null;
+  return `<button class="trow" type="button" data-task="${t.id}">
+    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</div></div>
+    <span class="who">${esc(a.name)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span></button>`;
 }
 function filterChips(el, key, opts) {
   el.innerHTML = opts.map(([v, l]) => `<button class="f" type="button" data-f="${key}" data-v="${v}" aria-pressed="${state[key] === v}">${esc(l)}</button>`).join("");
 }
 function paintTasks() {
-  filterChips($("#taskFilters"), "fTasks", [["todos", "Todos"], ["work", "En marcha"], ["done", "Hechos"], ["error", "Con error"], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
+  filterChips($("#taskFilters"), "fTasks", [["todos", "Todos"], ["work", "En marcha"], ["done", "Terminados"], ["error", "Con error"], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
   const f = state.fTasks;
   const list = state.tasks.filter(t => f === "todos" || t.status === f || (f.startsWith("room:") && byId[t.agentId].room === f.slice(5))).sort((a, b) => b.createdAt - a.createdAt);
-  $("#taskList").innerHTML = list.length ? list.map(taskRowHTML).join("") : `<p class="empty">No hay encargos con este filtro.</p>`;
+  $("#taskList").innerHTML = list.length ? `<div class="thead"><span>Encargo</span><span>Puesto</span><span>Estado</span></div>` + list.map(taskRowHTML).join("") : `<p class="empty">No hay encargos con este filtro.</p>`;
 }
 const EXAMPLES = [
-  { agentId: "dani", order: "Reel de lanzamiento de 30 s", result: "**0:00-0:03** Plano detalle del producto con luz dura lateral, golpe de bajo en el corte…" },
-  { agentId: "sofia", order: "Calendario de 4 semanas para Instagram y TikTok", result: "| Día | Red | Formato | Idea | CTA |\n|---|---|---|---|---|\n| Lun | TikTok | Reel | «3 errores que…» | Guardar |" },
-  { agentId: "alex", order: "Oferta irresistible con el método Hormozi", result: "**Resultado soñado:** … **Bonus:** … **Garantía:** 30 días o te devolvemos el dinero…" },
+  { agentId: "dani", order: "Reel de lanzamiento de 30 s", result: "0:00-0:03 Plano detalle del producto con luz dura lateral, golpe de bajo en el corte. 0:03-0:08 Tres planos rápidos de uso real…" },
+  { agentId: "sofia", order: "Calendario de 4 semanas para Instagram y TikTok", result: "Lunes, TikTok: reel «3 errores que…», CTA guardar. Miércoles, Instagram: carrusel comparativo…" },
+  { agentId: "alex", order: "Oferta con el método Hormozi", result: "Resultado soñado, plazo, esfuerzo y riesgo. Bonus por orden de valor percibido. Garantía de 30 días…" },
 ];
 const thumbs = {};
 function paintDeliverables() {
   filterChips($("#delFilters"), "fDel", [["todos", "Todo"], ...ROOMS.map(r => [r.id, r.name])]);
   const done = state.tasks.filter(t => t.status === "done" && (state.fDel === "todos" || byId[t.agentId].room === state.fDel)).sort((a, b) => b.createdAt - a.createdAt);
-  const list = done.length ? done : (state.tasks.some(t => t.status === "done") ? [] : EXAMPLES.map(x => ({ ...x, example: true, createdAt: Date.now() })));
-  $("#delGrid").innerHTML = list.length ? list.map(t => {
-    const a = byId[t.agentId], r = roomById[a.room]; thumbs[r.id] ||= Office.roomThumb(r);
+  const anyDone = state.tasks.some(t => t.status === "done");
+  const list = done.length ? done : anyDone ? [] : EXAMPLES.map(x => ({ ...x, example: true, createdAt: Date.now() }));
+  const cards = list.map(t => {
+    const a = byId[t.agentId];
     const plain = finalPart(t.result).replace(/[#*|`>_-]+/g, " ").replace(/\s+/g, " ").trim();
-    return `<button class="card del" type="button" ${t.example ? "" : `data-task="${t.id}"`}>
-      <div class="cover" style="background-image:url(${thumbs[r.id]})"><img class="px" src="${P(a)}" alt=""><div><b>${esc(a.name)}</b><span>${esc(a.role)}</span></div></div>
-      <div class="body"><div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 220))}</div>
-      <div class="m" style="font-size:11px;color:var(--ink-3);margin-top:auto">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></div></button>`;
-  }).join("") : `<p class="empty">Todavía no hay entregables en esta sala.</p>`;
-  if (!done.length && list.length) $("#delGrid").insertAdjacentHTML("afterbegin", `<p class="empty" style="grid-column:1/-1">Así se verán tus entregables cuando el equipo termine su primer trabajo:</p>`);
+    return `<button class="del" type="button" ${t.example ? "disabled style=\"cursor:default\"" : `data-task="${t.id}"`}>
+      <div class="who"><img class="px" src="${P(a)}" alt=""><b>${esc(a.name)}</b></div>
+      <div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 260))}</div>
+      <div class="d">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></button>`;
+  }).join("");
+  $("#delGrid").innerHTML = (!done.length && list.length ? `<p class="intro">Todavía no hay nada terminado. Así se verá cuando el equipo entregue su primer trabajo:</p>` : "")
+    + (list.length ? `<div class="gallery">${cards}</div>` : `<p class="empty">Todavía no hay entregables en esta sala.</p>`);
 }
 function paintSkills() {
-  filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Mías"], ...ROOMS.map(r => [r.id, r.name])]);
+  filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Creadas por ti"], ...ROOMS.map(r => [r.id, r.name])]);
   const f = state.fSkills;
   const list = allSkills().filter(s => f === "todos" || (f === "custom" ? s.custom : byId[s.agentId].room === f));
-  $("#skillGrid").innerHTML = list.map(s => { const a = byId[s.agentId]; return `<article class="card sk${s.custom ? " custom" : ""}">
-    <div class="top"><img class="px" src="${P(a)}" alt=""><div><h4>${esc(s.name)}</h4><div class="who">${esc(a.name)} · ${esc(DEPTS[a.dept])}</div></div></div>
-    <p>${esc(s.desc)}</p><details><summary>Cómo lo hace</summary><p style="margin-top:6px">${esc(s.method)}</p></details>
-    <div class="acts"><button class="btn sm" type="button" data-use="${s.id}">Usar</button>${s.custom ? `<button class="btn ghost sm" type="button" data-delskill="${s.id}">Borrar</button>` : ""}</div></article>`; }).join("") || `<p class="empty">Aún no has creado skills propias.</p>`;
+  const groups = AGENTS.map(a => [a, list.filter(s => s.agentId === a.id)]).filter(([, l]) => l.length);
+  $("#skillGrid").innerHTML = groups.map(([a, l]) => `<section class="skgroup"><h2><img class="px" src="${P(a)}" alt="">${esc(a.name)} <span>${esc(a.role)}</span></h2>
+    ${l.map(s => `<article class="sk"><h4>${esc(s.name)}${s.custom ? "<em>tuya</em>" : ""}</h4>
+      <div><p>${esc(s.desc)}</p><details><summary>Cómo lo hace</summary><p style="margin-top:6px">${esc(s.method)}</p></details></div>
+      <div class="acts"><button class="btn ghost sm" type="button" data-use="${s.id}">Usar</button>${s.custom ? `<button class="btn ghost sm" type="button" data-delskill="${s.id}">Borrar</button>` : ""}</div></article>`).join("")}</section>`).join("")
+    || `<p class="empty">Aún no has creado skills propias.</p>`;
 }
 
 /* ---------- Sala ---------- */
 let scene = null;
 function paintRooms() {
-  $("#roomsNav").innerHTML = `<span class="h">SALAS</span>` + ROOMS.map(r => `<button class="nl" type="button" data-room="${r.id}" aria-current="${state.room === r.id && state.view === "oficina"}"><span class="sw" style="background:${r.accent}"></span>${esc(r.name)}<span class="n" data-room-n="${r.id}"></span></button>`).join("");
-  $("#roomTabs").innerHTML = ROOMS.map(r => { thumbs[r.id] ||= Office.roomThumb(r); return `<button class="rt" type="button" data-room="${r.id}" aria-pressed="${state.room === r.id}"><img src="${thumbs[r.id]}" alt=""><div><div>${esc(r.name)}</div><div class="n" data-room-n="${r.id}"></div></div></button>`; }).join("");
+  $("#roomTabs").innerHTML = ROOMS.map(r => `<button class="rt" type="button" data-room="${r.id}" aria-pressed="${state.room === r.id}">${esc(r.name)} <span class="n" data-room-n="${r.id}"></span></button>`).join("");
   $("#stageName").textContent = roomById[state.room].name;
   paintCounts();
 }
@@ -414,7 +418,7 @@ function go(view) {
   if (!VIEWS.includes(view)) view = "oficina";
   state.view = view;
   VIEWS.forEach(v => { $("#v-" + v).hidden = v !== view; });
-  document.querySelectorAll(".nl[data-view]").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === view)));
+  document.querySelectorAll(".tab[data-view]").forEach(b => b.setAttribute("aria-current", String(b.dataset.view === view)));
   if (view === "oficina") scene?.start(); else scene?.stop();
   if (view === "encargos") paintTasks();
   if (view === "skills") paintSkills();
@@ -427,8 +431,8 @@ window.addEventListener("hashchange", () => go(location.hash.slice(1)));
 
 /* ---------- Compositor ---------- */
 function paintTargets() {
-  $("#target").innerHTML = `<option value="empresa">Toda la empresa (Elena reparte)</option>` + ROOMS.map(r =>
-    `<optgroup label="${esc(r.name)}">${AGENTS.filter(a => a.room === r.id).map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(a.role)}</option>`).join("")}</optgroup>`).join("");
+  $("#target").innerHTML = `<option value="empresa">Toda la empresa (Dirección reparte)</option>` + ROOMS.map(r =>
+    `<optgroup label="${esc(r.name)}">${AGENTS.filter(a => a.room === r.id).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join("")}</optgroup>`).join("");
   $("#target").value = state.comp.target;
 }
 function paintComposer() {
@@ -438,13 +442,13 @@ function paintComposer() {
   if (c.target === "empresa") slot.innerHTML = "";
   else {
     const list = skillsOf(c.target);
-    slot.innerHTML = `<label for="skillSel" hidden>Skill</label><select id="skillSel"><option value="">Sin skill concreta</option>${list.map(s => `<option value="${s.id}" ${c.skill === s.id ? "selected" : ""}>Skill: ${esc(s.name)}</option>`).join("")}</select>`;
+    slot.innerHTML = `<label for="skillSel" hidden>Skill</label><select id="skillSel"><option value="">Sin skill concreta</option>${list.map(s => `<option value="${s.id}" ${c.skill === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>`;
   }
   $("#btnAttach").hidden = !(AI.images || AI.mode === "none") || !!c.image;
-  $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">✕</button></span>` : "";
+  $("#imgSlot").innerHTML = c.image ? `<span class="chip-img"><img src="${URL.createObjectURL(c.image)}" alt="">${esc(c.image.name.slice(0, 20))}<button type="button" id="rmImg" aria-label="Quitar imagen">Quitar</button></span>` : "";
   const sk = c.skill ? skillById(c.skill) : null;
-  $("#cmd").placeholder = c.target === "empresa" ? "Nuevo encargo para toda la empresa. Ej.: «Lanzamos zapatillas veganas en enero: plan completo, web y 10 reels»"
-    : sk ? `${byId[c.target].name} usará «${sk.name}»: ${sk.desc} Añade los detalles.` : `¿Qué necesitas de ${byId[c.target].name}?`;
+  $("#cmd").placeholder = c.target === "empresa" ? "Describe el encargo. Dirección lo repartirá entre los puestos."
+    : sk ? `Con «${sk.name}»: ${sk.desc} Añade los detalles.` : `Encargo para ${byId[c.target].name}: describe lo que necesitas`;
 }
 $("#target").addEventListener("change", e => { state.comp.target = e.target.value; state.comp.skill = null; paintComposer(); });
 $("#skillSlot").addEventListener("change", e => { if (e.target.id === "skillSel") { state.comp.skill = e.target.value || null; paintComposer(); } });
@@ -462,7 +466,7 @@ $("#composer").addEventListener("submit", e => {
     const a = byId[c.target];
     if (a.room !== state.room) setRoom(a.room);
     runTask({ agentId: c.target, order, from: "Tú", skillId: c.skill, mode: c.mode, image: c.image });
-    toast(`${a.name} se pone con ello.`);
+    toast(`Encargo enviado a ${a.name}.`);
   }
   c.image = null; paintComposer();
 });
@@ -480,39 +484,40 @@ function openAgent(id, focusTask) {
   $("#drawer").innerHTML = `
     <div class="d-head"><img class="px" src="${P(a)}" alt="">
       <div style="min-width:0"><h2 id="dName">${esc(a.name)}</h2><p>${esc(a.role)} · ${esc(r.name)}</p>
-      <p style="font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-top:3px" id="dStatus"></p></div>
+      <p class="d-status" id="dStatus"></p></div>
       <button class="btn ghost sm x" type="button" id="dClose">Cerrar</button></div>
     <div class="d-body">
-      <p style="margin:0;color:var(--ink-2)">${esc(a.bio)}</p>
-      <div><p class="lbl">HERRAMIENTAS</p><div class="tools">${a.tools.map(s => `<span class="tool">${esc(s)}</span>`).join("")}</div></div>
-      <div><p class="lbl">SKILLS · elige una para tu encargo</p><div class="minisk">${skillsOf(id).map(s => `<button type="button" data-dskill="${s.id}" aria-pressed="${dc.skill === s.id}"><b>${esc(s.name)}</b>${esc(s.desc)}</button>`).join("")}</div></div>
-      <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">NUEVO ENCARGO PARA ${esc(a.name.toUpperCase())}</p>
+      <p class="d-bio">${esc(a.bio)} <span>Trabaja con ${esc(a.tools.join(", "))}.</span></p>
+      <form class="dorder" id="dOrder"><p class="lbl" style="margin:0">Nuevo encargo</p>
         <label for="dText" hidden>Encargo</label>
-        <textarea id="dText" placeholder="${dc.skill ? esc("Usará «" + skillById(dc.skill).name + "». Añade los detalles del encargo.") : "¿Qué necesitas de " + esc(a.name) + "?"}"></textarea>
-        <div class="crow"><div class="seg" role="group" aria-label="Profundidad"><button type="button" data-dmode="rapido" aria-pressed="${dc.mode === "rapido"}">Rápido</button><button type="button" data-dmode="pro" aria-pressed="${dc.mode === "pro"}">Profundo</button></div>
-        <span class="grow"></span><button class="btn" type="submit">Encargar a ${esc(a.name)}</button></div></form>
-      <div><p class="lbl">TRABAJO (${tasks.length})</p><div id="dTasks">${tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`}</div></div>
+        <textarea id="dText" placeholder="${dc.skill ? esc("Con «" + skillById(dc.skill).name + "». Añade los detalles.") : "Describe lo que necesitas"}"></textarea>
+        <div class="crow"><div class="seg" role="group" aria-label="Profundidad"><button type="button" data-dmode="rapido" aria-pressed="${dc.mode === "rapido"}">Rápido</button><button type="button" data-dmode="pro" aria-pressed="${dc.mode === "pro"}">Por pasos</button></div>
+        <span class="grow"></span><button class="btn" type="submit">Encargar</button></div></form>
+      <div><p class="lbl">Método (opcional)</p><div class="minisk">${skillsOf(id).map(s => `<button type="button" data-dskill="${s.id}" aria-pressed="${dc.skill === s.id}"><span><b>${esc(s.name)}</b>${esc(s.desc)}</span></button>`).join("")}</div></div>
+      <div><p class="lbl">Trabajo <span class="num">${tasks.length || ""}</span></p><div id="dTasks">${tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`}</div></div>
     </div>`;
   paintDStatus();
   $("#drawer").hidden = false; $("#scrim").hidden = false;
   if (focusTask) $("#drawer").querySelector(`[data-tid="${focusTask}"]`)?.scrollIntoView({ block: "start" });
 }
-function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; const s = state.status[state.open]; el.innerHTML = `${statusDot(state.open)} ${s === "work" ? esc(state.bubble[state.open] || "Trabajando") : s === "queue" ? "En cola" : "Disponible"}`; }
+function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; el.innerHTML = `${statusDot(state.open)} ${esc(statusText(state.open))}`; }
 function drawerTaskHTML(t) {
   const sk = t.skillId ? skillById(t.skillId) : null, p = progressOf(t);
-  const steps = t.steps.length ? `<div class="steps">${t.steps.map((s, i) => `<div class="s ${i + 1 < (t.step || 0) || t.status === "done" ? "done" : i + 1 === (t.step || 1) && t.status === "work" && t.phase === "exec" ? "cur" : ""}">${i + 1 < (t.step || 0) || t.status === "done" ? "✓" : i + 1 === (t.step || 1) && t.status === "work" ? "▸" : "·"} ${esc(s)}</div>`).join("")}</div>` : "";
+  const cur = i => i + 1 === (t.step || 1) && t.status === "work" && t.phase === "exec", done = i => i + 1 < (t.step || 0) || t.status === "done";
+  const steps = t.steps.length ? `<div class="steps">${t.steps.map((s, i) => `<div class="s ${done(i) ? "done" : cur(i) ? "cur" : ""}"><i>${i + 1}</i><span>${esc(s)}</span></div>`).join("")}</div>` : "";
   const body = t.status === "work" && !t.result ? `<div class="thinking">${esc(p.txt)}…</div>` : `<div class="md">${md(t.result)}</div>`;
   const others = AGENTS.filter(x => x.id !== t.agentId);
   const acts = t.status === "done" ? `<div class="task-acts">
       <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
       <button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
-      <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)} · ${esc(x.role)}</option>`).join("")}</select>
+      <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>
+      <span class="sep"></span>
+      <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a otro puesto…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select>
       <label for="hi-${t.id}" hidden>Instrucción</label><input id="hi-${t.id}" placeholder="Qué debe hacer con esto">
-      <button class="btn sm" type="button" data-handoff="${t.id}">Enviar</button>
-      <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>`
+      <button class="btn sm" type="button" data-handoff="${t.id}">Pasar</button></div>`
     : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
   return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
-    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="meta">${fmtDate(t.createdAt)} · ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</span><span class="st ${t.status}">${t.status === "work" ? esc(p.txt.split(" · ")[0]) : t.status === "done" ? "hecho" : "error"}</span></div>
+    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</span></div>
     ${steps}${body}${acts}</article>`;
 }
 function refreshDrawerTasks() {
@@ -548,7 +553,7 @@ document.addEventListener("click", async e => {
   if (el("#rmImg")) { state.comp.image = null; return paintComposer(); }
   if ((b = el("[data-mode]"))) { state.comp.mode = b.dataset.mode; return paintComposer(); }
   if ((b = el("[data-dmode]"))) { state.dComp.mode = b.dataset.dmode; document.querySelectorAll("[data-dmode]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); return; }
-  if ((b = el("[data-dskill]"))) { const dc = state.dComp; dc.skill = dc.skill === b.dataset.dskill ? null : b.dataset.dskill; const txt = $("#dText").value; openAgent(state.open); $("#dText").value = txt; $("#dText").focus(); return; }
+  if ((b = el("[data-dskill]"))) { const dc = state.dComp; dc.skill = dc.skill === b.dataset.dskill ? null : b.dataset.dskill; const txt = $("#dText").value, top = $(".d-body").scrollTop; openAgent(state.open); $("#dText").value = txt; $(".d-body").scrollTop = top; return; }
   if ((b = el("[data-f]"))) { state[b.dataset.f] = b.dataset.v; return b.dataset.f === "fSkills" ? paintSkills() : b.dataset.f === "fTasks" ? paintTasks() : paintDeliverables(); }
   if ((b = el("[data-use]"))) { const s = skillById(b.dataset.use); state.comp = { ...state.comp, target: s.agentId, skill: s.id }; go("oficina"); setRoom(byId[s.agentId].room); paintTargets(); paintComposer(); $("#cmd").focus(); return; }
   if ((b = el("[data-delskill]"))) { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; } state.customSkills = state.customSkills.filter(s => s.id !== b.dataset.delskill); await store.deleteSkill(b.dataset.delskill); paintSkills(); paintCounts(); return; }
@@ -558,13 +563,13 @@ document.addEventListener("click", async e => {
     const t = state.tasks.find(x => x.id === b.dataset.improve);
     runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
       extra: `Este es tu trabajo anterior:\n${t.result.slice(0, 12000)}\n\nRevísalo con ojo crítico de experto exigente: señala en 3-5 puntos qué falla o es mejorable y entrega la versión mejorada completa.` });
-    toast(`${byId[t.agentId].name} revisa su trabajo.`); return;
+    toast("Revisión en marcha."); return;
   }
   if ((b = el("[data-handoff]"))) {
     const t = state.tasks.find(x => x.id === b.dataset.handoff), to = $("#ho-" + t.id).value, ins = $("#hi-" + t.id).value.trim();
-    if (!to) { toast("Elige a quién se lo pasas."); $("#ho-" + t.id).focus(); return; }
-    runTask({ agentId: to, order: ins || `Continúa el trabajo de ${byId[t.agentId].name}: ${t.order}`, from: byId[t.agentId].name, mode: "pro",
-      extra: `${byId[t.agentId].name} (${byId[t.agentId].role}) te pasa este trabajo para que lo uses como base:\n${t.result.slice(0, 12000)}` });
+    if (!to) { toast("Elige a qué puesto se lo pasas."); $("#ho-" + t.id).focus(); return; }
+    runTask({ agentId: to, order: ins || `Continúa este trabajo de ${byId[t.agentId].name}: ${t.order}`, from: byId[t.agentId].name, mode: "pro",
+      extra: `El puesto de ${byId[t.agentId].role} te pasa este trabajo para que lo uses como base:\n${t.result.slice(0, 12000)}` });
     toast(`Pasado a ${byId[to].name}.`); return;
   }
   if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: t.extra }); return; }
@@ -577,7 +582,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open
 
 async function download(t) {
   if (!t) return;
-  const filename = `${byId[t.agentId].name}-${t.order.slice(0, 40).replace(/[^\p{L}\p{N}]+/gu, "-")}.md`;
+  const filename = `${byId[t.agentId].name}-${t.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ".md";
   const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
   if (dls) { try { await dls.save({ filename, data: t.result }); } catch { toast("Descarga cancelada."); } return; }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t.result], { type: "text/markdown" })); a.download = filename; a.click();
@@ -599,7 +604,7 @@ $("#settings").addEventListener("close", async () => {
   paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
 });
 $("#btnNewSkill").addEventListener("click", () => {
-  $("#kAgent").innerHTML = AGENTS.map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(a.role)}</option>`).join("");
+  $("#kAgent").innerHTML = AGENTS.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join("");
   ["kName", "kDesc", "kMethod"].forEach(i => $("#" + i).value = "");
   $("#skillDlg").showModal();
 });
@@ -613,13 +618,13 @@ $("#skillDlg").addEventListener("close", async () => {
 function paintHeader() {
   $("#coName").textContent = state.company;
   $("#coTitle").textContent = state.company;
-  $("#briefLine").textContent = state.brief.length > 140 ? state.brief.slice(0, 140) + "…" : state.brief;
+  $("#briefLine").textContent = state.brief.length > 160 ? state.brief.slice(0, 160) + "…" : state.brief;
 }
 function updateBanner() {
   const b = $("#aiBanner");
   if (aiReady()) { b.hidden = true; return; }
   b.hidden = false;
-  b.innerHTML = AI.mode === "pending" ? "Conectando con Claude…" : `Para que los agentes trabajen, abre esta app dentro de Claude o añade tu clave de API en <b>Proyecto y ajustes</b>.`;
+  b.innerHTML = AI.mode === "pending" ? "Conectando con Claude…" : `Para que el equipo trabaje, abre esta app dentro de Claude o añade tu clave de API en <b>Ajustes</b>.`;
 }
 
 /* ---------- Almacenamiento: base de datos del artifact o este navegador ---------- */
