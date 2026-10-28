@@ -458,9 +458,9 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
 <dialog id="liveDlg" class="livedlg">
   <form method="dialog">
     <h2 id="liveTitle">Vista en vivo</h2>
-    <p class="note">Así se ve la pieza. Para sacar el MP4 de una composición HyperFrames, descárgala y ejecuta «npx hyperframes render» en su carpeta.</p>
+    <p class="note" id="liveNote">Así se ve la pieza.</p>
     <iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe>
-    <div class="row"><button class="btn ghost" type="button" id="liveDl">Descargar HTML</button><button class="btn" value="close" type="submit">Cerrar</button></div>
+    <div class="row"><button class="btn ghost" type="button" id="liveDl">Descargar HTML</button><button class="btn ghost" type="button" id="liveMp4" hidden>Descargar MP4</button><button class="btn" value="close" type="submit">Cerrar</button></div>
   </form>
 </dialog>
 

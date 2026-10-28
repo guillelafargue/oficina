@@ -51,8 +51,15 @@ async function ask(prompt, { onText, signal, json = false, image = null, quick =
     if (quick) opts.modelTier = "quick";
     if (image && AI.images) opts.images = [image];
     if (json) return AI.sample.json(prompt, opts);
-    const r = await AI.sample(prompt, { ...opts, onText });
-    return r.text;
+    let r = await AI.sample(prompt, { ...opts, onText }), text = r.text;
+    // Si la respuesta se corta por longitud, se pide que siga donde lo dejó (hasta 3 veces).
+    for (let i = 0; r.truncated && i < 3; i++) {
+      const before = text;
+      r = await AI.sample([{ role: "user", content: prompt }, { role: "assistant", content: text }, { role: "user", content: "Tu respuesta se ha cortado por longitud. Continúa exactamente desde el último carácter que escribiste, sin repetir nada y sin comentarios. Si estabas dentro de un bloque de código, sigue dentro de él." }],
+        { signal, cache: false, onText: ({ text: more }) => onText?.({ text: before + more, delta: "" }) });
+      text = before + r.text;
+    }
+    return text;
   }
   const s = settingsLocal();
   if (!s.key) throw { code: "no_ai" };
@@ -837,6 +844,7 @@ document.addEventListener("click", async e => {
   if (el("#expBtn")) return exportDeliverables();
   if ((b = el("[data-live]"))) return openLive(state.tasks.find(x => x.id === b.dataset.live));
   if (el("#liveDl")) return downloadLive();
+  if (el("#liveMp4")) return recordLive();
   if ((b = el("[data-improve]"))) {
     const t = state.tasks.find(x => x.id === b.dataset.improve);
     runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
@@ -888,51 +896,120 @@ $("#pasteDlg").addEventListener("close", () => {
 
 /* Vista en vivo de composiciones HTML (HyperFrames, prototipos de interfaz y animaciones). */
 function liveHTML(text) {
-  const blocks = [...(text || "").matchAll(/```html[^\n]*\n([\s\S]*?)```/gi)].map(m => m[1]);
+  const src = text || "";
+  const blocks = [...src.matchAll(/```html[^\n]*\n([\s\S]*?)```/gi)].map(m => m[1]);
+  // Un bloque sin cerrar (respuesta cortada) también se puede ver: se toma hasta el final.
+  const open = /```html[^\n]*\n([\s\S]*)$/i.exec(src.replace(/```html[^\n]*\n[\s\S]*?```/gi, ""));
+  if (open) blocks.push(open[1]);
   return blocks.sort((x, y) => y.length - x.length)[0] || "";
 }
-// Reproductor mínimo: muestra cada .clip en su tramo, mueve los timelines de GSAP y escala el lienzo.
-const LIVE_PLAYER = `<script>(function(){
-  var stage=document.querySelector("[data-composition-id]"); if(!stage) return;
-  var W=+stage.dataset.width||1920,H=+stage.dataset.height||1080;
-  document.documentElement.style.cssText="margin:0;height:100%;background:#111;overflow:hidden";
-  document.body.style.cssText="margin:0;height:100%;overflow:hidden";
-  stage.style.width=W+"px";stage.style.height=H+"px";stage.style.position="absolute";stage.style.left="50%";stage.style.top="50%";stage.style.overflow="hidden";
-  function fit(){var k=Math.min(innerWidth/W,innerHeight/H);stage.style.transform="translate(-50%,-50%) scale("+k+")";}
-  fit();addEventListener("resize",fit);
-  var clips=[].slice.call(stage.querySelectorAll("[data-start]")).filter(function(e){return e!==stage;});
-  var end=clips.reduce(function(m,e){return Math.max(m,(+e.dataset.start||0)+(+e.dataset.duration||0));},0);
-  var t0=performance.now();
-  function frame(now){
-    var tls=window.__timelines||{},keys=Object.keys(tls),dur=end;
-    keys.forEach(function(k){dur=Math.max(dur,tls[k].duration());});
-    var t=((now-t0)/1000)%(dur||1);
-    clips.forEach(function(e){var s=+e.dataset.start||0,d=+e.dataset.duration||1e9,on=t>=s&&t<s+d;e.style.visibility=on?"":"hidden";
-      if(e.tagName==="VIDEO"||e.tagName==="AUDIO"){if(on&&e.paused){e.currentTime=t-s;e.play&&e.play().catch(function(){});}if(!on&&!e.paused)e.pause();}});
-    keys.forEach(function(k){tls[k].seek(t,false);});
-    requestAnimationFrame(frame);
+// Se ejecuta dentro del iframe aislado: reproduce la composición y, si se le pide, la graba a MP4 fotograma a fotograma.
+function livePlayer() {
+  var stage = document.querySelector("[data-composition-id]"); if (!stage) return;
+  var W = (+stage.dataset.width || 1920) & ~1, H = (+stage.dataset.height || 1080) & ~1;
+  document.documentElement.style.cssText = "margin:0;height:100%;background:#111;overflow:hidden";
+  document.body.style.cssText = "margin:0;height:100%;overflow:hidden";
+  stage.style.width = W + "px"; stage.style.height = H + "px"; stage.style.position = "absolute"; stage.style.left = "50%"; stage.style.top = "50%"; stage.style.overflow = "hidden";
+  function fit() { var k = Math.min(innerWidth / W, innerHeight / H); stage.style.transform = "translate(-50%,-50%) scale(" + k + ")"; }
+  fit(); addEventListener("resize", fit);
+  var clips = [].slice.call(stage.querySelectorAll("[data-start]")).filter(function (e) { return e !== stage; });
+  var end = clips.reduce(function (m, e) { return Math.max(m, (+e.dataset.start || 0) + (+e.dataset.duration || 0)); }, 0);
+  function duration() { var tls = window.__timelines || {}, d = end; Object.keys(tls).forEach(function (k) { d = Math.max(d, tls[k].duration()); }); return Math.min(d || 5, 180); }
+  function render(t, media) {
+    var tls = window.__timelines || {};
+    clips.forEach(function (e) {
+      var s = +e.dataset.start || 0, d = +e.dataset.duration || 1e9, on = t >= s && t < s + d; e.style.visibility = on ? "" : "hidden";
+      if (media && (e.tagName === "VIDEO" || e.tagName === "AUDIO")) { if (on && e.paused) { e.currentTime = t - s; e.play && e.play().catch(function () {}); } if (!on && !e.paused) e.pause(); }
+    });
+    Object.keys(tls).forEach(function (k) { tls[k].seek(t, false); });
   }
-  addEventListener("load",function(){requestAnimationFrame(frame);});
-})();<\/script>`;
-let liveTask = null;
+  var t0 = performance.now(), recording = false;
+  function frame(now) { if (!recording) render(((now - t0) / 1000) % duration(), true); requestAnimationFrame(frame); }
+  addEventListener("load", function () { requestAnimationFrame(frame); parent.postMessage({ live: "ready", dur: duration() }, "*"); });
+  function say(m) { parent.postMessage(Object.assign({ live: "rec" }, m), "*"); }
+  function loadMuxer() {
+    return window.Mp4Muxer ? Promise.resolve() : new Promise(function (ok, ko) {
+      var s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.js"; s.onload = ok; s.onerror = function () { ko(new Error("No se pudo cargar el codificador de vídeo.")); }; document.head.appendChild(s);
+    });
+  }
+  async function record(fps) {
+    if (!window.VideoEncoder || !window.VideoFrame) throw new Error("Este navegador no puede crear vídeo. Usa Chrome o Safari actualizados.");
+    await loadMuxer();
+    var codec = null, list = ["avc1.640028", "avc1.4d0028", "avc1.42002a", "avc1.640033"];
+    for (var i = 0; i < list.length && !codec; i++) { var c = { codec: list[i], width: W, height: H, bitrate: 8e6, framerate: fps }; try { if ((await VideoEncoder.isConfigSupported(c)).supported) codec = c; } catch (e) {} }
+    if (!codec) throw new Error("Este navegador no puede codificar MP4 a " + W + "x" + H + ".");
+    var target = new Mp4Muxer.ArrayBufferTarget(), mux = new Mp4Muxer.Muxer({ target: target, video: { codec: "avc", width: W, height: H }, fastStart: "in-memory" });
+    var fail = null, enc = new VideoEncoder({ output: function (ch, meta) { mux.addVideoChunk(ch, meta); }, error: function (e) { fail = e; } });
+    enc.configure(codec);
+    var css = [].map.call(document.querySelectorAll("style"), function (s) { return s.textContent; }).join("\n");
+    var canvas = document.createElement("canvas"); canvas.width = W; canvas.height = H; var ctx = canvas.getContext("2d");
+    var bg = getComputedStyle(stage).backgroundColor || "#000", total = Math.round(duration() * fps), ser = new XMLSerializer();
+    recording = true;
+    try {
+      for (var f = 0; f < total; f++) {
+        if (fail) throw fail;
+        render(f / fps, false);
+        var clone = stage.cloneNode(true); clone.querySelectorAll("script").forEach(function (s) { s.remove(); });
+        clone.style.transform = "none"; clone.style.left = "0"; clone.style.top = "0"; clone.style.position = "relative";
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:' + W + "px;height:" + H + 'px"><style>' + css.replace(/<\/style/gi, "") + "</style>" + ser.serializeToString(clone) + "</div></foreignObject></svg>";
+        var img = new Image(); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); await img.decode();
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H); ctx.drawImage(img, 0, 0, W, H);
+        var vf = new VideoFrame(canvas, { timestamp: Math.round(f * 1e6 / fps), duration: Math.round(1e6 / fps) });
+        enc.encode(vf, { keyFrame: f % (fps * 2) === 0 }); vf.close();
+        while (enc.encodeQueueSize > 8) await new Promise(function (r) { setTimeout(r, 5); });
+        if (f % 5 === 0) say({ p: f / total });
+      }
+      await enc.flush(); mux.finalize();
+      var buf = target.buffer; parent.postMessage({ live: "rec", done: true, buf: buf }, "*", [buf]);
+    } finally { recording = false; t0 = performance.now(); try { enc.close(); } catch (e) {} }
+  }
+  addEventListener("message", function (e) {
+    if (e.source !== parent || !e.data || e.data.live !== "record") return;
+    record(e.data.fps || 30).catch(function (err) { say({ error: err && err.name === "SecurityError" ? "Este navegador no deja grabar la vista en vivo. Abre la oficina en Chrome para descargar el MP4, o descarga el HTML y usa «npx hyperframes render»." : "No se pudo crear el MP4: " + String(err && err.message || err) }); });
+  });
+}
+const LIVE_PLAYER = `<script>(${livePlayer.toString()})();<\/script>`;
+let liveTask = null, liveBusy = false;
+function liveName(t, ext) { return `${byId[t.agentId].name}-${t.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ext; }
 function openLive(t) {
   const html = liveHTML(t?.result); if (!html) return;
-  liveTask = t;
-  const doc = /<html[\s>]/i.test(html) ? html.replace(/<\/body>/i, LIVE_PLAYER + "</body>") : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}${LIVE_PLAYER}</body></html>`;
+  liveTask = t; liveBusy = false;
+  const doc = /<html[\s>]/i.test(html) ? (/<\/body>/i.test(html) ? html.replace(/<\/body>/i, LIVE_PLAYER + "</body>") : html + LIVE_PLAYER)
+    : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}${LIVE_PLAYER}</body></html>`;
+  const isComp = /data-composition-id/.test(html);
   $("#liveTitle").textContent = t.order;
+  $("#liveMp4").hidden = !isComp; $("#liveMp4").disabled = false; $("#liveMp4").textContent = "Descargar MP4";
+  $("#liveNote").textContent = isComp ? "Así se ve la pieza. «Descargar MP4» la graba fotograma a fotograma en este navegador (tarda unos segundos por cada segundo de vídeo, sin sonido)." : "Así se ve la pieza.";
   $("#liveFrame").srcdoc = doc;
   $("#liveDlg").showModal();
 }
+function recordLive() {
+  if (liveBusy || !$("#liveFrame").contentWindow) return;
+  liveBusy = true; $("#liveMp4").disabled = true; $("#liveMp4").textContent = "Preparando…";
+  $("#liveFrame").contentWindow.postMessage({ live: "record", fps: 30 }, "*");
+}
+window.addEventListener("message", async e => {
+  if (!e.data || e.data.live !== "rec" || e.source !== $("#liveFrame").contentWindow) return;
+  const b = $("#liveMp4");
+  if (e.data.error) { liveBusy = false; b.disabled = false; b.textContent = "Descargar MP4"; toast(e.data.error); return; }
+  if (!e.data.done) { b.textContent = `Grabando ${Math.round(e.data.p * 100)} %`; return; }
+  liveBusy = false; b.disabled = false; b.textContent = "Descargar MP4";
+  const data = new Blob([e.data.buf], { type: "video/mp4" }), filename = liveName(liveTask, ".mp4");
+  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(data); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
 async function downloadLive() {
   if (!liveTask) return;
-  const html = liveHTML(liveTask.result), filename = `${byId[liveTask.agentId].name}-${liveTask.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ".html";
+  const html = liveHTML(liveTask.result), filename = liveName(liveTask, ".html");
   const data = /<html[\s>]/i.test(html) ? html : `<!doctype html>\n<html><head><meta charset="utf-8"></head><body>\n${html}\n</body></html>\n`;
   const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
   if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "text/html" })); a.download = filename; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-$("#liveDlg").addEventListener("close", () => { $("#liveFrame").srcdoc = ""; });
+$("#liveDlg").addEventListener("close", () => { $("#liveFrame").srcdoc = ""; liveBusy = false; });
 
 async function download(t) {
   if (!t) return;
