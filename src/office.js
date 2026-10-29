@@ -31,6 +31,12 @@ const Office = (() => {
       items: [["meeting", 15, 8, 5, 2], ["plant", 0, 4], ["plant", 27, 4], ["plantsmall", 11, 13], ["sofa", 22, 13, 3, 1], ["rug", 21, 11, 5, 4], ["cooler", 27, 7], ["bell", 12, 6]],
       pois: [[14, 9], [20, 9], [17, 11], [23, 12], [27, 8], [12, 7]],
     },
+    taller: {
+      wall: [["sign", 2], ["board", 7], ["window", 12], ["chart", 16], ["window", 20], ["clock", 24]],
+      desks: [{ x: 2, y: 7, w: 2, a: "audit" }, { x: 7, y: 7, w: 2, a: "uxui", dual: true }, { x: 2, y: 11, w: 2, a: "build", dual: true }, { x: 7, y: 11, w: 2, a: "qa" }],
+      items: [["meeting", 14, 8, 4, 2], ["lightbox", 20, 7, 3, 2], ["rack", 26, 4], ["printer", 24, 5], ["plant", 0, 4], ["plant", 27, 15], ["rug", 15, 11, 6, 4], ["beanbag", 16, 13], ["beanbag", 19, 13], ["plantsmall", 12, 14]],
+      pois: [[15, 10], [21, 9], [18, 12], [25, 7], [12, 7]],
+    },
   };
 
   // ---------- utilidades ----------

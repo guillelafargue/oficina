@@ -78,7 +78,7 @@ async function ask(prompt, { onText, signal, json = false, image = null, quick =
   } catch (e) { throw { code: e?.name === "AbortError" ? "cancelled" : "upstream_error", message: String(e?.message || e) }; }
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
+    throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : res.status === 529 ? "overloaded" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
   }
   // Lectura del flujo SSE: acumula los fragmentos de texto y comprueba el motivo de parada.
   const reader = res.body.getReader(), dec = new TextDecoder();
@@ -107,7 +107,8 @@ function errText(e) {
     refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Ajustes.",
     bad_key: "La clave de API no es válida.", invalid_json: "No se pudo leer el plan. Vuelve a intentarlo.",
     sampling_disabled: "Claude no está disponible en esta cuenta.", cancelled: "Detenido.", image_rejected: "La imagen no es válida; prueba con otra.",
-    prompt_too_large: "El encargo es demasiado largo; divídelo." })[e?.code] || ("No se pudo completar: " + (e?.message || "error desconocido"));
+    prompt_too_large: "El encargo es demasiado largo; divídelo.", overloaded: "Claude está saturado ahora mismo. Prueba en unos minutos.", empty_completion: "Claude no devolvió texto. Vuelve a intentarlo." })[e?.code]
+    || (/\b(529|overloaded)\b/i.test(e?.message || "") ? "Claude está saturado ahora mismo. Prueba en unos minutos." : /\b(5\d\d)\b/.test(e?.message || "") ? "El servicio de Claude ha fallado un momento. Vuelve a intentarlo." : "No se pudo completar: " + (e?.message || "error desconocido"));
 }
 
 /* ---------- Cola: máximo 3 agentes llamando a la IA a la vez ---------- */
@@ -157,8 +158,13 @@ function canonChecks(a) {
 }
 const RULES = (a) => `Cómo entregar:
 - En español, en Markdown, con la calidad de un profesional senior de primer nivel en tu área. Nada genérico: concreto y aplicable a este proyecto.
-- Si es código, el código completo sin omitir partes; si es un guion, entero y con tiempos; si es un plan, con fases, fechas y responsables; si son números, en tablas.
-- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso, porque no puedes manejarla tú directamente.
+- Estructura SIEMPRE así: empieza con «## Resumen» (de 3 a 5 viñetas cortas: qué entregas, tu recomendación o la decisión clave, y qué necesitas del propietario). Después, el trabajo en secciones «## …» con subtítulos «### …». Si te han dado un plan de pasos, cada paso es una sección «## 1. …», «## 2. …». Cierra con «## Entrega final»: el resultado consolidado y listo para usar.
+- Si das opciones o propuestas, cada una en «### Opción A: título» (B, C…) con **Qué**, **Por qué**, **Esfuerzo** e **Impacto**; después, una tabla comparativa y tu recomendación.
+- Números, comparativas y calendarios, en tablas. Plannings y cronogramas: tabla con fechas y responsables y además un diagrama \`\`\`mermaid gantt. Procesos, flujos o arquitectura: \`\`\`mermaid flowchart. Mermaid sencillo, con etiquetas sin paréntesis ni comillas.
+- Bocetos de páginas web, pantallas de la app, landings o piezas visuales: un bloque \`\`\`html completo y autocontenido (CSS en <style>, sin imágenes ni scripts externos, con textos y datos realistas). La oficina lo muestra en vivo y lo descarga.
+- Si es código, el código completo sin omitir partes; si es un guion, entero y con tiempos.
+- Si el encargo implica cambiar el código de una app, añade antes de la entrega final «## Cambios para Claude Code»: objetivo, archivos y qué cambia en cada uno, cómo probarlo y criterios de aceptación. El propietario lo enviará con un botón a Claude Code, que hará el cambio y abrirá la PR.
+- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso.
 - Si te falta un dato, asume algo razonable, dilo en una línea y sigue.`;
 function planStepsPrompt(a, order, skill) {
   return `${persona(a)}
@@ -173,7 +179,7 @@ Antes de trabajar, planifica. Elige de tu repertorio las skills (de 1 a 3) que m
 Responde SOLO con JSON: {"skills": ["id de skill", "..."], "pasos": ["título corto del paso 1", "..."]}`;
 }
 function execPrompt(a, t, skill) {
-  const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
+  const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nTras «## Resumen», una sección por paso titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
   const ctx = ctxFor(`${t.order} ${skill?.name || ""} ${a.role}`, 24000);
   return `${persona(a)}
 ${ctx ? "\n" + ctx + "\n" : CTX.projectFiles ? "" : "\nNO HAY ARCHIVOS DE CONTEXTO CARGADOS. Si el encargo trata sobre el código, los documentos o los datos de la app del propietario, dilo en la primera línea («No tengo cargado el código de la app: súbelo en Contexto») y trabaja solo con el briefing, sin inventar archivos.\n"}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
@@ -223,14 +229,14 @@ Enfoque: ${run.resumen}
 ENTREGAS:
 ${results.map(r => `### ${byId[r.agentId].role}: ${r.order}\n${finalPart(r.result).slice(0, 2200)}`).join("\n\n")}
 
-Escribe en español, en Markdown, un informe ejecutivo breve para el propietario: qué se ha hecho, decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay, y los 3 siguientes pasos con su responsable.`;
+Escribe en español, en Markdown, un informe ejecutivo breve para el propietario. Empieza con «## Resumen» (3-5 viñetas) y sigue con secciones «## …»: qué se ha hecho (tabla con puesto, entrega y estado), decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay y los 3 siguientes pasos con su responsable (tabla). Cierra con «Siguiente paso sugerido: …».`;
 }
 
 /* ---------- Ejecución de tareas ---------- */
 function newTask(o) {
   const t = { id: uid(), agentId: o.agentId, order: o.order, from: o.from || "Tú", skillId: o.skillId || null, mode: o.mode || "pro", runId: o.runId || null,
-    extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0 };
-  state.tasks.push(t); return t;
+    extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0, ...(o.version > 1 ? { version: o.version } : {}) };
+  state.tasks.push(t); o._onCreate?.(t); return t;
 }
 function setAgent(agentId) {
   const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
@@ -239,8 +245,14 @@ function setAgent(agentId) {
   if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.phase === "review" ? "Autoevaluando" : active.phase === "revise" ? "Mejorando su trabajo" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
   else delete state.bubble[agentId];
 }
+// Cada encargo tiene su propio interruptor: se puede detener solo o caer con el encargo de empresa que lo contiene.
+const CTL = new Map();
+function stopTask(t) { const c = CTL.get(t.id); if (c) { t.stopped = true; c.abort(); } }
 async function runTask(o) {
   const a = byId[o.agentId], t = newTask(o), skill = t.skillId ? skillById(t.skillId) : null;
+  const ctl = new AbortController(); CTL.set(t.id, ctl);
+  if (o.signal) { if (o.signal.aborted) ctl.abort(); else o.signal.addEventListener("abort", () => ctl.abort(), { once: true }); }
+  o = { ...o, signal: ctl.signal };
   setAgent(a.id); bump(t);
   try {
     await acquire(o.signal);
@@ -254,7 +266,7 @@ async function runTask(o) {
       }
       t.phase = "exec"; setAgent(a.id); bump(t);
       let lastPaint = 0;
-      const tools = AI.mode === "sample" && AI.tools ? ctxTools() : [];
+      const tools = AI.mode === "sample" && AI.tools ? ctxTools(a.id) : [];
       t.useTools = tools.length > 0;
       t.result = await ask(execPrompt(a, t, skill), { signal: o.signal, image: o.image || null, tools, onText: ({ text }) => {
         t.result = text;
@@ -270,8 +282,9 @@ async function runTask(o) {
       t.status = "done";
     } finally { release(); }
   } catch (e) {
-    t.status = "error"; t.result = (e?.text ? e.text + "\n\n" : "") + "> " + errText(e);
+    t.status = "error"; t.result = (e?.text || t.result ? (e?.text || t.result) + "\n\n" : "") + "> " + (ctl.signal.aborted ? "Detenido a mano." : errText(e));
   }
+  CTL.delete(t.id);
   t.phase = "fin"; setAgent(a.id); bump(t); await store.saveTask(t);
   if (t.status === "done") maybeLearnSkill(a);
   return t;
@@ -464,7 +477,7 @@ async function giveFeedback(t, kind, comment) {
   if (kind === "down") {
     const c = comment.trim();
     if (c) addLessons(a.id, [`En encargos como «${t.order.slice(0, 60)}», el propietario pidió: ${c}`], "tu", t.order);
-    runTask({ agentId: a.id, order: "Mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+    runTask({ agentId: a.id, order: t.order.replace(/ \(v\d+\)$/, "") + ` (v${(t.version || 1) + 1})`, version: (t.version || 1) + 1, from: "Tú", mode: "rapido", skillId: t.skillId,
       extra: `Tu entrega anterior:\n${t.result.slice(0, 12000)}\n\nEl propietario la ha marcado como mejorable${c ? `: «${c}»` : "."} Entrega la versión mejorada completa, corrigiendo exactamente eso.` });
     toast(c ? "Anotado. Lo tendrá en cuenta siempre y ya está rehaciéndolo." : "Anotado. Ya está rehaciéndolo.");
     return;
@@ -482,9 +495,10 @@ async function giveFeedback(t, kind, comment) {
 // Trabajo autónomo continuo: Dirección lanza rondas solas mientras la app está abierta.
 function autoTick() {
   const au = BRAIN.auto;
+  if (TALLER.on && !au.on && aiReady() && Date.now() >= (TALLER.next ||= Date.now() + 120e3)) { TALLER.next = Date.now() + 60 * 60e3; runTallerRound(); }
   if (!au.on || state.run || !aiReady() || au.rounds >= AUTO_MAX_ROUNDS) return paintAuto();
   if (!au.next) au.next = Date.now() + 60e3;
-  if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; runCompany("", "auto"); }
+  if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; if (TALLER.on && au.rounds % 2 === 0) runTallerRound(); else runCompany("", "auto"); }
   paintAuto();
 }
 function paintAuto() {
@@ -498,21 +512,25 @@ function paintAuto() {
 /* ---------- Pintado ---------- */
 let paintQueued = false;
 const changed = new Set();
-function bump(t) { t.v = (t.v || 0) + 1; changed.add(t.id); schedule(); }
+function bump(t) { t.v = (t.v || 0) + 1; changed.add(t.id); schedule(); if (t.status === "work") saveSoon(t); }
+// Mientras trabaja, el encargo se guarda como mucho cada 8 s: si se cierra la oficina, queda «Interrumpido» con lo que llevaba.
+const saveTimers = new Map();
+function saveSoon(t) { if (saveTimers.has(t.id)) return; saveTimers.set(t.id, setTimeout(() => { saveTimers.delete(t.id); if (state.tasks.includes(t) && t.status === "work") store.saveTask(t); }, saveTimers.size ? 8000 : 1500)); }
 function schedule() { if (paintQueued) return; paintQueued = true; requestAnimationFrame(() => { paintQueued = false; paintAll(); }); }
 function paintAll() {
   paintCounts(); paintTeam(); paintLive(); paintRun();
   if (state.view === "encargos") paintTasks();
   if (state.view === "entregables") paintDeliverables();
   if (state.open) refreshDrawerTasks();
+  refreshReader();
   changed.clear();
 }
 function paintCounts() {
   const work = AGENTS.filter(a => state.status[a.id] !== "idle").length;
   $("#sIdle").textContent = AGENTS.length - work; $("#sWork").textContent = work;
   $("#nWork").textContent = work || "";
-  $("#nTasks").textContent = state.tasks.length || "";
-  $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
+  $("#nTasks").textContent = state.tasks.filter(t => !t.archived).length || "";
+  $("#nDone").textContent = state.tasks.filter(t => t.status === "done" && !t.archived).length || "";
   $("#nSkills").textContent = allSkills().length;
   $("#nCtx").textContent = ctxFiles(CTX.items) || "";
   for (const r of ROOMS) {
@@ -530,7 +548,7 @@ function paintTeam() {
     <img class="px" src="${P(a)}" alt=""><div style="min-width:0"><b>${esc(a.name)}${statusDot(a.id)}</b><span>${state.status[a.id] === "idle" ? esc(a.role) : esc(statusText(a.id))}</span></div></button>`).join("");
 }
 function progressOf(t) {
-  if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Terminado" : "Error" };
+  if (t.status !== "work") return { pct: 100, ind: false, txt: statusLabel(t) };
   if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
   if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
   if (t.phase === "review") return { pct: 92, ind: true, txt: "Autoevaluando" };
@@ -538,7 +556,7 @@ function progressOf(t) {
   if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k} de ${t.steps.length}`, step: t.steps[k - 1] || "" }; }
   return { pct: 40, ind: true, txt: t.result ? "Escribiendo" : "Pensando" };
 }
-function statusLabel(t) { return t.status === "work" ? progressOf(t).txt : t.status === "done" ? "Terminado" : "Error"; }
+function statusLabel(t) { return t.status === "work" ? progressOf(t).txt : t.status === "done" ? "Terminado" : t.stopped ? "Detenido" : t.interrupted ? "Interrumpido" : "Error"; }
 function jobHTML(t) {
   const a = byId[t.agentId], p = progressOf(t);
   return `<button class="job" type="button" data-task="${t.id}"><div class="t">${esc(t.order)}</div>
@@ -549,7 +567,7 @@ function paintLive() {
   const live = state.tasks.filter(t => t.status === "work").sort((a, b) => a.createdAt - b.createdAt);
   $("#liveCount").textContent = live.length;
   $("#liveList").innerHTML = live.length ? live.map(jobHTML).join("") : `<p class="empty">Nadie está trabajando ahora. Haz un encargo o lanza una ronda autónoma.</p>`;
-  const recent = state.tasks.filter(t => t.status !== "work").sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+  const recent = state.tasks.filter(t => t.status !== "work" && !t.archived).sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
   $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí verás lo último que se ha entregado.</p>`;
 }
 function paintRun() {
@@ -562,43 +580,8 @@ function paintRun() {
     ${(r.fases || []).map(f => `<div class="ph">${esc(f.nombre)}</div><ol>${f.tareas.map(x => `<li><b>${esc(byId[x.agente]?.name)}</b>: ${esc(x.tarea)} <span class="st ${x.estado}">${lbl[x.estado] ? "· " + lbl[x.estado].toLowerCase() : ""}</span></li>`).join("")}</ol>`).join("")}
     ${r.reportId ? `<div class="row" style="justify-content:flex-start;margin-top:12px"><button class="btn sm" type="button" data-task="${r.reportId}">Leer el informe</button></div>` : ""}`;
 }
-function taskRowHTML(t) {
-  const a = byId[t.agentId], sk = t.skillId ? skillById(t.skillId) : null;
-  return `<button class="trow" type="button" data-task="${t.id}">
-    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</div></div>
-    <span class="who">${esc(a.name)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span></button>`;
-}
 function filterChips(el, key, opts) {
   el.innerHTML = opts.map(([v, l]) => `<button class="f" type="button" data-f="${key}" data-v="${v}" aria-pressed="${state[key] === v}">${esc(l)}</button>`).join("");
-}
-function paintTasks() {
-  filterChips($("#taskFilters"), "fTasks", [["todos", "Todos"], ["work", "En marcha"], ["done", "Terminados"], ["error", "Con error"], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
-  const f = state.fTasks;
-  const list = state.tasks.filter(t => f === "todos" || t.status === f || (f.startsWith("room:") && byId[t.agentId].room === f.slice(5))).sort((a, b) => b.createdAt - a.createdAt);
-  $("#taskList").innerHTML = list.length ? `<div class="thead"><span>Encargo</span><span>Puesto</span><span>Estado</span></div>` + list.map(taskRowHTML).join("") : `<p class="empty">No hay encargos con este filtro.</p>`;
-}
-const EXAMPLES = [
-  { agentId: "dani", order: "Reel de lanzamiento de 30 s", result: "0:00-0:03 Plano detalle del producto con luz dura lateral, golpe de bajo en el corte. 0:03-0:08 Tres planos rápidos de uso real…" },
-  { agentId: "sofia", order: "Calendario de 4 semanas para Instagram y TikTok", result: "Lunes, TikTok: reel «3 errores que…», CTA guardar. Miércoles, Instagram: carrusel comparativo…" },
-  { agentId: "alex", order: "Oferta con el método Hormozi", result: "Resultado soñado, plazo, esfuerzo y riesgo. Bonus por orden de valor percibido. Garantía de 30 días…" },
-];
-const thumbs = {};
-function paintDeliverables() {
-  filterChips($("#delFilters"), "fDel", [["todos", "Todo"], ...ROOMS.map(r => [r.id, r.name])]);
-  const done = state.tasks.filter(t => t.status === "done" && (state.fDel === "todos" || byId[t.agentId].room === state.fDel)).sort((a, b) => b.createdAt - a.createdAt);
-  const anyDone = state.tasks.some(t => t.status === "done");
-  const list = done.length ? done : anyDone ? [] : EXAMPLES.map(x => ({ ...x, example: true, createdAt: Date.now() }));
-  const cards = list.map(t => {
-    const a = byId[t.agentId];
-    const plain = finalPart(t.result).replace(/[#*|`>_-]+/g, " ").replace(/\s+/g, " ").trim();
-    return `<button class="del" type="button" ${t.example ? "disabled style=\"cursor:default\"" : `data-task="${t.id}"`}>
-      <div class="who"><img class="px" src="${P(a)}" alt=""><b>${esc(a.name)}</b></div>
-      <div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 260))}</div>
-      <div class="d">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></button>`;
-  }).join("");
-  paintExport();
-  $("#delGrid").innerHTML = (!done.length && list.length ? `<p class="intro">Todavía no hay nada terminado. Así se verá cuando el equipo entregue su primer trabajo:</p>` : "")
-    + (list.length ? `<div class="gallery">${cards}</div>` : `<p class="empty">Todavía no hay entregables en esta sala.</p>`);
 }
 /* Exportar entregables: todo, por sala o por puesto, en un solo Markdown con índice. */
 function exportGroups() {
@@ -621,18 +604,6 @@ function taskMarkdown(t) {
     skills.length ? `Métodos: ${skills.join(", ")}` : "", typeof t.score === "number" ? `Autoevaluación: ${t.score}/10${t.revised ? " (revisada y mejorada)" : ""}` : "",
     t.feedback === "up" ? "Tu valoración: útil" : t.feedback === "down" ? "Tu valoración: mejorable" : ""].filter(Boolean);
   return `## ${t.order}\n\n${meta.map(m => "- " + m).join("\n")}\n\n${t.result}\n`;
-}
-async function exportDeliverables() {
-  const key = $("#expSel").value || "todos", g = exportGroups().find(x => x[0] === key) || exportGroups()[0];
-  const list = state.tasks.filter(t => t.status === "done" && g[2](t)).sort((a, b) => a.createdAt - b.createdAt);
-  if (!list.length) return toast("No hay entregables terminados en esa selección.");
-  const title = `${state.company}: entregables${key === "todos" ? "" : " de " + g[1].replace(/ \(\d+\)$/, "")}`;
-  const data = `# ${title}\n\nExportado el ${new Date().toLocaleString("es-ES")}. ${list.length} ${list.length === 1 ? "entregable" : "entregables"}.\n\n${list.map((t, i) => `${i + 1}. ${t.order} (${byId[t.agentId].name})`).join("\n")}\n\n---\n\n${list.map(taskMarkdown).join("\n---\n\n")}`;
-  const filename = title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") + ".md";
-  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
-  if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "text/markdown" })); a.download = filename; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 function paintSkills() {
   filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Creadas por ti"], ...ROOMS.map(r => [r.id, r.name])]);
@@ -673,6 +644,7 @@ let scene = null;
 function paintRooms() {
   $("#roomTabs").innerHTML = ROOMS.map(r => `<button class="rt" type="button" data-room="${r.id}" aria-pressed="${state.room === r.id}">${esc(r.name)} <span class="n" data-room-n="${r.id}"></span></button>`).join("");
   $("#stageName").textContent = roomById[state.room].name;
+  $("#btnTaller").hidden = state.room !== "taller";
   paintCounts();
 }
 function centerStage() { const w = $(".canvaswrap"); if (w && w.scrollWidth > w.clientWidth) w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; }
@@ -750,7 +722,7 @@ function openAgent(id, focusTask) {
   state.open = id; scene?.select(id);
   const a = byId[id], r = roomById[a.room], dc = state.dComp;
   if (dc.agent !== id) { dc.agent = id; dc.skill = null; }
-  const tasks = state.tasks.filter(t => t.agentId === id).sort((x, y) => y.createdAt - x.createdAt);
+  const tasks = state.tasks.filter(t => t.agentId === id && !t.archived).sort((x, y) => y.createdAt - x.createdAt);
   $("#drawer").innerHTML = `
     <div class="d-head"><img class="px" src="${P(a)}" alt="">
       <div style="min-width:0"><h2 id="dName">${esc(a.name)}</h2><p>${esc(a.role)} · ${esc(r.name)}</p>
@@ -771,6 +743,7 @@ function openAgent(id, focusTask) {
   paintDStatus();
   $("#drawer").hidden = false; $("#scrim").hidden = false;
   if (focusTask) $("#drawer").querySelector(`[data-tid="${focusTask}"]`)?.scrollIntoView({ block: "start" });
+  setTimeout(() => $("#dClose")?.focus(), 0);
 }
 function brainHTML(a) {
   const st = statsOf(a.id), mem = memOf(a.id), learned = state.customSkills.filter(s => s.agentId === a.id && s.learned);
@@ -781,30 +754,17 @@ function brainHTML(a) {
 }
 function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; el.innerHTML = `${statusDot(state.open)} ${esc(statusText(state.open))}`; }
 function drawerTaskHTML(t) {
-  const sk = t.skillId ? skillById(t.skillId) : null, p = progressOf(t);
-  const cur = i => i + 1 === (t.step || 1) && t.status === "work" && t.phase === "exec", done = i => i + 1 < (t.step || 0) || t.status === "done";
-  const steps = t.steps.length ? `<div class="steps">${t.steps.map((s, i) => `<div class="s ${done(i) ? "done" : cur(i) ? "cur" : ""}"><i>${i + 1}</i><span>${esc(s)}</span></div>`).join("")}</div>` : "";
-  const body = t.status === "work" && !t.result ? `<div class="thinking">${esc(p.txt)}…</div>` : `<div class="md">${md(t.result)}</div>`;
-  const others = AGENTS.filter(x => x.id !== t.agentId);
-  const acts = t.status === "done" ? `<div class="task-acts">
-      <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
-      ${liveHTML(t.result) ? `<button class="btn ghost sm" type="button" data-live="${t.id}">Ver en vivo</button>` : ""}<button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
-      <span class="fb">${t.feedback === "up" ? "Marcado como útil" : t.feedback === "down" ? "Marcado como mejorable" : `<button class="btn ghost sm" type="button" data-fb="up" data-fbid="${t.id}">Útil</button><button class="btn ghost sm" type="button" data-fb="down" data-fbid="${t.id}">Mejorable</button>`}</span>
-      <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>
-      <span class="sep"></span>
-      <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a otro puesto…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select>
-      <label for="hi-${t.id}" hidden>Instrucción</label><input id="hi-${t.id}" placeholder="Qué debe hacer con esto">
-      <button class="btn sm" type="button" data-handoff="${t.id}">Pasar</button></div>`
-    : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
-  return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
-    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${[sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).length ? " · " + [sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).map(x => esc(x.name)).join(", ") : ""}${typeof t.score === "number" ? ` · autoevaluación ${t.score}/10${t.revised ? ", revisada y mejorada" : ""}` : ""}</span></div>
-    ${t.feedback !== "down" && t.status === "done" ? `<form class="fbform" data-fbform="${t.id}" hidden><label for="fbt-${t.id}" hidden>Qué falló</label><input id="fbt-${t.id}" placeholder="Qué debería hacer distinto (lo recordará siempre)"><button class="btn sm" type="submit">Rehacer</button></form>` : ""}
-    ${steps}${body}${acts}</article>`;
+  const p = progressOf(t), k = kindOf(t), sum = t.status === "done" ? summaryOf(t, 2) : [];
+  return `<article class="dtask" data-tid="${t.id}" data-v="${t.v}">
+    <button class="dt-main" type="button" data-task="${t.id}"><span class="dt-k">${esc(k.label)} · ${fmtDate(t.createdAt)}</span><span class="dt-t">${esc(t.order)}</span>
+      ${sum.length ? `<span class="dt-x">${esc(sum.join(" · "))}</span>` : ""}</button>
+    <span class="st ${t.status}">${esc(statusLabel(t))}</span>
+    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</article>`;
 }
 function refreshDrawerTasks() {
   paintDStatus();
   const box = $("#dTasks"); if (!box) return;
-  const tasks = state.tasks.filter(t => t.agentId === state.open).sort((x, y) => y.createdAt - x.createdAt);
+  const tasks = state.tasks.filter(t => t.agentId === state.open && !t.archived).sort((x, y) => y.createdAt - x.createdAt);
   const ids = [...box.querySelectorAll("[data-tid]")].map(e => e.dataset.tid);
   if (ids.join() !== tasks.map(t => t.id).join()) { box.innerHTML = tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`; return; }
   for (const t of tasks) if (changed.has(t.id)) { const el = box.querySelector(`[data-tid="${t.id}"]`); if (el && el.dataset.v !== String(t.v)) el.outerHTML = drawerTaskHTML(t); }
@@ -829,7 +789,36 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-go]"))) return go(b.dataset.go);
   if ((b = el("[data-room]"))) { if (state.view !== "oficina") go("oficina"); return setRoom(b.dataset.room); }
   if ((b = el("[data-agent]"))) return openAgent(b.dataset.agent);
-  if ((b = el("[data-task]"))) { const t = state.tasks.find(x => x.id === b.dataset.task); if (t) openAgent(t.agentId, t.id); return; }
+  if ((b = el("[data-task]"))) return openReader(b.dataset.task);
+  if (!el("details.menu")) document.querySelectorAll("details.menu[open]").forEach(d => d.open = false);
+  if (el("#rBack")) return closeReader();
+  if ((b = el("[data-stop]"))) { const t = state.tasks.find(x => x.id === b.dataset.stop); if (t) { stopTask(t); toast("Detenido."); } return; }
+  if ((b = el("[data-archive]"))) { const t = state.tasks.find(x => x.id === b.dataset.archive); if (t) { const on = !t.archived; await archiveTasks([t.id], on); toast(on ? "Archivado. Lo tienes en «Archivados»." : "Vuelve a estar en las listas."); paintAll(); if (READER.id === t.id) paintReader(); } return; }
+  if ((b = el("[data-export]"))) { const t = state.tasks.find(x => x.id === b.dataset.eid); b.closest("details")?.removeAttribute("open"); if (t) exportTasks([t], b.dataset.export); return; }
+  if ((b = el("[data-apply]"))) { const t = state.tasks.find(x => x.id === b.dataset.apply); if (t) openApply(t); return; }
+  if ((b = el("[data-execcheck]"))) { const t = state.tasks.find(x => x.id === b.dataset.execcheck); if (t) ccCheck(t, b.dataset.sess); return; }
+  if ((b = el("[data-sketch]"))) { const t = state.tasks.find(x => x.id === READER.id); if (t) openLive(t, READER.blocks[+b.dataset.sketch]); return; }
+  if ((b = el("[data-sketchcode]"))) { const fig = b.closest("figure"), src = READER.blocks[+b.dataset.sketchcode]; let pre = fig.querySelector("pre"); if (pre) { pre.remove(); b.textContent = "Código"; } else { pre = document.createElement("pre"); pre.className = "code"; pre.textContent = src; fig.appendChild(pre); b.textContent = "Ocultar código"; } return; }
+  if ((b = el("[data-copycode]"))) { try { await navigator.clipboard.writeText(b.parentElement.querySelector("code")?.textContent || ""); b.textContent = "Copiado"; setTimeout(() => b.textContent = "Copiar", 1500); } catch { toast("No se pudo copiar."); } return; }
+  if ((b = el("[data-next]"))) { const t = state.tasks.find(x => x.id === b.dataset.next), n = docParts(t).next; runTask({ agentId: t.agentId, order: n, from: "Tú", mode: "pro", extra: `Viene de tu entrega «${t.order}»:\n${finalPart(t.result).slice(0, 10000)}` }); toast(`Encargado a ${byId[t.agentId].name}.`); return; }
+  if ((b = el("[data-toc]"))) { e.preventDefault(); $("#" + b.dataset.toc)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if ((b = el("[data-pick]"))) { const id = b.dataset.pick; if (b.checked) state.sel.add(id); else state.sel.delete(id); return paintTasks(); }
+  if (el("#pickAll")) { const on = $("#pickAll").checked; document.querySelectorAll("[data-pick]").forEach(x => on ? state.sel.add(x.dataset.pick) : state.sel.delete(x.dataset.pick)); return paintTasks(); }
+  if ((b = el("[data-bulk]"))) {
+    const ids = [...state.sel], k = b.dataset.bulk;
+    if (k === "none") { state.sel.clear(); return paintTasks(); }
+    if (k === "delete") { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = `¿Borrar ${ids.length}?`; return; } await deleteTasks(ids); toast(`${ids.length} borrados.`); return; }
+    if (k === "export") return exportTasks(state.tasks.filter(t => state.sel.has(t.id) && t.status === "done").sort((a, b) => a.createdAt - b.createdAt), "pdf", "la selección");
+    await archiveTasks(ids, k === "archive"); state.sel.clear(); toast(k === "archive" ? "Archivados." : "Desarchivados."); return paintAll();
+  }
+  if ((b = el("[data-clean]"))) {
+    const c = cleanupCounts(), k = b.dataset.clean; b.closest("details")?.removeAttribute("open");
+    if (k === "errors") { await deleteTasks(c.errs.map(t => t.id)); toast(`${c.errs.length} encargos con error borrados.`); }
+    if (k === "old") { await archiveTasks(c.old.map(t => t.id)); toast(`${c.old.length} archivados.`); paintAll(); }
+    if (k === "archived") { if (b.dataset.confirm !== "1") { b.closest("details").open = true; b.dataset.confirm = "1"; b.querySelector("b").textContent = `¿Borrar ${c.archived.length} para siempre?`; return; } await deleteTasks(c.archived.map(t => t.id)); toast("Archivados borrados."); }
+    return;
+  }
+  if (el("#btnTaller")) return runTallerRound(true);
   if (el("[data-settings]")) return openSettings();
   if (el("#dClose") || e.target === $("#scrim")) return closeAgent();
   if (el("#rmImg")) { state.comp.image = null; return paintComposer(); }
@@ -843,11 +832,12 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-dl]"))) return download(state.tasks.find(x => x.id === b.dataset.dl));
   if (el("#expBtn")) return exportDeliverables();
   if ((b = el("[data-live]"))) return openLive(state.tasks.find(x => x.id === b.dataset.live));
+  if ((b = el("[data-dev]"))) { $("#liveFrame").dataset.dev = b.dataset.dev; document.querySelectorAll("[data-dev]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); return; }
   if (el("#liveDl")) return downloadLive();
   if (el("#liveMp4")) return recordLive();
   if ((b = el("[data-improve]"))) {
     const t = state.tasks.find(x => x.id === b.dataset.improve);
-    runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+    runTask({ agentId: t.agentId, order: t.order.replace(/^(Revisar y mejorar|Mejorar): /, "") + ` (v${(t.version || 1) + 1})`.replace(/ \(v\d+\) \(v/, " (v"), version: (t.version || 1) + 1, from: "Tú", mode: "rapido", skillId: t.skillId,
       extra: `Este es tu trabajo anterior:\n${t.result.slice(0, 12000)}\n\nRevísalo con ojo crítico de experto exigente: señala en 3-5 puntos qué falla o es mejorable y entrega la versión mejorada completa.` });
     toast("Revisión en marcha."); return;
   }
@@ -872,13 +862,17 @@ document.addEventListener("click", async e => {
   if (el("#ctxPasteBtn")) { $("#pName").value = ""; $("#pText").value = ""; $("#pasteDlg").showModal(); return; }
   if (el("#ctxFilesBtn")) return $("#ctxFiles").click();
   if (el("#ctxDirBtn")) return $("#ctxDir").click();
-  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: t.extra }); return; }
+  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); if (!t) return; const wasOpen = READER.id === t.id; await deleteTasks([t.id]); const part = (t.interrupted || t.stopped) ? (t.result || "").replace(/\n*> [^\n]*$/, "").trim() : ""; runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: (t.extra || "") + (part ? `\n\nYa llevabas esto hecho antes de que se interrumpiera. Úsalo y entrega el trabajo completo:\n${part.slice(0, 12000)}` : ""), version: t.version, _onCreate: n => { if (wasOpen) openReader(n.id); } }); toast("De nuevo en marcha."); return; }
   if ((b = el("[data-del]"))) {
     if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
-    const id = b.dataset.del; state.tasks = state.tasks.filter(x => x.id !== id); await store.deleteTask(id); paintAll(); return;
+    await deleteTasks([b.dataset.del]); toast("Borrado."); return;
   }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open) closeAgent(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]")) return; if (document.querySelector("details.menu[open]")) { document.querySelectorAll("details.menu[open]").forEach(d => d.open = false); return; } if (READER.id) closeReader(); else if (state.open) closeAgent(); });
+document.addEventListener("input", e => {
+  if (e.target.id === "taskQ") { state.q = e.target.value; paintTasks.focus = true; paintTasks(); }
+  if (e.target.id === "delQ") { state.qDel = e.target.value; paintDeliverables(); }
+});
 document.addEventListener("change", async e => {
   const t = e.target;
   if (t.dataset.ctxsrc != null) { const list = CTX.items.filter(x => x.source === t.dataset.ctxsrc); list.forEach(x => x.active = t.checked); CTX.ver++; paintContext(); paintComposer(); for (const x of list) await store.saveCtx(x).catch(() => {}); }
@@ -971,15 +965,16 @@ function livePlayer() {
 const LIVE_PLAYER = `<script>(${livePlayer.toString()})();<\/script>`;
 let liveTask = null, liveBusy = false;
 function liveName(t, ext) { return `${byId[t.agentId].name}-${t.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ext; }
-function openLive(t) {
-  const html = liveHTML(t?.result); if (!html) return;
-  liveTask = t; liveBusy = false;
+function openLive(t, block) {
+  const html = block || liveHTML(t?.result); if (!html) return;
+  liveTask = t; liveTask._block = html; liveBusy = false;
   const doc = /<html[\s>]/i.test(html) ? (/<\/body>/i.test(html) ? html.replace(/<\/body>/i, LIVE_PLAYER + "</body>") : html + LIVE_PLAYER)
     : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}${LIVE_PLAYER}</body></html>`;
   const isComp = /data-composition-id/.test(html);
   $("#liveTitle").textContent = t.order;
   $("#liveMp4").hidden = !isComp; $("#liveMp4").disabled = false; $("#liveMp4").textContent = "Descargar MP4";
-  $("#liveNote").textContent = isComp ? "Así se ve la pieza. «Descargar MP4» la graba fotograma a fotograma en este navegador (tarda unos segundos por cada segundo de vídeo, sin sonido)." : "Así se ve la pieza.";
+  $("#liveDev").hidden = isComp; $("#liveFrame").dataset.dev = isComp ? "" : "desk"; document.querySelectorAll("[data-dev]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.dev === "desk")));
+  $("#liveNote").textContent = isComp ? "Así se ve la pieza. «Descargar MP4» la graba fotograma a fotograma en este navegador (tarda unos segundos por cada segundo de vídeo, sin sonido)." : "Así se ve el boceto. Cambia entre móvil y escritorio, o descárgalo para abrirlo en el navegador.";
   $("#liveFrame").srcdoc = doc;
   $("#liveDlg").showModal();
 }
@@ -1002,7 +997,7 @@ window.addEventListener("message", async e => {
 });
 async function downloadLive() {
   if (!liveTask) return;
-  const html = liveHTML(liveTask.result), filename = liveName(liveTask, ".html");
+  const html = liveTask._block || liveHTML(liveTask.result), filename = liveName(liveTask, ".html");
   const data = /<html[\s>]/i.test(html) ? html : `<!doctype html>\n<html><head><meta charset="utf-8"></head><body>\n${html}\n</body></html>\n`;
   const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
   if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
@@ -1026,6 +1021,8 @@ function openSettings() {
   const s = settingsLocal(); $("#fKey").value = s.key || ""; $("#fModel").value = s.model || "claude-opus-5-5";
   $("#keyFields").hidden = AI.mode === "sample";
   $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
+  $("#fTallerOn").checked = TALLER.on; $("#fTallerApply").checked = TALLER.apply; $("#fTallerRepo").value = TALLER.repo; $("#fTallerDay").value = String(TALLER.perDay);
+  $("#fRepos").value = CC.repos.join("\n");
   $("#settings").showModal();
 }
 $("#settings").addEventListener("close", async () => {
@@ -1036,6 +1033,12 @@ $("#settings").addEventListener("close", async () => {
   BRAIN.review = $("#fReview").checked;
   const wasOn = BRAIN.auto.on; BRAIN.auto.on = $("#fAuto").checked; BRAIN.auto.every = +$("#fEvery").value || 30;
   if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
+  const repoOk = r => /^[\w.-]+\/[\w.-]+$/.test(r), clean = r => r.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
+  const tOn = TALLER.on; TALLER.on = $("#fTallerOn").checked; TALLER.apply = $("#fTallerApply").checked; TALLER.perDay = +$("#fTallerDay").value || 3;
+  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) TALLER.repo = tr;
+  if (TALLER.on && !tOn) TALLER.next = Date.now() + 120e3;
+  tallerSave();
+  const repos = $("#fRepos").value.split("\n").map(clean).filter(repoOk); if (repos.length) { CC.repos = [...new Set(repos)]; if (!CC.repos.includes(CC.repo)) CC.repo = CC.repos[0]; ccSave(); }
   paintAuto();
   paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
 });
@@ -1120,7 +1123,7 @@ function ctxFor(query, budget = 24000) {
   return `${index}\n\nCONTENIDO${all + index.length > budget ? " (fragmentos más relevantes para este encargo)" : ""}:\n` +
     picked.map(c => `### ${c.it.name}${c.part ? ` (parte ${c.part + 1})` : ""}\n${c.text}`).join("\n");
 }
-function ctxTools() {
+function ctxTools(agent) {
   const t = [];
   if (ctxActive().length) t.push(
     { name: "buscar_contexto", description: "Busca en los documentos y el código que el propietario ha cargado como contexto de su empresa o su aplicación. Devuelve los fragmentos más relevantes para la consulta.",
@@ -1135,7 +1138,7 @@ function ctxTools() {
         const text = act.filter(x => x.source === hit.source && file(x) === file(hit)).sort((a, b) => (+(/\[parte (\d+)/.exec(a.name)?.[1]) || 0) - (+(/\[parte (\d+)/.exec(b.name)?.[1]) || 0)).map(x => x.text).join(""), from = Math.max(0, +desde || 0);
         return { ruta: file(hit), caracteres_totales: text.length, desde: from, texto: text.slice(from, from + 10000) };
       } });
-  if (CTX.projectFiles && CTX.fileTools) t.push(...CTX.fileTools);
+  if (CTX.projectFiles && CTX.fileTools) t.push(...(agent && byId[agent]?.room === "taller" && /\/oficina$/i.test(TALLER.repo) && CTX.rawFileTools ? CTX.rawFileTools : CTX.fileTools));
   return t;
 }
 const ctxFiles = list => new Set(list.map(x => x.name.replace(/ \[parte \d+ de \d+\]$/, ""))).size;
@@ -1229,7 +1232,7 @@ function hideOwnFiles(tools) {
 async function enableProjectFiles(ask = true) {
   const f = window.claude?.use ? await window.claude.use("files").catch(() => null) : null;
   if (!f || !AI.tools) { CTX.projectFiles = false; if (ask) toast("Los archivos del proyecto solo están disponibles al abrir la app dentro de Claude."); paintContext(); return; }
-  try { CTX.fileTools = hideOwnFiles(await f.asSampleTools()); CTX.projectFiles = true; }
+  try { CTX.rawFileTools = await f.asSampleTools(); CTX.fileTools = hideOwnFiles(CTX.rawFileTools); CTX.projectFiles = true; }
   catch (e) { CTX.projectFiles = false; if (ask) toast(e?.code === "not_granted" ? "No se ha permitido leer los archivos del proyecto." : "No se pudieron abrir los archivos del proyecto."); }
   paintContext();
 }
@@ -1261,7 +1264,7 @@ const store = {
         const s = await this.base.get();
         if (s.exists) { const d = thaw(s); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
-          this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
+          this.base.collection("tasks").orderBy("createdAt", "desc").limit(1000).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
         try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
@@ -1303,16 +1306,18 @@ const store = {
   deleteSkill(id) { return this.del("skills", id); },
   local() {
     try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
-      tasks: state.tasks.filter(t => t.status !== "work").slice(-150).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+      tasks: state.tasks.filter(t => t.status !== "work").slice(-300).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
     if (!this.db) this.saveBrain("facts");
   },
 };
 function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + 60e3; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
-  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, status: t.status === "work" ? "error" : t.status, v: 0 });
+  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, ...(t.status === "work" ? { status: "error", interrupted: true, result: (t.result ? t.result + "\n\n" : "") + "> Se interrumpió al cerrar la oficina. Pulsa «Seguir» para retomarlo." } : {}), v: 0 });
 }
 function mergeRuns(list) { const have = new Set(state.runs.map(r => r.id)); for (const r of list) if (r?.id && !have.has(r.id)) state.runs.push({ ...r, status: r.status === "work" ? "error" : r.status }); }
+
+/*__WORK__*/
 
 /* ---------- Arranque ---------- */
 function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }

@@ -13,7 +13,7 @@
   --line-2: #cfcbc1;
   --ink: #1d1d1b;
   --ink-2: #55534d;
-  --ink-3: #8a877f;
+  --ink-3: #6b6860;
   --accent: #2f6b4f;
   --accent-ink: #ffffff;
   --accent-soft: #e4eee8;
@@ -291,7 +291,169 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
 .banner { font-size: 13.5px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); margin: -12px 0 20px; }
 .banner b { color: var(--ink); font-weight: 500; }
 
+
+/* Barras de herramientas, búsqueda y menús */
+.toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: -6px 0 14px; min-height: 36px; }
+.search input { min-height: 34px; width: min(340px, 100%); border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 10px; font-size: 13.5px; }
+.search { flex: 1 1 240px; }
+.bulk { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.bulk b { font-weight: 500; margin-right: 6px; }
+.bad, .btn.ghost.bad { color: var(--bad); }
+.menu { position: relative; }
+.menu > summary { list-style: none; cursor: pointer; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); margin-left: 2px; }
+.menu-pop { position: absolute; z-index: 35; top: calc(100% + 6px); left: 0; min-width: 260px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,.12); padding: 4px; display: flex; flex-direction: column; }
+.menu-pop.right, .r-acts .menu-pop, .toolbar .menu-pop { left: auto; right: 0; }
+.menu-pop button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 5px; display: flex; flex-direction: column; gap: 1px; font-size: 13.5px; }
+.menu-pop button:hover:not(:disabled) { background: var(--sunk); }
+.menu-pop button:disabled { opacity: .45; cursor: default; }
+.menu-pop button b { font-weight: 500; }
+.menu-pop button span { font-size: 12.5px; color: var(--ink-3); }
+.menu-pop button.bad b { color: var(--bad); }
+h3.fh { margin: 22px 0 0; font-size: 12px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+
+/* Encargos como bandeja */
+.trow, .thead { grid-template-columns: 22px minmax(0, 1fr) 130px 110px 150px; gap: 16px; align-items: center; }
+.trow { padding: 0; }
+.trow.sel { background: var(--accent-soft); }
+.trow .tmain { border: 0; background: none; text-align: left; padding: 12px 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.trow .tmain:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+.trow .t { display: block; }
+.trow .m { display: block; }
+.trow .st { text-align: left; }
+.tcheck { display: flex; align-items: center; justify-content: center; }
+.tcheck input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
+.racts { display: flex; gap: 14px; justify-content: flex-end; }
+.racts .linkbtn { font-size: 12.5px; color: var(--ink-3); }
+.racts .linkbtn.bad { color: var(--bad); }
+.thead span:last-child { text-align: right; }
+
+/* Entregables */
+.dgroup { margin-top: 26px; }
+.dgroup .gallery { margin-top: 14px; }
+.del { position: relative; padding: 16px 18px 14px; gap: 10px; }
+.del-open { position: absolute; inset: 0; border: 0; background: none; border-radius: 8px; z-index: 0; }
+.del:hover { border-color: var(--ink-3); }
+.del-h, .del-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.del .kind { font-size: 11.5px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--accent); }
+.del[data-kind="web"] .kind, .del[data-kind="video"] .kind { color: #b0562a; }
+.del[data-kind="app"] .kind, .del[data-kind="code"] .kind { color: #3d5f8f; }
+.del .d { margin: 0; font-size: 12px; color: var(--ink-3); }
+.del h3.t { margin: 0; font-weight: 600; font-size: 15.5px; line-height: 1.3; letter-spacing: -.01em; }
+.del ul.x { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+.del ul.x li::before { content: "– "; color: var(--ink-3); }
+.del ul.x li { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.del-f { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); }
+.del-f .who { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.del-acts { display: flex; gap: 12px; position: relative; z-index: 1; }
+.del-acts .linkbtn { font-size: 12.5px; color: var(--ink-3); }
+.emptybox { border: 1px dashed var(--line-2); border-radius: 8px; padding: 22px; margin-top: 20px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 620px; }
+.emptybox p { margin: 0; }
+
+/* Panel del agente: lista compacta */
+.dtask { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.dt-main { border: 0; background: none; text-align: left; padding: 0; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dt-main:hover .dt-t { text-decoration: underline; text-underline-offset: 3px; }
+.dt-k { font-size: 12px; color: var(--ink-3); }
+.dt-t { font-size: 14.5px; font-weight: 500; }
+.dt-x { font-size: 13px; color: var(--ink-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dtask .bar { grid-column: 1 / -1; margin-top: 4px; }
+
+/* Lector de entregas */
+body.noscroll { overflow: hidden; }
+.reader { position: fixed; inset: 0; z-index: 25; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
+.r-bar { display: flex; align-items: center; gap: 14px; padding: 10px max(24px, env(safe-area-inset-right, 0px)) 10px max(24px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); background: var(--bg); min-height: 56px; }
+.r-crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); min-width: 0; flex: 1; }
+.r-crumb img { width: 22px; height: 22px; border-radius: 3px; background: var(--sunk); }
+.r-crumb b { color: var(--ink); font-weight: 500; }
+.r-crumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.r-scroll { flex: 1; overflow: auto; overscroll-behavior: contain; }
+.r-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 720px) 260px; gap: 48px; justify-content: center; padding: 36px max(24px, env(safe-area-inset-right, 0px)) 96px max(24px, env(safe-area-inset-left, 0px)); }
+.r-toc { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 120px); overflow: auto; padding-top: 4px; }
+.r-toc a { font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 4px 0 4px 10px; border-left: 1px solid var(--line); line-height: 1.35; }
+.r-toc a.sub { padding-left: 22px; font-size: 12.5px; color: var(--ink-3); }
+.r-toc a:hover { color: var(--ink); border-left-color: var(--ink); }
+.r-doc { min-width: 0; }
+.r-head .kicker { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+.r-head h1 { margin: 0 0 24px; font-size: 30px; line-height: 1.15; letter-spacing: -.03em; font-weight: 600; text-wrap: balance; }
+.r-sum { border-left: 3px solid var(--accent); background: var(--surface); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 30px; }
+.r-sum .lbl { margin-bottom: 6px; color: var(--accent); }
+.r-sum ul, .r-sum ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 15px; }
+.r-sum p { margin: 0 0 6px; font-size: 15px; }
+.r-progress { margin-bottom: 24px; }
+.r-steps { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--ink-3); display: flex; flex-direction: column; gap: 3px; }
+.r-steps li.done { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.r-steps li.cur { color: var(--ink); font-weight: 500; }
+.r-cc { margin-top: 32px; border: 1px solid var(--line-2); border-radius: 8px; padding: 16px 18px; background: var(--surface); }
+.r-cc-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+.r-cc-h .lbl { margin: 0; }
+.r-proc { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
+.r-proc > summary { cursor: pointer; font-weight: 500; font-size: 14px; display: flex; gap: 10px; align-items: baseline; }
+.r-proc[open] > summary { margin-bottom: 10px; }
+.r-side { display: flex; flex-direction: column; gap: 26px; align-self: start; position: sticky; top: 0; font-size: 13.5px; }
+.r-side .lbl { margin-bottom: 8px; }
+.r-side p { margin: 0 0 8px; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; margin: 0; }
+.facts dt { color: var(--ink-3); }
+.facts dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.facts .linkbtn { padding: 0; font-size: 13.5px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); }
+.r-next { border-top: 2px solid var(--ink); padding-top: 10px; }
+.handoff { display: flex; flex-direction: column; gap: 6px; }
+.handoff select, .handoff input { min-height: 32px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; max-width: 100%; }
+.handoff .btn { align-self: flex-start; }
+.exec { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.exec a { color: var(--accent); font-size: 13px; }
+.exec .st.working, .exec .st.sent { color: var(--accent); } .exec .st.completed, .exec .st.review_ready { color: var(--ink); } .exec .st.failed, .exec .st.error { color: var(--bad); }
+
+/* Tipografía de documento */
+.md2 { font-size: 15.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.md2 > :first-child { margin-top: 0; }
+.md2 h1 { font-size: 24px; } .md2 h2 { font-size: 21px; margin: 38px 0 10px; letter-spacing: -.02em; padding-top: 18px; border-top: 1px solid var(--line); }
+.md2 h3 { font-size: 16.5px; margin: 26px 0 6px; } .md2 h4 { font-size: 15px; margin: 18px 0 4px; }
+.md2 h1, .md2 h2, .md2 h3, .md2 h4 { font-weight: 600; line-height: 1.25; scroll-margin-top: 16px; }
+.md2 > h2:first-child { border-top: 0; padding-top: 0; }
+.md2 p, .md2 ul, .md2 ol { margin: 0 0 14px; }
+.md2 li { margin-bottom: 5px; } .md2 li > ul, .md2 li > ol { margin: 5px 0 0; }
+.md2 strong { font-weight: 600; }
+.md2 a { color: var(--accent); }
+.md2 code { font-family: var(--f-mono); font-size: .86em; background: var(--sunk); padding: 1px 5px; border-radius: 4px; }
+.md2 pre.code { position: relative; background: var(--sunk); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
+.md2 pre code { background: none; padding: 0; font-size: inherit; }
+.copycode { position: absolute; top: 8px; right: 8px; border: 1px solid var(--line-2); background: var(--surface); border-radius: 5px; font-size: 12px; padding: 2px 8px; color: var(--ink-2); opacity: 0; transition: opacity .15s; }
+pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
+.md2 blockquote { margin: 0 0 16px; padding: 4px 0 4px 16px; border-left: 3px solid var(--line-2); color: var(--ink-2); }
+.md2 hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.tbl { overflow-x: auto; margin: 4px 0 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.md2 table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.45; }
+.md2 th, .md2 td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.md2 th { font-weight: 600; font-size: 12.5px; color: var(--ink-2); background: var(--sunk); white-space: nowrap; }
+.md2 tr:last-child td { border-bottom: 0; }
+.opt { border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px 4px; margin: 0 0 14px; background: var(--surface); }
+.opt > h3 { margin-top: 0; }
+.opt.rec { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.diagram { margin: 6px 0 20px; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 14px; overflow-x: auto; }
+.diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+.diagram svg[aria-roledescription="gantt"] { min-width: 640px; }
+.diagram .note { color: #6b6860; }
+.sketch { margin: 6px 0 20px; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.sk-view { position: relative; height: 300px; overflow: hidden; background: #111; }
+.sk-view iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; border: 0; transform: scale(var(--k, .5625)); transform-origin: 0 0; pointer-events: none; background: #fff; }
+.sketch figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.sketch figcaption > span:first-child { display: flex; flex-direction: column; }
+.sketch figcaption b { font-weight: 500; }
+.sk-acts { display: flex; gap: 6px; }
+.sketch pre.code { margin: 0; border-radius: 0; max-height: 360px; border-top: 1px solid var(--line); }
+.live-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.live-stage { display: flex; justify-content: center; background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 16px; overflow: hidden; }
+.livedlg .live-stage iframe { margin: 0; border: 0; border-radius: 0; height: 62vh; max-height: none; aspect-ratio: auto; }
+.livedlg iframe[data-dev="mobile"] { width: 390px; max-width: 100%; background: #fff; }
+.livedlg iframe[data-dev="desk"] { background: #fff; }
+
+@media (max-width: 1180px) { .r-grid { grid-template-columns: minmax(0, 1fr) 260px; } .r-toc { display: none; } }
 @media (max-width: 1080px) { .officegrid { grid-template-columns: minmax(0, 1fr); gap: 32px; } .live { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; } }
+@media (max-width: 900px) { .r-grid { grid-template-columns: minmax(0, 1fr); } .r-side { position: static; } }
 @media (max-width: 760px) {
   .top-in { flex-wrap: wrap; height: auto; padding-top: 12px; gap: 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .brand { flex: 1; }
@@ -312,6 +474,16 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   .sk details { grid-row: 3; }
   .sk .acts { grid-column: 2; grid-row: 1; }
   .drawer { top: 6vh; border-radius: 12px 12px 0 0; border-left: 0; border-top: 1px solid var(--line); padding-right: 0; }
+  .trow, .thead { grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; }
+  .trow .who, .thead span:nth-child(3), .trow .racts, .thead span:nth-child(5) { display: none; }
+  .r-bar { flex-wrap: wrap; padding-left: 16px; padding-right: 16px; gap: 8px 10px; }
+  .r-crumb { order: 3; flex-basis: 100%; }
+  .r-head h1 { font-size: 24px; }
+  .r-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 22px 16px 80px; }
+  .md2 { font-size: 15px; }
+  .sk-view { height: 220px; }
+  .tabs { gap: 16px; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); padding-right: 24px; } .tab { font-size: 13.5px; }
+  .toolbar { margin-top: 0; }
   .d-head, .d-body { padding-left: 18px; padding-right: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .bar.ind i { animation: none; } }
@@ -361,7 +533,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="officegrid">
       <div>
         <div class="roomtabs" id="roomTabs"></div>
-        <div class="stage-h"><h2 id="stageName"></h2><span class="sub">Toca un puesto para ver su trabajo o hacerle un encargo · <span class="num" id="clock"></span></span></div>
+        <div class="stage-h"><h2 id="stageName"></h2><span class="sub"><button class="btn ghost sm" type="button" id="btnTaller" hidden title="Auditoría revisa la app, elige una mejora y prepara el cambio para Claude Code">Revisar la app ahora</button> Toca un puesto para ver su trabajo o hacerle un encargo · <span class="num" id="clock"></span></span></div>
         <div class="canvaswrap"><canvas id="scene" role="img" aria-label="Sala de la oficina con los agentes trabajando"></canvas></div>
         <div class="team" id="team"></div>
       </div>
@@ -374,7 +546,8 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </section>
 
   <section class="view" id="v-encargos" hidden>
-    <div class="vh"><div><h1>Encargos</h1><p>Todo lo que has pedido, quién lo lleva y en qué punto está.</p></div></div>
+    <div class="vh"><div><h1>Encargos</h1><p>Todo lo que has pedido, quién lo lleva y en qué punto está. Selecciona varios para archivarlos, exportarlos o borrarlos de una vez.</p></div></div>
+    <div class="toolbar" id="taskTools"></div>
     <div class="filters" id="taskFilters"></div>
     <div id="taskList"></div>
   </section>
@@ -405,14 +578,19 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </section>
 
   <section class="view" id="v-entregables" hidden>
-    <div class="vh"><div><h1>Entregables</h1><p>El trabajo terminado, listo para copiar o descargar. Puedes exportarlo todo junto, por sala o por puesto.</p></div>
-      <div class="exp"><label for="expSel" hidden>Qué exportar</label><select id="expSel"></select><button class="btn ghost sm" type="button" id="expBtn">Exportar</button></div></div>
+    <div class="vh"><div><h1>Entregables</h1><p>Cada trabajo terminado es un documento: ábrelo para leerlo con su resumen, ver los bocetos en vivo, descargarlo en PDF o Word, o aplicarlo en tu app.</p></div></div>
+    <div class="toolbar"><label class="search"><span hidden>Buscar</span><input type="search" id="delQ" placeholder="Buscar en entregables"></label>
+      <div class="exp"><label for="expSel" hidden>Qué exportar</label><select id="expSel"></select><label for="expFmt" hidden>Formato</label><select id="expFmt"><option value="pdf">PDF</option><option value="docx">Word</option><option value="md">Markdown</option></select><button class="btn ghost sm" type="button" id="expBtn">Exportar</button></div></div>
     <div class="filters" id="delFilters"></div>
     <div id="delGrid"></div>
   </section>
 </main>
 
 <div class="scrim" id="scrim" hidden></div>
+<section class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="r-bar"><button class="btn ghost sm" type="button" id="rBack">Volver</button><div class="r-crumb" id="rCrumb"></div><div class="r-acts" id="rActs"></div></div>
+  <div class="r-scroll"><div class="r-grid"><nav class="r-toc" id="rToc" aria-label="Índice"></nav><article class="r-doc" id="rDoc"></article><aside class="r-side" id="rSide"></aside></div></div>
+</section>
 <section class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dName"></section>
 
 <dialog id="settings">
@@ -422,6 +600,13 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
+    <h3 class="fh">Taller de producto</h3>
+    <div class="field"><label class="chk"><input type="checkbox" id="fTallerOn"><span><b>Mejora continua de la app</b><span>Cada hora (o en rondas alternas del modo autónomo), Auditoría revisa la app, elige una mejora que no se haya hecho y prepara el cambio para Claude Code.</span></span></label></div>
+    <div class="field"><label for="fTallerRepo">Repositorio que mejora el Taller</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fTallerApply"><span><b>Aplicar los cambios solos</b><span>Envía cada mejora a Claude Code, que hace el cambio, pasa las comprobaciones, abre la PR y la fusiona si todo pasa. Te llega un aviso al terminar.</span></span></label>
+      <label for="fTallerDay" class="note">Máximo al día</label><select id="fTallerDay"><option value="1">1 cambio</option><option value="3">3 cambios</option><option value="5">5 cambios</option></select></div>
+    <div class="field"><label for="fRepos">Tus repositorios (uno por línea)</label><textarea id="fRepos" style="min-height:64px" placeholder="usuario/proyecto"></textarea><span class="note">Aparecen al pulsar «Aplicar en la app» en cualquier entrega.</span></div>
+    <h3 class="fh">Equipo</h3>
     <div class="field"><label class="chk"><input type="checkbox" id="fAuto"><span><b>Trabajo autónomo continuo</b><span>Mientras la app esté abierta, Dirección lanza rondas solas: decide qué hace falta, reparte y mejora lo flojo. Máximo 12 rondas por sesión.</span></span></label>
       <label for="fEvery" class="note">Cada</label><select id="fEvery"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
     <div id="keyFields">
@@ -455,16 +640,28 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </form>
 </dialog>
 
+<dialog id="ccDlg">
+  <form method="dialog">
+    <h2>Aplicar en la app</h2>
+    <p class="note" id="ccTitle"></p>
+    <div class="field"><label for="ccRepo">Repositorio</label><select id="ccRepo"></select><input id="ccOther" placeholder="usuario/proyecto" hidden autocomplete="off"></div>
+    <div class="field"><label for="ccInstr">Qué debe hacer Claude Code</label><textarea id="ccInstr" maxlength="4000"></textarea><span class="note">Recibe también la entrega completa como especificación.</span></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="ccMerge"><span><b>Fusionar la PR si pasan las comprobaciones</b><span>Si lo desmarcas, la deja abierta para que la revises.</span></span></label></div>
+    <p class="note" id="ccNote"></p>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="send" type="submit" id="ccSend">Enviar a Claude Code</button></div>
+  </form>
+</dialog>
+
 <dialog id="liveDlg" class="livedlg">
   <form method="dialog">
-    <h2 id="liveTitle">Vista en vivo</h2>
+    <div class="live-h"><h2 id="liveTitle">Vista en vivo</h2><div class="seg" role="group" aria-label="Tamaño" id="liveDev"><button type="button" data-dev="mobile" aria-pressed="false">Móvil</button><button type="button" data-dev="desk" aria-pressed="true">Escritorio</button></div></div>
     <p class="note" id="liveNote">Así se ve la pieza.</p>
-    <iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe>
+    <div class="live-stage"><iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe></div>
     <div class="row"><button class="btn ghost" type="button" id="liveDl">Descargar HTML</button><button class="btn ghost" type="button" id="liveMp4" hidden>Descargar MP4</button><button class="btn" value="close" type="submit">Cerrar</button></div>
   </form>
 </dialog>
 
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
@@ -1708,6 +1905,143 @@ const CANON = {
     "Earned Growth Rate: crecimiento por recompra y recomendación."]],
 };
 
+/* Taller de producto: el departamento que revisa la app, la rediseña y aplica los cambios.
+   Sus puestos trabajan sobre el código real (contexto o repositorio) y, cuando hace falta tocar la app,
+   preparan el encargo exacto para Claude Code, que abre la PR. Formato de skill: [clave, nombre, para qué sirve, método, fuente]. */
+ROOMS.push({ id: "taller", name: "Taller de producto", sign: "TALLER", brick: "#5a4630", floor: "#6b5c4a", accent: "#e8a33d" });
+Object.assign(DEPTS, { audit: "Auditoría de producto", ui: "Diseño de interfaz", build: "Ingeniería de producto", qa: "Calidad" });
+
+AGENTS.push(
+  { id: "audit", room: "taller", dept: "audit", name: "Auditoría", role: "Auditoría de producto y experiencia", look: [1, "#2b2b2b", 2, 35, "#2b2a30"],
+    bio: "Revisa la app pantalla a pantalla y en el código: qué falla, qué falta, qué confunde y qué se puede quitar. Entrega hallazgos priorizados con la evidencia y el cambio concreto.",
+    tools: ["Heurísticas de Nielsen", "Lighthouse", "axe DevTools", "PostHog", "Hotjar", "Maze"],
+    kit: "Trabajas sobre la app real: lee el código y los textos del contexto antes de opinar y cita archivos y pantallas concretas. Cada hallazgo lleva gravedad (crítica, alta, media, baja), evidencia, impacto para el usuario, el cambio propuesto y el esfuerzo. Termina siempre con una tabla priorizada y con los 3 primeros cambios redactados como encargo listo para Claude Code (archivos, qué cambiar y cómo comprobarlo).",
+    refs: [
+      ["Jakob Nielsen", "las 10 heurísticas de usabilidad y la evaluación heurística"],
+      ["Steve Krug", "no me hagas pensar: claridad, escaneo y pruebas de usabilidad baratas"],
+      ["Marty Cagan", "producto que resuelve riesgos de valor, usabilidad, viabilidad y negocio"],
+      ["Teresa Torres", "descubrimiento continuo y árbol de oportunidades"],
+      ["Julie Zhuo", "criterio de diseño de producto y revisiones de calidad"],
+    ],
+    skills: [
+      ["heur", "Evaluación heurística", "Auditoría completa con las 10 heurísticas.", "Recorre cada pantalla y flujo principal. Para cada problema indica la heurística que incumple, la gravedad de 0 a 4 de Nielsen, dónde está (pantalla y archivo), la evidencia y la corrección. Agrupa por flujo y ordena por gravedad.", "Jakob Nielsen (NN/g)"],
+      ["gaps", "Qué le falta a la app", "Funciones y estados que faltan frente a lo que el usuario espera.", "Lista los trabajos que el usuario intenta hacer, comprueba cuáles resuelve la app, cuáles a medias y cuáles no. Revisa estados vacíos, de carga, de error, sin conexión y de borrado, deshacer, búsqueda, filtros y acciones en bloque. Prioriza con RICE.", "Jobs To Be Done, Marty Cagan"],
+      ["flow", "Auditoría de flujos", "Cuenta pasos, decisiones y fricción de cada tarea.", "Para los 5 flujos clave cuenta toques, pantallas, decisiones y textos que hay que leer. Marca dónde se pierde el usuario y propone la versión con menos pasos, con el antes y el después en una tabla.", "Steve Krug, Luke Wroblewski"],
+      ["backlog", "Backlog de mejoras", "De hallazgos a una lista priorizada y lista para ejecutar.", "Convierte cada hallazgo en una mejora con título, problema, cambio, criterios de aceptación, archivos afectados, esfuerzo (S, M, L) e impacto. Ordena por impacto entre esfuerzo y marca las 3 primeras para hacerlas ya.", "Shape Up (Ryan Singer), RICE"],
+      ["copy", "Revisión de textos de la interfaz", "Botones, avisos, vacíos y errores claros.", "Revisa cada texto de la interfaz: que diga qué pasa y qué hacer, en el idioma del usuario, sin jerga ni culpa. Entrega una tabla con texto actual, problema y texto nuevo, y el archivo donde está.", "Torrey Podmajersky, Strategic Writing for UX"],
+    ] },
+  { id: "uxui", room: "taller", dept: "ui", name: "Interfaz", role: "Diseño de interfaz (UI y UX)", look: [3, "#7a4a2a", 1, 190, "#2a2d36"],
+    bio: "Rediseña pantallas para que se entiendan a la primera: jerarquía, ritmo, tipografía y estados. Entrega bocetos en HTML que se ven en vivo y las especificaciones para construirlos.",
+    tools: ["Figma", "HTML y CSS modernos", "Tailwind 4", "Radix y shadcn/ui", "Framer Motion", "Rive"],
+    kit: "Dibujas con código: cada propuesta de pantalla va en un bloque ```html completo y autocontenido (CSS en <style>, sin dependencias externas, datos de ejemplo realistas, ancho de móvil y de escritorio) para que la oficina lo muestre en vivo. Respeta el estilo de la app que tengas en el contexto (colores, tipografías y componentes). Huye del aspecto de plantilla de IA: nada de degradados de neón, tarjetas iguales en rejilla, emojis como iconos ni sombras por todas partes; jerarquía con tamaño, peso y espacio. Acompaña el boceto con la especificación: medidas, estados (vacío, carga, error) y qué archivo cambia.",
+    refs: [
+      ["Adam Wathan y Steve Schoger", "Refactoring UI: jerarquía, espaciado y color con criterio"],
+      ["Dieter Rams", "menos pero mejor: diseño honesto y discreto"],
+      ["Don Norman", "affordances, mapeo y retroalimentación"],
+      ["Luke Wroblewski", "móvil primero y formularios sin fricción"],
+      ["Emil Kowalski", "interfaces con detalle: animación con propósito y sensación de calidad"],
+    ],
+    skills: [
+      ["redesign", "Rediseño de pantalla", "De una pantalla confusa a una clara, con boceto en vivo.", "Analiza la pantalla actual (qué ve primero el usuario, qué tiene que hacer y qué sobra). Propón una jerarquía nueva, entrega el boceto en un bloque html completo con estados vacío, normal y error, y una tabla de cambios respecto a la actual.", "Refactoring UI"],
+      ["system", "Sistema visual", "Tokens, tipografía, espaciado y componentes coherentes.", "Define la escala tipográfica, la escala de espacios de 4 en 4, la paleta con roles (fondo, superficie, texto, acento, estados) y su versión oscura, radios y sombras. Entrega los tokens en CSS y una página html de muestra con botones, campos, listas, tablas y avisos.", "Design tokens (W3C), Refactoring UI"],
+      ["results", "Presentar resultados", "Respuestas largas convertidas en documentos fáciles de leer.", "Diseña cómo se presenta un resultado: resumen arriba, decisión o acción principal, secciones con índice, tablas para comparar, opciones en tarjetas con pros y contras, y detalles plegados. Entrega el boceto en html.", "Práctica de diseño editorial y de dashboards"],
+      ["mobile", "Pase móvil", "Que todo funcione con el pulgar.", "Revisa zonas de toque (44 px mínimo), alcance del pulgar, teclado, áreas seguras, tamaño de letra y scroll horizontal. Entrega la lista de cambios y el boceto móvil en html a 390 px de ancho.", "Luke Wroblewski, Apple Human Interface Guidelines"],
+      ["motion", "Movimiento con propósito", "Animaciones que explican, no que decoran.", "Define qué transiciones ayudan (entrar, salir, cambiar de estado, confirmar), con duración de 150 a 250 ms, curva y propiedades (solo transform y opacity), y su versión con movimiento reducido. Entrega una demostración en html.", "Emil Kowalski, Material Motion"],
+    ] },
+  { id: "build", room: "taller", dept: "build", name: "Implementación", role: "Ingeniería de producto: aplica los cambios", look: [0, "#1a1a1a", 3, 215, "#22262e"],
+    bio: "Convierte propuestas en cambios de código reales. Prepara el encargo exacto para Claude Code, que trabaja sobre el repositorio, abre la PR y la deja lista para fusionar.",
+    tools: ["Claude Code", "GitHub", "Git", "TypeScript", "Playwright", "Vercel"],
+    kit: "Cuando el encargo pide cambiar la app, tu entrega es una especificación de implementación que Claude Code pueda ejecutar sin preguntar: objetivo en una frase, archivos a tocar con lo que cambia en cada uno, el código nuevo cuando sea corto o los pasos exactos si es largo, cómo probarlo (comandos y qué comprobar en pantalla) y criterios de aceptación. Si tienes el código en el contexto, cítalo con ruta y nombre de función. Al final, el propietario pulsa «Aplicar en la app» y Claude Code hace el cambio, abre la PR y la fusiona si las comprobaciones pasan.",
+    refs: [
+      ["Kent Beck", "pasos pequeños, pruebas primero y ordenar antes de cambiar"],
+      ["Martin Fowler", "refactorización segura y diseño evolutivo"],
+      ["Ryan Singer", "Shape Up: dar forma al trabajo antes de construirlo"],
+      ["Kent C. Dodds", "probar como lo usa la persona: el trofeo de pruebas"],
+    ],
+    skills: [
+      ["spec", "Especificación para Claude Code", "El encargo de cambio listo para ejecutar.", "Escribe: objetivo, contexto mínimo, archivos y cambios uno a uno, casos límite, cómo probarlo (comandos y comprobaciones en pantalla), criterios de aceptación y qué no tocar. Añade el título y la descripción de la PR.", "Anthropic: buenas prácticas de Claude Code"],
+      ["slice", "Cortar en PRs pequeñas", "Un cambio grande en entregas seguras.", "Divide el cambio en 2-5 PRs que se puedan fusionar por separado sin romper nada, cada una con su objetivo, archivos, prueba y orden. Indica qué se puede esconder tras un interruptor.", "Kent Beck (Tidy First?), trunk-based development"],
+      ["fix", "Arreglo de fallo", "De síntoma a causa y arreglo con prueba.", "Reproduce el fallo con pasos exactos, localiza la causa en el código, propone el arreglo mínimo y la prueba que lo cubre para que no vuelva. Indica cómo comprobarlo a mano.", "Depuración sistemática (obra/superpowers)"],
+      ["feature", "Nueva función completa", "De la idea a la función con todos sus estados.", "Define datos, interfaz, estados (vacío, carga, error, éxito), textos, accesibilidad, analítica y pruebas. Entrega la especificación para Claude Code y el boceto html si hay interfaz nueva.", "Shape Up, Kent C. Dodds"],
+    ] },
+  { id: "qa", room: "taller", dept: "qa", name: "Calidad", role: "Calidad: pruebas, accesibilidad y rendimiento", look: [2, "#5a3a2a", 0, 160, "#26302e"],
+    bio: "Comprueba que lo que se entrega funciona: casos de prueba, accesibilidad, rendimiento y regresiones. Revisa cada cambio antes de fusionarlo.",
+    tools: ["Playwright", "axe-core", "Lighthouse", "WebPageTest", "Sentry", "Vitest"],
+    kit: "Pruebas como usuario y con herramientas: para cada cambio da los casos de prueba (feliz, límites y errores) con pasos y resultado esperado, la revisión de accesibilidad WCAG 2.2 AA (contraste, foco, teclado, lectores de pantalla) y el presupuesto de rendimiento (LCP, INP, CLS). Cuando haya código, escribe la prueba de Playwright lista para pegar.",
+    refs: [
+      ["Lisa Crispin", "pruebas ágiles: los cuadrantes y la calidad de todo el equipo"],
+      ["James Bach", "pruebas exploratorias con heurísticas y sesiones"],
+      ["Addy Osmani", "rendimiento web y Core Web Vitals"],
+      ["Léonie Watson", "accesibilidad real con lectores de pantalla"],
+    ],
+    skills: [
+      ["plan", "Plan de pruebas", "Qué probar, cómo y en qué orden.", "Lista los flujos críticos y para cada uno los casos (feliz, límites, errores, sin conexión, permisos) con pasos y resultado esperado, en tabla. Marca cuáles automatizar con Playwright y escribe esas pruebas.", "Lisa Crispin y Janet Gregory"],
+      ["a11y", "Auditoría de accesibilidad", "WCAG 2.2 AA pantalla a pantalla.", "Revisa contraste, tamaño de toque, foco visible, orden de tabulación, nombres accesibles, etiquetas de formularios, movimiento reducido y lector de pantalla. Cada fallo con el criterio WCAG, dónde está y el arreglo.", "W3C WCAG 2.2, Léonie Watson"],
+      ["perf", "Presupuesto de rendimiento", "Que la app vaya rápida de verdad.", "Mide o estima LCP, INP y CLS, peso de JS y CSS, imágenes y peticiones. Lista las 10 mejoras con impacto estimado y cómo comprobarlas.", "Addy Osmani, web.dev"],
+      ["review", "Revisión de un cambio", "Antes de fusionar: ¿funciona y no rompe nada?", "Revisa el cambio contra sus criterios de aceptación, busca regresiones en lo cercano, casos límite y accesibilidad, y da un veredicto (fusionar, fusionar con cambios o no fusionar) con los motivos.", "Revisión de código (Google Engineering Practices)"],
+      ["explore", "Sesión exploratoria", "Encontrar lo que nadie ha previsto.", "Sesión de 45 minutos con una misión, heurísticas (SFDPOT, tours) y notas de lo probado, fallos encontrados con pasos para reproducirlos y preguntas abiertas.", "James Bach (Rapid Software Testing)"],
+    ] },
+);
+
+Object.assign(CANON, {
+  "Jakob Nielsen": ["Usability Engineering; 10 Usability Heuristics; Designing Web Usability", [
+    "Visibilidad del estado del sistema: el usuario siempre sabe qué está pasando.",
+    "Control y libertad: salidas claras, deshacer y rehacer.",
+    "Prevenir errores es mejor que buenos mensajes de error; y si ocurren, que digan cómo salir.",
+    "Reconocer antes que recordar: opciones visibles, no memoria.",
+    "Diseño estético y minimalista: cada elemento extra compite con lo importante.",
+    "Cinco usuarios encuentran la mayoría de los problemas de usabilidad."]],
+  "Steve Krug": ["Don't Make Me Think; Rocket Surgery Made Easy", [
+    "Cada pantalla debe explicarse sola: si el usuario duda, hay un problema.",
+    "La gente escanea, no lee: jerarquía visual clara y bloques bien definidos.",
+    "Elimina la mitad de las palabras y luego la mitad de lo que queda.",
+    "Pruebas de usabilidad baratas y frecuentes, una mañana al mes."]],
+  "Julie Zhuo": ["The Making of a Manager; artículos sobre calidad de diseño", [
+    "Diseña para el problema, no para la solución que ya tenías en mente.",
+    "Revisiones de diseño con criterios explícitos: utilidad, usabilidad y deleite.",
+    "La calidad está en los detalles que nadie pidió."]],
+  "Adam Wathan y Steve Schoger": ["Refactoring UI", [
+    "Empieza por la función, no por el diseño de la cabecera.",
+    "Jerarquía con tamaño, peso y color, no solo con tamaño de letra.",
+    "Espacio de sobra primero y luego quita; usa una escala fija de espacios.",
+    "Menos bordes: separa con espacio, fondos y sombras sutiles.",
+    "Define tus colores en escalas con roles claros, no a ojo."]],
+  "Luke Wroblewski": ["Mobile First; Web Form Design", [
+    "Diseña primero para móvil: obliga a priorizar lo esencial.",
+    "Formularios: menos campos, etiquetas arriba y validación en línea.",
+    "Las zonas de toque y el alcance del pulgar mandan."]],
+  "Emil Kowalski": ["Sonner, Vaul y Animations on the Web", [
+    "La animación debe tener propósito: explicar de dónde viene y a dónde va algo.",
+    "Rápida: entre 150 y 250 ms, con curvas naturales.",
+    "Anima transform y opacity, nunca propiedades que fuerzan el diseño.",
+    "Los detalles invisibles (gestos, interrupciones) son los que dan sensación de calidad."]],
+  "Ryan Singer": ["Shape Up (Basecamp)", [
+    "Da forma al trabajo antes de comprometerlo: problema, solución gruesa, límites y agujeros.",
+    "Apetito en vez de estimación: cuánto tiempo merece, no cuánto llevará.",
+    "Equipos pequeños con autonomía en ciclos de 6 semanas.",
+    "Mapa de alcances: divide por partes que se pueden terminar del todo."]],
+  "Kent C. Dodds": ["Testing JavaScript; Epic React; el trofeo de pruebas", [
+    "Cuanto más se parezcan tus pruebas a cómo se usa el software, más confianza dan.",
+    "Más pruebas de integración que unitarias: el trofeo, no la pirámide.",
+    "Prueba el comportamiento, nunca los detalles de implementación."]],
+  "Lisa Crispin": ["Agile Testing; More Agile Testing (con Janet Gregory)", [
+    "La calidad es de todo el equipo, no de un departamento al final.",
+    "Los cuatro cuadrantes: pruebas que guían el desarrollo y pruebas que critican el producto.",
+    "Ejemplos concretos antes de construir: especificación con ejemplos."]],
+  "James Bach": ["Lessons Learned in Software Testing; Rapid Software Testing", [
+    "Probar es aprender sobre el producto preguntándole, no comprobar una lista.",
+    "Sesiones exploratorias con misión, tiempo limitado y notas.",
+    "Heurísticas como SFDPOT (estructura, función, datos, plataforma, operaciones, tiempo)."]],
+  "Addy Osmani": ["Learning JavaScript Design Patterns; Image Optimization; web.dev", [
+    "Mide primero: Core Web Vitals con datos de campo, no solo de laboratorio.",
+    "Envía menos JavaScript: divide, difiere y elimina lo que no se usa.",
+    "Las imágenes suelen ser el mayor ahorro: formato, tamaño y carga diferida."]],
+  "Léonie Watson": ["Trabajo en W3C, TetraLogical y charlas de accesibilidad", [
+    "Prueba con lectores de pantalla reales, no solo con validadores automáticos.",
+    "HTML semántico primero; ARIA solo cuando el HTML no alcanza.",
+    "La accesibilidad es una cuestión de calidad y de derechos, no un extra."]],
+});
+
 /* Motor de la oficina pixel-art: dibuja salas, muebles y agentes que caminan, se sientan y trabajan.
    Todo se dibuja con código en un canvas lógico de 448x256 px (mosaicos de 16 px) escalado sin suavizado. */
 const Office = (() => {
@@ -1740,6 +2074,12 @@ const Office = (() => {
       desks: [{ x: 2, y: 7, w: 2, a: "alex" }, { x: 7, y: 7, w: 2, a: "rocio" }, { x: 2, y: 11, w: 2, a: "lola", headset: true }],
       items: [["meeting", 15, 8, 5, 2], ["plant", 0, 4], ["plant", 27, 4], ["plantsmall", 11, 13], ["sofa", 22, 13, 3, 1], ["rug", 21, 11, 5, 4], ["cooler", 27, 7], ["bell", 12, 6]],
       pois: [[14, 9], [20, 9], [17, 11], [23, 12], [27, 8], [12, 7]],
+    },
+    taller: {
+      wall: [["sign", 2], ["board", 7], ["window", 12], ["chart", 16], ["window", 20], ["clock", 24]],
+      desks: [{ x: 2, y: 7, w: 2, a: "audit" }, { x: 7, y: 7, w: 2, a: "uxui", dual: true }, { x: 2, y: 11, w: 2, a: "build", dual: true }, { x: 7, y: 11, w: 2, a: "qa" }],
+      items: [["meeting", 14, 8, 4, 2], ["lightbox", 20, 7, 3, 2], ["rack", 26, 4], ["printer", 24, 5], ["plant", 0, 4], ["plant", 27, 15], ["rug", 15, 11, 6, 4], ["beanbag", 16, 13], ["beanbag", 19, 13], ["plantsmall", 12, 14]],
+      pois: [[15, 10], [21, 9], [18, 12], [25, 7], [12, 7]],
     },
   };
 
@@ -2208,7 +2548,7 @@ async function ask(prompt, { onText, signal, json = false, image = null, quick =
   } catch (e) { throw { code: e?.name === "AbortError" ? "cancelled" : "upstream_error", message: String(e?.message || e) }; }
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
+    throw { code: res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : res.status === 529 ? "overloaded" : "upstream_error", message: data?.error?.message || ("HTTP " + res.status) };
   }
   // Lectura del flujo SSE: acumula los fragmentos de texto y comprueba el motivo de parada.
   const reader = res.body.getReader(), dec = new TextDecoder();
@@ -2237,7 +2577,8 @@ function errText(e) {
     refused: "Claude ha declinado esta tarea. Reformúlala.", no_ai: "Falta conectar la IA: añade tu clave en Ajustes.",
     bad_key: "La clave de API no es válida.", invalid_json: "No se pudo leer el plan. Vuelve a intentarlo.",
     sampling_disabled: "Claude no está disponible en esta cuenta.", cancelled: "Detenido.", image_rejected: "La imagen no es válida; prueba con otra.",
-    prompt_too_large: "El encargo es demasiado largo; divídelo." })[e?.code] || ("No se pudo completar: " + (e?.message || "error desconocido"));
+    prompt_too_large: "El encargo es demasiado largo; divídelo.", overloaded: "Claude está saturado ahora mismo. Prueba en unos minutos.", empty_completion: "Claude no devolvió texto. Vuelve a intentarlo." })[e?.code]
+    || (/\b(529|overloaded)\b/i.test(e?.message || "") ? "Claude está saturado ahora mismo. Prueba en unos minutos." : /\b(5\d\d)\b/.test(e?.message || "") ? "El servicio de Claude ha fallado un momento. Vuelve a intentarlo." : "No se pudo completar: " + (e?.message || "error desconocido"));
 }
 
 /* ---------- Cola: máximo 3 agentes llamando a la IA a la vez ---------- */
@@ -2287,8 +2628,13 @@ function canonChecks(a) {
 }
 const RULES = (a) => `Cómo entregar:
 - En español, en Markdown, con la calidad de un profesional senior de primer nivel en tu área. Nada genérico: concreto y aplicable a este proyecto.
-- Si es código, el código completo sin omitir partes; si es un guion, entero y con tiempos; si es un plan, con fases, fechas y responsables; si son números, en tablas.
-- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso, porque no puedes manejarla tú directamente.
+- Estructura SIEMPRE así: empieza con «## Resumen» (de 3 a 5 viñetas cortas: qué entregas, tu recomendación o la decisión clave, y qué necesitas del propietario). Después, el trabajo en secciones «## …» con subtítulos «### …». Si te han dado un plan de pasos, cada paso es una sección «## 1. …», «## 2. …». Cierra con «## Entrega final»: el resultado consolidado y listo para usar.
+- Si das opciones o propuestas, cada una en «### Opción A: título» (B, C…) con **Qué**, **Por qué**, **Esfuerzo** e **Impacto**; después, una tabla comparativa y tu recomendación.
+- Números, comparativas y calendarios, en tablas. Plannings y cronogramas: tabla con fechas y responsables y además un diagrama \`\`\`mermaid gantt. Procesos, flujos o arquitectura: \`\`\`mermaid flowchart. Mermaid sencillo, con etiquetas sin paréntesis ni comillas.
+- Bocetos de páginas web, pantallas de la app, landings o piezas visuales: un bloque \`\`\`html completo y autocontenido (CSS en <style>, sin imágenes ni scripts externos, con textos y datos realistas). La oficina lo muestra en vivo y lo descarga.
+- Si es código, el código completo sin omitir partes; si es un guion, entero y con tiempos.
+- Si el encargo implica cambiar el código de una app, añade antes de la entrega final «## Cambios para Claude Code»: objetivo, archivos y qué cambia en cada uno, cómo probarlo y criterios de aceptación. El propietario lo enviará con un botón a Claude Code, que hará el cambio y abrirá la PR.
+- Si el trabajo se ejecuta en una herramienta externa (por ejemplo ${a.tools[0]}), indica exactamente qué hacer en ella paso a paso.
 - Si te falta un dato, asume algo razonable, dilo en una línea y sigue.`;
 function planStepsPrompt(a, order, skill) {
   return `${persona(a)}
@@ -2303,7 +2649,7 @@ Antes de trabajar, planifica. Elige de tu repertorio las skills (de 1 a 3) que m
 Responde SOLO con JSON: {"skills": ["id de skill", "..."], "pasos": ["título corto del paso 1", "..."]}`;
 }
 function execPrompt(a, t, skill) {
-  const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nEstructura la respuesta con una sección por paso, titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
+  const plan = t.steps.length ? `\nPLAN DE TRABAJO (síguelo en orden):\n${t.steps.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nTras «## Resumen», una sección por paso titulada exactamente «## 1. …», «## 2. …», etc. Termina con «## Entrega final»: el resultado consolidado, listo para usar.` : "";
   const ctx = ctxFor(`${t.order} ${skill?.name || ""} ${a.role}`, 24000);
   return `${persona(a)}
 ${ctx ? "\n" + ctx + "\n" : CTX.projectFiles ? "" : "\nNO HAY ARCHIVOS DE CONTEXTO CARGADOS. Si el encargo trata sobre el código, los documentos o los datos de la app del propietario, dilo en la primera línea («No tengo cargado el código de la app: súbelo en Contexto») y trabaja solo con el briefing, sin inventar archivos.\n"}${t.extra ? "\nCONTEXTO DEL ENCARGO:\n" + t.extra + "\n" : ""}
@@ -2353,14 +2699,14 @@ Enfoque: ${run.resumen}
 ENTREGAS:
 ${results.map(r => `### ${byId[r.agentId].role}: ${r.order}\n${finalPart(r.result).slice(0, 2200)}`).join("\n\n")}
 
-Escribe en español, en Markdown, un informe ejecutivo breve para el propietario: qué se ha hecho, decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay, y los 3 siguientes pasos con su responsable.`;
+Escribe en español, en Markdown, un informe ejecutivo breve para el propietario. Empieza con «## Resumen» (3-5 viñetas) y sigue con secciones «## …»: qué se ha hecho (tabla con puesto, entrega y estado), decisiones clave, qué necesita aprobar o aportar él, incoherencias entre entregas si las hay y los 3 siguientes pasos con su responsable (tabla). Cierra con «Siguiente paso sugerido: …».`;
 }
 
 /* ---------- Ejecución de tareas ---------- */
 function newTask(o) {
   const t = { id: uid(), agentId: o.agentId, order: o.order, from: o.from || "Tú", skillId: o.skillId || null, mode: o.mode || "pro", runId: o.runId || null,
-    extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0 };
-  state.tasks.push(t); return t;
+    extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0, ...(o.version > 1 ? { version: o.version } : {}) };
+  state.tasks.push(t); o._onCreate?.(t); return t;
 }
 function setAgent(agentId) {
   const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
@@ -2369,8 +2715,14 @@ function setAgent(agentId) {
   if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.phase === "review" ? "Autoevaluando" : active.phase === "revise" ? "Mejorando su trabajo" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
   else delete state.bubble[agentId];
 }
+// Cada encargo tiene su propio interruptor: se puede detener solo o caer con el encargo de empresa que lo contiene.
+const CTL = new Map();
+function stopTask(t) { const c = CTL.get(t.id); if (c) { t.stopped = true; c.abort(); } }
 async function runTask(o) {
   const a = byId[o.agentId], t = newTask(o), skill = t.skillId ? skillById(t.skillId) : null;
+  const ctl = new AbortController(); CTL.set(t.id, ctl);
+  if (o.signal) { if (o.signal.aborted) ctl.abort(); else o.signal.addEventListener("abort", () => ctl.abort(), { once: true }); }
+  o = { ...o, signal: ctl.signal };
   setAgent(a.id); bump(t);
   try {
     await acquire(o.signal);
@@ -2384,7 +2736,7 @@ async function runTask(o) {
       }
       t.phase = "exec"; setAgent(a.id); bump(t);
       let lastPaint = 0;
-      const tools = AI.mode === "sample" && AI.tools ? ctxTools() : [];
+      const tools = AI.mode === "sample" && AI.tools ? ctxTools(a.id) : [];
       t.useTools = tools.length > 0;
       t.result = await ask(execPrompt(a, t, skill), { signal: o.signal, image: o.image || null, tools, onText: ({ text }) => {
         t.result = text;
@@ -2400,8 +2752,9 @@ async function runTask(o) {
       t.status = "done";
     } finally { release(); }
   } catch (e) {
-    t.status = "error"; t.result = (e?.text ? e.text + "\n\n" : "") + "> " + errText(e);
+    t.status = "error"; t.result = (e?.text || t.result ? (e?.text || t.result) + "\n\n" : "") + "> " + (ctl.signal.aborted ? "Detenido a mano." : errText(e));
   }
+  CTL.delete(t.id);
   t.phase = "fin"; setAgent(a.id); bump(t); await store.saveTask(t);
   if (t.status === "done") maybeLearnSkill(a);
   return t;
@@ -2594,7 +2947,7 @@ async function giveFeedback(t, kind, comment) {
   if (kind === "down") {
     const c = comment.trim();
     if (c) addLessons(a.id, [`En encargos como «${t.order.slice(0, 60)}», el propietario pidió: ${c}`], "tu", t.order);
-    runTask({ agentId: a.id, order: "Mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+    runTask({ agentId: a.id, order: t.order.replace(/ \(v\d+\)$/, "") + ` (v${(t.version || 1) + 1})`, version: (t.version || 1) + 1, from: "Tú", mode: "rapido", skillId: t.skillId,
       extra: `Tu entrega anterior:\n${t.result.slice(0, 12000)}\n\nEl propietario la ha marcado como mejorable${c ? `: «${c}»` : "."} Entrega la versión mejorada completa, corrigiendo exactamente eso.` });
     toast(c ? "Anotado. Lo tendrá en cuenta siempre y ya está rehaciéndolo." : "Anotado. Ya está rehaciéndolo.");
     return;
@@ -2612,9 +2965,10 @@ async function giveFeedback(t, kind, comment) {
 // Trabajo autónomo continuo: Dirección lanza rondas solas mientras la app está abierta.
 function autoTick() {
   const au = BRAIN.auto;
+  if (TALLER.on && !au.on && aiReady() && Date.now() >= (TALLER.next ||= Date.now() + 120e3)) { TALLER.next = Date.now() + 60 * 60e3; runTallerRound(); }
   if (!au.on || state.run || !aiReady() || au.rounds >= AUTO_MAX_ROUNDS) return paintAuto();
   if (!au.next) au.next = Date.now() + 60e3;
-  if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; runCompany("", "auto"); }
+  if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; if (TALLER.on && au.rounds % 2 === 0) runTallerRound(); else runCompany("", "auto"); }
   paintAuto();
 }
 function paintAuto() {
@@ -2628,21 +2982,25 @@ function paintAuto() {
 /* ---------- Pintado ---------- */
 let paintQueued = false;
 const changed = new Set();
-function bump(t) { t.v = (t.v || 0) + 1; changed.add(t.id); schedule(); }
+function bump(t) { t.v = (t.v || 0) + 1; changed.add(t.id); schedule(); if (t.status === "work") saveSoon(t); }
+// Mientras trabaja, el encargo se guarda como mucho cada 8 s: si se cierra la oficina, queda «Interrumpido» con lo que llevaba.
+const saveTimers = new Map();
+function saveSoon(t) { if (saveTimers.has(t.id)) return; saveTimers.set(t.id, setTimeout(() => { saveTimers.delete(t.id); if (state.tasks.includes(t) && t.status === "work") store.saveTask(t); }, saveTimers.size ? 8000 : 1500)); }
 function schedule() { if (paintQueued) return; paintQueued = true; requestAnimationFrame(() => { paintQueued = false; paintAll(); }); }
 function paintAll() {
   paintCounts(); paintTeam(); paintLive(); paintRun();
   if (state.view === "encargos") paintTasks();
   if (state.view === "entregables") paintDeliverables();
   if (state.open) refreshDrawerTasks();
+  refreshReader();
   changed.clear();
 }
 function paintCounts() {
   const work = AGENTS.filter(a => state.status[a.id] !== "idle").length;
   $("#sIdle").textContent = AGENTS.length - work; $("#sWork").textContent = work;
   $("#nWork").textContent = work || "";
-  $("#nTasks").textContent = state.tasks.length || "";
-  $("#nDone").textContent = state.tasks.filter(t => t.status === "done").length || "";
+  $("#nTasks").textContent = state.tasks.filter(t => !t.archived).length || "";
+  $("#nDone").textContent = state.tasks.filter(t => t.status === "done" && !t.archived).length || "";
   $("#nSkills").textContent = allSkills().length;
   $("#nCtx").textContent = ctxFiles(CTX.items) || "";
   for (const r of ROOMS) {
@@ -2660,7 +3018,7 @@ function paintTeam() {
     <img class="px" src="${P(a)}" alt=""><div style="min-width:0"><b>${esc(a.name)}${statusDot(a.id)}</b><span>${state.status[a.id] === "idle" ? esc(a.role) : esc(statusText(a.id))}</span></div></button>`).join("");
 }
 function progressOf(t) {
-  if (t.status !== "work") return { pct: 100, ind: false, txt: t.status === "done" ? "Terminado" : "Error" };
+  if (t.status !== "work") return { pct: 100, ind: false, txt: statusLabel(t) };
   if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
   if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
   if (t.phase === "review") return { pct: 92, ind: true, txt: "Autoevaluando" };
@@ -2668,7 +3026,7 @@ function progressOf(t) {
   if (t.steps.length) { const k = Math.max(1, t.step || 1); return { pct: Math.round((k - (t.step >= t.steps.length ? 0 : .5)) / t.steps.length * 100), ind: false, txt: `Paso ${k} de ${t.steps.length}`, step: t.steps[k - 1] || "" }; }
   return { pct: 40, ind: true, txt: t.result ? "Escribiendo" : "Pensando" };
 }
-function statusLabel(t) { return t.status === "work" ? progressOf(t).txt : t.status === "done" ? "Terminado" : "Error"; }
+function statusLabel(t) { return t.status === "work" ? progressOf(t).txt : t.status === "done" ? "Terminado" : t.stopped ? "Detenido" : t.interrupted ? "Interrumpido" : "Error"; }
 function jobHTML(t) {
   const a = byId[t.agentId], p = progressOf(t);
   return `<button class="job" type="button" data-task="${t.id}"><div class="t">${esc(t.order)}</div>
@@ -2679,7 +3037,7 @@ function paintLive() {
   const live = state.tasks.filter(t => t.status === "work").sort((a, b) => a.createdAt - b.createdAt);
   $("#liveCount").textContent = live.length;
   $("#liveList").innerHTML = live.length ? live.map(jobHTML).join("") : `<p class="empty">Nadie está trabajando ahora. Haz un encargo o lanza una ronda autónoma.</p>`;
-  const recent = state.tasks.filter(t => t.status !== "work").sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
+  const recent = state.tasks.filter(t => t.status !== "work" && !t.archived).sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
   $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí verás lo último que se ha entregado.</p>`;
 }
 function paintRun() {
@@ -2692,43 +3050,8 @@ function paintRun() {
     ${(r.fases || []).map(f => `<div class="ph">${esc(f.nombre)}</div><ol>${f.tareas.map(x => `<li><b>${esc(byId[x.agente]?.name)}</b>: ${esc(x.tarea)} <span class="st ${x.estado}">${lbl[x.estado] ? "· " + lbl[x.estado].toLowerCase() : ""}</span></li>`).join("")}</ol>`).join("")}
     ${r.reportId ? `<div class="row" style="justify-content:flex-start;margin-top:12px"><button class="btn sm" type="button" data-task="${r.reportId}">Leer el informe</button></div>` : ""}`;
 }
-function taskRowHTML(t) {
-  const a = byId[t.agentId], sk = t.skillId ? skillById(t.skillId) : null;
-  return `<button class="trow" type="button" data-task="${t.id}">
-    <div style="min-width:0"><div class="t">${esc(t.order)}</div><div class="m">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${sk ? " · " + esc(sk.name) : ""}</div></div>
-    <span class="who">${esc(a.name)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span></button>`;
-}
 function filterChips(el, key, opts) {
   el.innerHTML = opts.map(([v, l]) => `<button class="f" type="button" data-f="${key}" data-v="${v}" aria-pressed="${state[key] === v}">${esc(l)}</button>`).join("");
-}
-function paintTasks() {
-  filterChips($("#taskFilters"), "fTasks", [["todos", "Todos"], ["work", "En marcha"], ["done", "Terminados"], ["error", "Con error"], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
-  const f = state.fTasks;
-  const list = state.tasks.filter(t => f === "todos" || t.status === f || (f.startsWith("room:") && byId[t.agentId].room === f.slice(5))).sort((a, b) => b.createdAt - a.createdAt);
-  $("#taskList").innerHTML = list.length ? `<div class="thead"><span>Encargo</span><span>Puesto</span><span>Estado</span></div>` + list.map(taskRowHTML).join("") : `<p class="empty">No hay encargos con este filtro.</p>`;
-}
-const EXAMPLES = [
-  { agentId: "dani", order: "Reel de lanzamiento de 30 s", result: "0:00-0:03 Plano detalle del producto con luz dura lateral, golpe de bajo en el corte. 0:03-0:08 Tres planos rápidos de uso real…" },
-  { agentId: "sofia", order: "Calendario de 4 semanas para Instagram y TikTok", result: "Lunes, TikTok: reel «3 errores que…», CTA guardar. Miércoles, Instagram: carrusel comparativo…" },
-  { agentId: "alex", order: "Oferta con el método Hormozi", result: "Resultado soñado, plazo, esfuerzo y riesgo. Bonus por orden de valor percibido. Garantía de 30 días…" },
-];
-const thumbs = {};
-function paintDeliverables() {
-  filterChips($("#delFilters"), "fDel", [["todos", "Todo"], ...ROOMS.map(r => [r.id, r.name])]);
-  const done = state.tasks.filter(t => t.status === "done" && (state.fDel === "todos" || byId[t.agentId].room === state.fDel)).sort((a, b) => b.createdAt - a.createdAt);
-  const anyDone = state.tasks.some(t => t.status === "done");
-  const list = done.length ? done : anyDone ? [] : EXAMPLES.map(x => ({ ...x, example: true, createdAt: Date.now() }));
-  const cards = list.map(t => {
-    const a = byId[t.agentId];
-    const plain = finalPart(t.result).replace(/[#*|`>_-]+/g, " ").replace(/\s+/g, " ").trim();
-    return `<button class="del" type="button" ${t.example ? "disabled style=\"cursor:default\"" : `data-task="${t.id}"`}>
-      <div class="who"><img class="px" src="${P(a)}" alt=""><b>${esc(a.name)}</b></div>
-      <div class="t">${esc(t.order)}</div><div class="x">${esc(plain.slice(0, 260))}</div>
-      <div class="d">${t.example ? '<span class="st ex">Ejemplo</span>' : fmtDate(t.createdAt)}</div></button>`;
-  }).join("");
-  paintExport();
-  $("#delGrid").innerHTML = (!done.length && list.length ? `<p class="intro">Todavía no hay nada terminado. Así se verá cuando el equipo entregue su primer trabajo:</p>` : "")
-    + (list.length ? `<div class="gallery">${cards}</div>` : `<p class="empty">Todavía no hay entregables en esta sala.</p>`);
 }
 /* Exportar entregables: todo, por sala o por puesto, en un solo Markdown con índice. */
 function exportGroups() {
@@ -2751,18 +3074,6 @@ function taskMarkdown(t) {
     skills.length ? `Métodos: ${skills.join(", ")}` : "", typeof t.score === "number" ? `Autoevaluación: ${t.score}/10${t.revised ? " (revisada y mejorada)" : ""}` : "",
     t.feedback === "up" ? "Tu valoración: útil" : t.feedback === "down" ? "Tu valoración: mejorable" : ""].filter(Boolean);
   return `## ${t.order}\n\n${meta.map(m => "- " + m).join("\n")}\n\n${t.result}\n`;
-}
-async function exportDeliverables() {
-  const key = $("#expSel").value || "todos", g = exportGroups().find(x => x[0] === key) || exportGroups()[0];
-  const list = state.tasks.filter(t => t.status === "done" && g[2](t)).sort((a, b) => a.createdAt - b.createdAt);
-  if (!list.length) return toast("No hay entregables terminados en esa selección.");
-  const title = `${state.company}: entregables${key === "todos" ? "" : " de " + g[1].replace(/ \(\d+\)$/, "")}`;
-  const data = `# ${title}\n\nExportado el ${new Date().toLocaleString("es-ES")}. ${list.length} ${list.length === 1 ? "entregable" : "entregables"}.\n\n${list.map((t, i) => `${i + 1}. ${t.order} (${byId[t.agentId].name})`).join("\n")}\n\n---\n\n${list.map(taskMarkdown).join("\n---\n\n")}`;
-  const filename = title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") + ".md";
-  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
-  if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "text/markdown" })); a.download = filename; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 function paintSkills() {
   filterChips($("#skillFilters"), "fSkills", [["todos", "Todas"], ["custom", "Creadas por ti"], ...ROOMS.map(r => [r.id, r.name])]);
@@ -2803,6 +3114,7 @@ let scene = null;
 function paintRooms() {
   $("#roomTabs").innerHTML = ROOMS.map(r => `<button class="rt" type="button" data-room="${r.id}" aria-pressed="${state.room === r.id}">${esc(r.name)} <span class="n" data-room-n="${r.id}"></span></button>`).join("");
   $("#stageName").textContent = roomById[state.room].name;
+  $("#btnTaller").hidden = state.room !== "taller";
   paintCounts();
 }
 function centerStage() { const w = $(".canvaswrap"); if (w && w.scrollWidth > w.clientWidth) w.scrollLeft = (w.scrollWidth - w.clientWidth) / 2; }
@@ -2880,7 +3192,7 @@ function openAgent(id, focusTask) {
   state.open = id; scene?.select(id);
   const a = byId[id], r = roomById[a.room], dc = state.dComp;
   if (dc.agent !== id) { dc.agent = id; dc.skill = null; }
-  const tasks = state.tasks.filter(t => t.agentId === id).sort((x, y) => y.createdAt - x.createdAt);
+  const tasks = state.tasks.filter(t => t.agentId === id && !t.archived).sort((x, y) => y.createdAt - x.createdAt);
   $("#drawer").innerHTML = `
     <div class="d-head"><img class="px" src="${P(a)}" alt="">
       <div style="min-width:0"><h2 id="dName">${esc(a.name)}</h2><p>${esc(a.role)} · ${esc(r.name)}</p>
@@ -2901,6 +3213,7 @@ function openAgent(id, focusTask) {
   paintDStatus();
   $("#drawer").hidden = false; $("#scrim").hidden = false;
   if (focusTask) $("#drawer").querySelector(`[data-tid="${focusTask}"]`)?.scrollIntoView({ block: "start" });
+  setTimeout(() => $("#dClose")?.focus(), 0);
 }
 function brainHTML(a) {
   const st = statsOf(a.id), mem = memOf(a.id), learned = state.customSkills.filter(s => s.agentId === a.id && s.learned);
@@ -2911,30 +3224,17 @@ function brainHTML(a) {
 }
 function paintDStatus() { const el = $("#dStatus"); if (!el || !state.open) return; el.innerHTML = `${statusDot(state.open)} ${esc(statusText(state.open))}`; }
 function drawerTaskHTML(t) {
-  const sk = t.skillId ? skillById(t.skillId) : null, p = progressOf(t);
-  const cur = i => i + 1 === (t.step || 1) && t.status === "work" && t.phase === "exec", done = i => i + 1 < (t.step || 0) || t.status === "done";
-  const steps = t.steps.length ? `<div class="steps">${t.steps.map((s, i) => `<div class="s ${done(i) ? "done" : cur(i) ? "cur" : ""}"><i>${i + 1}</i><span>${esc(s)}</span></div>`).join("")}</div>` : "";
-  const body = t.status === "work" && !t.result ? `<div class="thinking">${esc(p.txt)}…</div>` : `<div class="md">${md(t.result)}</div>`;
-  const others = AGENTS.filter(x => x.id !== t.agentId);
-  const acts = t.status === "done" ? `<div class="task-acts">
-      <button class="btn ghost sm" type="button" data-copy="${t.id}">Copiar</button><button class="btn ghost sm" type="button" data-dl="${t.id}">Descargar</button>
-      ${liveHTML(t.result) ? `<button class="btn ghost sm" type="button" data-live="${t.id}">Ver en vivo</button>` : ""}<button class="btn ghost sm" type="button" data-improve="${t.id}">Revisar y mejorar</button>
-      <span class="fb">${t.feedback === "up" ? "Marcado como útil" : t.feedback === "down" ? "Marcado como mejorable" : `<button class="btn ghost sm" type="button" data-fb="up" data-fbid="${t.id}">Útil</button><button class="btn ghost sm" type="button" data-fb="down" data-fbid="${t.id}">Mejorable</button>`}</span>
-      <button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>
-      <span class="sep"></span>
-      <label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Pasar a otro puesto…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select>
-      <label for="hi-${t.id}" hidden>Instrucción</label><input id="hi-${t.id}" placeholder="Qué debe hacer con esto">
-      <button class="btn sm" type="button" data-handoff="${t.id}">Pasar</button></div>`
-    : t.status === "error" ? `<div class="task-acts"><button class="btn ghost sm" type="button" data-retry="${t.id}">Reintentar</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button></div>` : "";
-  return `<article class="task" data-tid="${t.id}" data-v="${t.v}">
-    <div class="task-h"><span class="o">${esc(t.order)}</span><span class="st ${t.status}">${esc(statusLabel(t))}</span><span class="meta">${fmtDate(t.createdAt)} · pedido por ${esc(t.from)}${[sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).length ? " · " + [sk, ...(t.autoSkills || []).map(skillById)].filter(Boolean).map(x => esc(x.name)).join(", ") : ""}${typeof t.score === "number" ? ` · autoevaluación ${t.score}/10${t.revised ? ", revisada y mejorada" : ""}` : ""}</span></div>
-    ${t.feedback !== "down" && t.status === "done" ? `<form class="fbform" data-fbform="${t.id}" hidden><label for="fbt-${t.id}" hidden>Qué falló</label><input id="fbt-${t.id}" placeholder="Qué debería hacer distinto (lo recordará siempre)"><button class="btn sm" type="submit">Rehacer</button></form>` : ""}
-    ${steps}${body}${acts}</article>`;
+  const p = progressOf(t), k = kindOf(t), sum = t.status === "done" ? summaryOf(t, 2) : [];
+  return `<article class="dtask" data-tid="${t.id}" data-v="${t.v}">
+    <button class="dt-main" type="button" data-task="${t.id}"><span class="dt-k">${esc(k.label)} · ${fmtDate(t.createdAt)}</span><span class="dt-t">${esc(t.order)}</span>
+      ${sum.length ? `<span class="dt-x">${esc(sum.join(" · "))}</span>` : ""}</button>
+    <span class="st ${t.status}">${esc(statusLabel(t))}</span>
+    ${t.status === "work" ? `<div class="bar ${p.ind ? "ind" : ""}"><i style="width:${p.pct}%"></i></div>` : ""}</article>`;
 }
 function refreshDrawerTasks() {
   paintDStatus();
   const box = $("#dTasks"); if (!box) return;
-  const tasks = state.tasks.filter(t => t.agentId === state.open).sort((x, y) => y.createdAt - x.createdAt);
+  const tasks = state.tasks.filter(t => t.agentId === state.open && !t.archived).sort((x, y) => y.createdAt - x.createdAt);
   const ids = [...box.querySelectorAll("[data-tid]")].map(e => e.dataset.tid);
   if (ids.join() !== tasks.map(t => t.id).join()) { box.innerHTML = tasks.length ? tasks.map(drawerTaskHTML).join("") : `<p class="empty">Todavía no le has encargado nada.</p>`; return; }
   for (const t of tasks) if (changed.has(t.id)) { const el = box.querySelector(`[data-tid="${t.id}"]`); if (el && el.dataset.v !== String(t.v)) el.outerHTML = drawerTaskHTML(t); }
@@ -2959,7 +3259,36 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-go]"))) return go(b.dataset.go);
   if ((b = el("[data-room]"))) { if (state.view !== "oficina") go("oficina"); return setRoom(b.dataset.room); }
   if ((b = el("[data-agent]"))) return openAgent(b.dataset.agent);
-  if ((b = el("[data-task]"))) { const t = state.tasks.find(x => x.id === b.dataset.task); if (t) openAgent(t.agentId, t.id); return; }
+  if ((b = el("[data-task]"))) return openReader(b.dataset.task);
+  if (!el("details.menu")) document.querySelectorAll("details.menu[open]").forEach(d => d.open = false);
+  if (el("#rBack")) return closeReader();
+  if ((b = el("[data-stop]"))) { const t = state.tasks.find(x => x.id === b.dataset.stop); if (t) { stopTask(t); toast("Detenido."); } return; }
+  if ((b = el("[data-archive]"))) { const t = state.tasks.find(x => x.id === b.dataset.archive); if (t) { const on = !t.archived; await archiveTasks([t.id], on); toast(on ? "Archivado. Lo tienes en «Archivados»." : "Vuelve a estar en las listas."); paintAll(); if (READER.id === t.id) paintReader(); } return; }
+  if ((b = el("[data-export]"))) { const t = state.tasks.find(x => x.id === b.dataset.eid); b.closest("details")?.removeAttribute("open"); if (t) exportTasks([t], b.dataset.export); return; }
+  if ((b = el("[data-apply]"))) { const t = state.tasks.find(x => x.id === b.dataset.apply); if (t) openApply(t); return; }
+  if ((b = el("[data-execcheck]"))) { const t = state.tasks.find(x => x.id === b.dataset.execcheck); if (t) ccCheck(t, b.dataset.sess); return; }
+  if ((b = el("[data-sketch]"))) { const t = state.tasks.find(x => x.id === READER.id); if (t) openLive(t, READER.blocks[+b.dataset.sketch]); return; }
+  if ((b = el("[data-sketchcode]"))) { const fig = b.closest("figure"), src = READER.blocks[+b.dataset.sketchcode]; let pre = fig.querySelector("pre"); if (pre) { pre.remove(); b.textContent = "Código"; } else { pre = document.createElement("pre"); pre.className = "code"; pre.textContent = src; fig.appendChild(pre); b.textContent = "Ocultar código"; } return; }
+  if ((b = el("[data-copycode]"))) { try { await navigator.clipboard.writeText(b.parentElement.querySelector("code")?.textContent || ""); b.textContent = "Copiado"; setTimeout(() => b.textContent = "Copiar", 1500); } catch { toast("No se pudo copiar."); } return; }
+  if ((b = el("[data-next]"))) { const t = state.tasks.find(x => x.id === b.dataset.next), n = docParts(t).next; runTask({ agentId: t.agentId, order: n, from: "Tú", mode: "pro", extra: `Viene de tu entrega «${t.order}»:\n${finalPart(t.result).slice(0, 10000)}` }); toast(`Encargado a ${byId[t.agentId].name}.`); return; }
+  if ((b = el("[data-toc]"))) { e.preventDefault(); $("#" + b.dataset.toc)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if ((b = el("[data-pick]"))) { const id = b.dataset.pick; if (b.checked) state.sel.add(id); else state.sel.delete(id); return paintTasks(); }
+  if (el("#pickAll")) { const on = $("#pickAll").checked; document.querySelectorAll("[data-pick]").forEach(x => on ? state.sel.add(x.dataset.pick) : state.sel.delete(x.dataset.pick)); return paintTasks(); }
+  if ((b = el("[data-bulk]"))) {
+    const ids = [...state.sel], k = b.dataset.bulk;
+    if (k === "none") { state.sel.clear(); return paintTasks(); }
+    if (k === "delete") { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = `¿Borrar ${ids.length}?`; return; } await deleteTasks(ids); toast(`${ids.length} borrados.`); return; }
+    if (k === "export") return exportTasks(state.tasks.filter(t => state.sel.has(t.id) && t.status === "done").sort((a, b) => a.createdAt - b.createdAt), "pdf", "la selección");
+    await archiveTasks(ids, k === "archive"); state.sel.clear(); toast(k === "archive" ? "Archivados." : "Desarchivados."); return paintAll();
+  }
+  if ((b = el("[data-clean]"))) {
+    const c = cleanupCounts(), k = b.dataset.clean; b.closest("details")?.removeAttribute("open");
+    if (k === "errors") { await deleteTasks(c.errs.map(t => t.id)); toast(`${c.errs.length} encargos con error borrados.`); }
+    if (k === "old") { await archiveTasks(c.old.map(t => t.id)); toast(`${c.old.length} archivados.`); paintAll(); }
+    if (k === "archived") { if (b.dataset.confirm !== "1") { b.closest("details").open = true; b.dataset.confirm = "1"; b.querySelector("b").textContent = `¿Borrar ${c.archived.length} para siempre?`; return; } await deleteTasks(c.archived.map(t => t.id)); toast("Archivados borrados."); }
+    return;
+  }
+  if (el("#btnTaller")) return runTallerRound(true);
   if (el("[data-settings]")) return openSettings();
   if (el("#dClose") || e.target === $("#scrim")) return closeAgent();
   if (el("#rmImg")) { state.comp.image = null; return paintComposer(); }
@@ -2973,11 +3302,12 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-dl]"))) return download(state.tasks.find(x => x.id === b.dataset.dl));
   if (el("#expBtn")) return exportDeliverables();
   if ((b = el("[data-live]"))) return openLive(state.tasks.find(x => x.id === b.dataset.live));
+  if ((b = el("[data-dev]"))) { $("#liveFrame").dataset.dev = b.dataset.dev; document.querySelectorAll("[data-dev]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); return; }
   if (el("#liveDl")) return downloadLive();
   if (el("#liveMp4")) return recordLive();
   if ((b = el("[data-improve]"))) {
     const t = state.tasks.find(x => x.id === b.dataset.improve);
-    runTask({ agentId: t.agentId, order: "Revisar y mejorar: " + t.order, from: "Tú", mode: "rapido", skillId: t.skillId,
+    runTask({ agentId: t.agentId, order: t.order.replace(/^(Revisar y mejorar|Mejorar): /, "") + ` (v${(t.version || 1) + 1})`.replace(/ \(v\d+\) \(v/, " (v"), version: (t.version || 1) + 1, from: "Tú", mode: "rapido", skillId: t.skillId,
       extra: `Este es tu trabajo anterior:\n${t.result.slice(0, 12000)}\n\nRevísalo con ojo crítico de experto exigente: señala en 3-5 puntos qué falla o es mejorable y entrega la versión mejorada completa.` });
     toast("Revisión en marcha."); return;
   }
@@ -3002,13 +3332,17 @@ document.addEventListener("click", async e => {
   if (el("#ctxPasteBtn")) { $("#pName").value = ""; $("#pText").value = ""; $("#pasteDlg").showModal(); return; }
   if (el("#ctxFilesBtn")) return $("#ctxFiles").click();
   if (el("#ctxDirBtn")) return $("#ctxDir").click();
-  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: t.extra }); return; }
+  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); if (!t) return; const wasOpen = READER.id === t.id; await deleteTasks([t.id]); const part = (t.interrupted || t.stopped) ? (t.result || "").replace(/\n*> [^\n]*$/, "").trim() : ""; runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: (t.extra || "") + (part ? `\n\nYa llevabas esto hecho antes de que se interrumpiera. Úsalo y entrega el trabajo completo:\n${part.slice(0, 12000)}` : ""), version: t.version, _onCreate: n => { if (wasOpen) openReader(n.id); } }); toast("De nuevo en marcha."); return; }
   if ((b = el("[data-del]"))) {
     if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
-    const id = b.dataset.del; state.tasks = state.tasks.filter(x => x.id !== id); await store.deleteTask(id); paintAll(); return;
+    await deleteTasks([b.dataset.del]); toast("Borrado."); return;
   }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && state.open) closeAgent(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]")) return; if (document.querySelector("details.menu[open]")) { document.querySelectorAll("details.menu[open]").forEach(d => d.open = false); return; } if (READER.id) closeReader(); else if (state.open) closeAgent(); });
+document.addEventListener("input", e => {
+  if (e.target.id === "taskQ") { state.q = e.target.value; paintTasks.focus = true; paintTasks(); }
+  if (e.target.id === "delQ") { state.qDel = e.target.value; paintDeliverables(); }
+});
 document.addEventListener("change", async e => {
   const t = e.target;
   if (t.dataset.ctxsrc != null) { const list = CTX.items.filter(x => x.source === t.dataset.ctxsrc); list.forEach(x => x.active = t.checked); CTX.ver++; paintContext(); paintComposer(); for (const x of list) await store.saveCtx(x).catch(() => {}); }
@@ -3101,15 +3435,16 @@ function livePlayer() {
 const LIVE_PLAYER = `<script>(${livePlayer.toString()})();<\/script>`;
 let liveTask = null, liveBusy = false;
 function liveName(t, ext) { return `${byId[t.agentId].name}-${t.order.slice(0, 40)}`.replace(/[^\p{L}\p{N}]+/gu, "-") + ext; }
-function openLive(t) {
-  const html = liveHTML(t?.result); if (!html) return;
-  liveTask = t; liveBusy = false;
+function openLive(t, block) {
+  const html = block || liveHTML(t?.result); if (!html) return;
+  liveTask = t; liveTask._block = html; liveBusy = false;
   const doc = /<html[\s>]/i.test(html) ? (/<\/body>/i.test(html) ? html.replace(/<\/body>/i, LIVE_PLAYER + "</body>") : html + LIVE_PLAYER)
     : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}${LIVE_PLAYER}</body></html>`;
   const isComp = /data-composition-id/.test(html);
   $("#liveTitle").textContent = t.order;
   $("#liveMp4").hidden = !isComp; $("#liveMp4").disabled = false; $("#liveMp4").textContent = "Descargar MP4";
-  $("#liveNote").textContent = isComp ? "Así se ve la pieza. «Descargar MP4» la graba fotograma a fotograma en este navegador (tarda unos segundos por cada segundo de vídeo, sin sonido)." : "Así se ve la pieza.";
+  $("#liveDev").hidden = isComp; $("#liveFrame").dataset.dev = isComp ? "" : "desk"; document.querySelectorAll("[data-dev]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.dev === "desk")));
+  $("#liveNote").textContent = isComp ? "Así se ve la pieza. «Descargar MP4» la graba fotograma a fotograma en este navegador (tarda unos segundos por cada segundo de vídeo, sin sonido)." : "Así se ve el boceto. Cambia entre móvil y escritorio, o descárgalo para abrirlo en el navegador.";
   $("#liveFrame").srcdoc = doc;
   $("#liveDlg").showModal();
 }
@@ -3132,7 +3467,7 @@ window.addEventListener("message", async e => {
 });
 async function downloadLive() {
   if (!liveTask) return;
-  const html = liveHTML(liveTask.result), filename = liveName(liveTask, ".html");
+  const html = liveTask._block || liveHTML(liveTask.result), filename = liveName(liveTask, ".html");
   const data = /<html[\s>]/i.test(html) ? html : `<!doctype html>\n<html><head><meta charset="utf-8"></head><body>\n${html}\n</body></html>\n`;
   const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
   if (dls) { try { await dls.save({ filename, data }); } catch { toast("Descarga cancelada."); } return; }
@@ -3156,6 +3491,8 @@ function openSettings() {
   const s = settingsLocal(); $("#fKey").value = s.key || ""; $("#fModel").value = s.model || "claude-opus-5-5";
   $("#keyFields").hidden = AI.mode === "sample";
   $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
+  $("#fTallerOn").checked = TALLER.on; $("#fTallerApply").checked = TALLER.apply; $("#fTallerRepo").value = TALLER.repo; $("#fTallerDay").value = String(TALLER.perDay);
+  $("#fRepos").value = CC.repos.join("\n");
   $("#settings").showModal();
 }
 $("#settings").addEventListener("close", async () => {
@@ -3166,6 +3503,12 @@ $("#settings").addEventListener("close", async () => {
   BRAIN.review = $("#fReview").checked;
   const wasOn = BRAIN.auto.on; BRAIN.auto.on = $("#fAuto").checked; BRAIN.auto.every = +$("#fEvery").value || 30;
   if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
+  const repoOk = r => /^[\w.-]+\/[\w.-]+$/.test(r), clean = r => r.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
+  const tOn = TALLER.on; TALLER.on = $("#fTallerOn").checked; TALLER.apply = $("#fTallerApply").checked; TALLER.perDay = +$("#fTallerDay").value || 3;
+  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) TALLER.repo = tr;
+  if (TALLER.on && !tOn) TALLER.next = Date.now() + 120e3;
+  tallerSave();
+  const repos = $("#fRepos").value.split("\n").map(clean).filter(repoOk); if (repos.length) { CC.repos = [...new Set(repos)]; if (!CC.repos.includes(CC.repo)) CC.repo = CC.repos[0]; ccSave(); }
   paintAuto();
   paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
 });
@@ -3250,7 +3593,7 @@ function ctxFor(query, budget = 24000) {
   return `${index}\n\nCONTENIDO${all + index.length > budget ? " (fragmentos más relevantes para este encargo)" : ""}:\n` +
     picked.map(c => `### ${c.it.name}${c.part ? ` (parte ${c.part + 1})` : ""}\n${c.text}`).join("\n");
 }
-function ctxTools() {
+function ctxTools(agent) {
   const t = [];
   if (ctxActive().length) t.push(
     { name: "buscar_contexto", description: "Busca en los documentos y el código que el propietario ha cargado como contexto de su empresa o su aplicación. Devuelve los fragmentos más relevantes para la consulta.",
@@ -3265,7 +3608,7 @@ function ctxTools() {
         const text = act.filter(x => x.source === hit.source && file(x) === file(hit)).sort((a, b) => (+(/\[parte (\d+)/.exec(a.name)?.[1]) || 0) - (+(/\[parte (\d+)/.exec(b.name)?.[1]) || 0)).map(x => x.text).join(""), from = Math.max(0, +desde || 0);
         return { ruta: file(hit), caracteres_totales: text.length, desde: from, texto: text.slice(from, from + 10000) };
       } });
-  if (CTX.projectFiles && CTX.fileTools) t.push(...CTX.fileTools);
+  if (CTX.projectFiles && CTX.fileTools) t.push(...(agent && byId[agent]?.room === "taller" && /\/oficina$/i.test(TALLER.repo) && CTX.rawFileTools ? CTX.rawFileTools : CTX.fileTools));
   return t;
 }
 const ctxFiles = list => new Set(list.map(x => x.name.replace(/ \[parte \d+ de \d+\]$/, ""))).size;
@@ -3359,7 +3702,7 @@ function hideOwnFiles(tools) {
 async function enableProjectFiles(ask = true) {
   const f = window.claude?.use ? await window.claude.use("files").catch(() => null) : null;
   if (!f || !AI.tools) { CTX.projectFiles = false; if (ask) toast("Los archivos del proyecto solo están disponibles al abrir la app dentro de Claude."); paintContext(); return; }
-  try { CTX.fileTools = hideOwnFiles(await f.asSampleTools()); CTX.projectFiles = true; }
+  try { CTX.rawFileTools = await f.asSampleTools(); CTX.fileTools = hideOwnFiles(CTX.rawFileTools); CTX.projectFiles = true; }
   catch (e) { CTX.projectFiles = false; if (ask) toast(e?.code === "not_granted" ? "No se ha permitido leer los archivos del proyecto." : "No se pudieron abrir los archivos del proyecto."); }
   paintContext();
 }
@@ -3391,7 +3734,7 @@ const store = {
         const s = await this.base.get();
         if (s.exists) { const d = thaw(s); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
-          this.base.collection("tasks").orderBy("createdAt", "desc").limit(300).get(),
+          this.base.collection("tasks").orderBy("createdAt", "desc").limit(1000).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
         try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
@@ -3433,16 +3776,570 @@ const store = {
   deleteSkill(id) { return this.del("skills", id); },
   local() {
     try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
-      tasks: state.tasks.filter(t => t.status !== "work").slice(-150).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+      tasks: state.tasks.filter(t => t.status !== "work").slice(-300).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
     if (!this.db) this.saveBrain("facts");
   },
 };
 function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + 60e3; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
-  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, status: t.status === "work" ? "error" : t.status, v: 0 });
+  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, ...(t.status === "work" ? { status: "error", interrupted: true, result: (t.result ? t.result + "\n\n" : "") + "> Se interrumpió al cerrar la oficina. Pulsa «Seguir» para retomarlo." } : {}), v: 0 });
 }
 function mergeRuns(list) { const have = new Set(state.runs.map(r => r.id)); for (const r of list) if (r?.id && !have.has(r.id)) state.runs.push({ ...r, status: r.status === "work" ? "error" : r.status }); }
+
+/* ---------- Entregas como documentos: estructura, lector, exportación y ejecución ---------- */
+
+// Partes de una entrega: resumen, pasos, entrega final, cambios para Claude Code y siguiente paso.
+function splitSections(text) {
+  const out = [], lines = String(text || "").split("\n");
+  let cur = { title: "", body: [] }, fence = false;
+  for (const ln of lines) {
+    if (/^\s*(```|~~~)/.test(ln)) fence = !fence;
+    const m = !fence && /^##\s+(.+?)\s*#*\s*$/.exec(ln);
+    if (m && !/^###/.test(ln)) { out.push(cur); cur = { title: m[1].trim(), body: [] }; } else cur.body.push(ln);
+  }
+  out.push(cur);
+  return out.map(x => ({ title: x.title, body: x.body.join("\n").trim() })).filter(x => x.title || x.body);
+}
+const NEXT_RE = /^\s*\**\s*Siguiente paso sugerido\s*\**\s*:?\s*\**\s*(.+)$/im;
+const METHODS_RE = /^\s*\**\s*(Métodos? (aplicados?|que he aplicado)|He aplicado)[^\n]*$/im;
+function docParts(t) {
+  const raw = t.result || "";
+  const next = (NEXT_RE.exec(raw)?.[1] || "").replace(/\*+$/, "").trim().replace(/^./, c => c.toUpperCase());
+  const methods = (METHODS_RE.exec(raw)?.[0] || "").replace(/\*/g, "").trim();
+  const clean = raw.replace(NEXT_RE, "").replace(METHODS_RE, "").trim();
+  const secs = splitSections(clean);
+  const pick = re => secs.find(x => re.test(x.title));
+  const resumen = pick(/^resumen/i), final = pick(/^entrega final/i), cc = pick(/^cambios para claude code/i);
+  const steps = secs.filter(x => /^\d+\s*[.)]/.test(x.title));
+  const rest = secs.filter(x => x !== resumen && x !== final && x !== cc && !steps.includes(x));
+  const join = list => list.map(x => (x.title ? `## ${x.title}\n\n` : "") + x.body).join("\n\n");
+  // Con «Entrega final», el documento es la entrega y el proceso queda plegado; sin ella, todo es documento.
+  const main = final ? final.body : join([...rest, ...steps]);
+  const process = final ? join([...steps, ...rest]) : "";
+  return { resumen: resumen?.body || "", main, process, cc: cc?.body || "", next, methods, stepsN: steps.length };
+}
+function kindOf(t) {
+  const r = t.result || "";
+  if (/data-composition-id/.test(r)) return { id: "video", label: "Vídeo" };
+  if (/```html/i.test(r)) return { id: "web", label: "Boceto" };
+  if (/^##\s*Cambios para Claude Code/im.test(r)) return { id: "app", label: "Cambio en la app" };
+  if (/^###\s*(Opción|Propuesta)/im.test(r)) return { id: "options", label: "Propuestas" };
+  if (/```mermaid[\s\S]*?\bgantt\b/i.test(r)) return { id: "plan", label: "Planning" };
+  if (/```(js|ts|tsx|jsx|css|sql|py|bash|json|swift|kotlin)/i.test(r)) return { id: "code", label: "Código" };
+  if (t.agentId === "elena" && t.runId) return { id: "report", label: "Informe" };
+  return { id: "doc", label: "Documento" };
+}
+function summaryOf(t, n = 3) {
+  const p = docParts(t);
+  const bullets = (p.resumen || "").split("\n").map(l => l.replace(/^\s*([-*+]|\d+[.)])\s+/, "").replace(/[*_`#>]/g, "").trim()).filter(Boolean);
+  if (bullets.length) return bullets.slice(0, n);
+  const plain = (p.main || t.result || "").replace(/```[\s\S]*?```/g, " ").replace(/[#*|`>_-]+/g, " ").replace(/\s+/g, " ").trim();
+  return plain ? [plain.slice(0, 240) + (plain.length > 240 ? "…" : "")] : [];
+}
+
+/* ---------- Lector ---------- */
+const READER = { id: null, blocks: [], lastPaint: 0 };
+const isDark = () => matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light";
+function loadScript(src, test) {
+  if (test()) return Promise.resolve();
+  return (loadScript.p ||= {})[src] ||= new Promise((ok, ko) => {
+    const s = document.createElement("script"); s.src = src; s.onload = () => test() ? ok() : ko(new Error("No se pudo cargar " + src));
+    s.onerror = () => { delete loadScript.p[src]; ko(new Error("Sin conexión con la librería")); }; document.head.appendChild(s);
+  });
+}
+const LIB = {
+  mermaid: () => loadScript("https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js", () => !!window.mermaid).then(() => {
+    if (!LIB._mm) { window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral", fontFamily: "Geist, system-ui, sans-serif", flowchart: { htmlLabels: false, curve: "basis" }, gantt: { barHeight: 22, fontSize: 12 } }); LIB._mm = true; }
+    return window.mermaid;
+  }),
+  pdf: () => loadScript("https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js", () => !!window.pdfMake)
+    .then(() => loadScript("https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.js", () => !!window.pdfMake?.vfs?.["Roboto-Regular.ttf"])).then(() => window.pdfMake),
+  docx: () => loadScript("https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js", () => !!window.docx).then(() => window.docx),
+};
+let mmSeq = 0;
+async function mermaidSvg(code) { const mm = await LIB.mermaid(); const { svg } = await mm.render("mm" + (++mmSeq), code.trim()); return svg; }
+// Convierte un diagrama en PNG para los documentos (sin foreignObject para que el lienzo no se bloquee).
+async function svgToPng(svg, maxW = 1400) {
+  const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), el = doc.documentElement;
+  const vb = (el.getAttribute("viewBox") || "").split(/[\s,]+/).map(Number);
+  let w = vb.length === 4 && vb[2] ? vb[2] : parseFloat(el.getAttribute("width")) || 800, h = vb.length === 4 && vb[3] ? vb[3] : parseFloat(el.getAttribute("height")) || 400;
+  el.setAttribute("width", w); el.setAttribute("height", h); el.style.maxWidth = "none";
+  const k = Math.min(2, maxW / w), img = new Image();
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(new XMLSerializer().serializeToString(el)); await img.decode();
+  const c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const ctx = c.getContext("2d"); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+  return { url: c.toDataURL("image/png"), w, h };
+}
+// Mejora el HTML del Markdown: diagramas, bocetos en miniatura, tarjetas de opciones, tablas con scroll y copiar código.
+function enhanceDoc(root, t, live) {
+  root.querySelectorAll("pre > code").forEach(code => {
+    const pre = code.parentElement, lang = (/language-(\S+)/.exec(code.className) || [])[1] || "", src = code.textContent;
+    if (lang === "mermaid") {
+      const box = document.createElement("figure"); box.className = "diagram"; box.dataset.mm = src; box.innerHTML = `<div class="dg-in note">${live ? "El diagrama se dibuja al terminar." : "Dibujando el diagrama…"}</div>`;
+      pre.replaceWith(box); return;
+    }
+    if (lang === "html") {
+      const i = READER.blocks.push(src) - 1, comp = /data-composition-id/.test(src);
+      const card = document.createElement("figure"); card.className = "sketch";
+      card.innerHTML = `<div class="sk-view"><iframe sandbox="allow-scripts" title="Boceto" loading="lazy" tabindex="-1"></iframe></div>
+        <figcaption><span><b>${comp ? "Composición de vídeo" : "Boceto"}</b><span class="note">${comp ? "Se reproduce y se descarga en MP4." : "Se ve en vivo, en móvil y en escritorio."}</span></span>
+        <span class="sk-acts"><button class="btn sm" type="button" data-sketch="${i}">${comp ? "Ver vídeo" : "Abrir boceto"}</button><button class="btn ghost sm" type="button" data-sketchcode="${i}">Código</button></span></figcaption>`;
+      if (!live) card.querySelector("iframe").srcdoc = sketchDoc(src, true);
+      pre.replaceWith(card); return;
+    }
+    const b = document.createElement("button"); b.type = "button"; b.className = "copycode"; b.textContent = "Copiar"; b.dataset.copycode = "1";
+    pre.classList.add("code"); pre.appendChild(b);
+  });
+  root.querySelectorAll("table").forEach(tb => { if (tb.parentElement.classList.contains("tbl")) return; const w = document.createElement("div"); w.className = "tbl"; tb.replaceWith(w); w.appendChild(tb); });
+  // Cada «Opción …» o «Propuesta …» con su contenido se agrupa en una tarjeta.
+  [...root.querySelectorAll("h3")].filter(h => /^(opción|opcion|propuesta|alternativa|escenario)\b/i.test(h.textContent.trim())).forEach(h => {
+    const card = document.createElement("section"); card.className = "opt"; h.before(card);
+    let n = h; const take = [];
+    while (n && !(n !== h && /^H[1-3]$/.test(n.tagName)) && !(n.tagName === "HR")) { take.push(n); n = n.nextElementSibling; }
+    take.forEach(x => card.appendChild(x));
+    if (/recomend/i.test(card.textContent.slice(0, 160))) card.classList.add("rec");
+  });
+  root.querySelectorAll("a[href]").forEach(a => { a.target = "_blank"; a.rel = "noopener"; });
+  if (!live) drawDiagrams(root);
+}
+async function drawDiagrams(root) {
+  for (const box of root.querySelectorAll("figure.diagram[data-mm]")) {
+    const code = box.dataset.mm; delete box.dataset.mm;
+    try { box.innerHTML = `<div class="dg-in">${await mermaidSvg(code)}</div>`; }
+    catch { box.innerHTML = `<pre class="code">${esc(code)}</pre><p class="note">No se pudo dibujar este diagrama; se muestra su código.</p>`; }
+  }
+}
+function sketchDoc(html, thumb) {
+  const base = /<html[\s>]/i.test(html) ? html : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>${html}</body></html>`;
+  return thumb ? base.replace(/<head(\s[^>]*)?>/i, m => m + "<style>html,body{overflow:hidden!important}</style>") + (/data-composition-id/.test(html) ? LIVE_PLAYER : "") : base;
+}
+function tocHTML(root) {
+  const hs = [...root.querySelectorAll(".r-main h2, .r-main h3, .r-main .opt > h3")].filter((h, i, a) => a.indexOf(h) === i);
+  hs.forEach((h, i) => { h.id = "s" + i; });
+  return hs.length > 1 ? `<p class="lbl">En este documento</p>${hs.map(h => `<a href="#${h.id}" class="${h.tagName === "H3" ? "sub" : ""}" data-toc="${h.id}">${esc(h.textContent)}</a>`).join("")}` : "";
+}
+function openReader(id) {
+  const t = state.tasks.find(x => x.id === id); if (!t) return;
+  READER.id = id; closeAgent();
+  $("#reader").hidden = false; document.body.classList.add("noscroll");
+  paintReader(true);
+  $("#reader .r-scroll").scrollTop = 0;
+  if (location.hash !== "#e-" + id) history.pushState(null, "", "#e-" + id);
+}
+function closeReader() {
+  if (!READER.id) return;
+  READER.id = null; $("#reader").hidden = true; document.body.classList.remove("noscroll");
+  if (location.hash.startsWith("#e-")) history.replaceState(null, "", "#" + state.view);
+}
+window.addEventListener("popstate", () => { const h = location.hash; if (h.startsWith("#e-")) openReader(h.slice(3)); else closeReader(); });
+function paintReader(full) {
+  const t = state.tasks.find(x => x.id === READER.id); if (!t) return closeReader();
+  const a = byId[t.agentId], r = roomById[a.room], k = kindOf(t), p = docParts(t), live = t.status === "work";
+  const prog = progressOf(t);
+  READER.blocks = [];
+  $("#rCrumb").innerHTML = `<img class="px" src="${P(a)}" alt=""><span><b>${esc(a.name)}</b> · ${esc(r.name)}</span>`;
+  const html = !t.result && live ? "" : md(p.main || (live ? t.result : ""));
+  const others = AGENTS.filter(x => x.id !== t.agentId);
+  const sk = [t.skillId, ...(t.autoSkills || [])].filter(Boolean).map(skillById).filter(Boolean);
+  const execs = (t.exec || []).slice().reverse();
+  $("#rActs").innerHTML = live
+    ? `<button class="btn ghost sm" type="button" data-stop="${t.id}">Detener</button>`
+    : t.status === "error"
+      ? `<button class="btn sm" type="button" data-retry="${t.id}">${t.interrupted || t.stopped ? "Seguir" : "Reintentar"}</button><button class="btn ghost sm" type="button" data-archive="${t.id}">${t.archived ? "Desarchivar" : "Archivar"}</button><button class="btn ghost sm" type="button" data-del="${t.id}">Borrar</button>`
+      : `${READER_SKETCH(t)}<button class="btn ghost sm" type="button" data-apply="${t.id}">Aplicar en la app</button>
+        <details class="menu"><summary class="btn sm">Descargar</summary><div class="menu-pop"><button type="button" data-export="pdf" data-eid="${t.id}"><b>PDF</b><span>Documento listo para leer o imprimir</span></button><button type="button" data-export="docx" data-eid="${t.id}"><b>Word</b><span>Para editarlo en Word, Pages o Google Docs</span></button><button type="button" data-export="md" data-eid="${t.id}"><b>Markdown</b><span>Texto con formato, para Notion o GitHub</span></button>${READER.blocksAny ? "" : ""}</div></details>
+        <details class="menu"><summary class="btn ghost sm" aria-label="Más acciones">Más</summary><div class="menu-pop right"><button type="button" data-copy="${t.id}"><b>Copiar texto</b></button><button type="button" data-improve="${t.id}"><b>Revisar y mejorar</b><span>El puesto la critica y entrega otra versión</span></button><button type="button" data-archive="${t.id}"><b>${t.archived ? "Desarchivar" : "Archivar"}</b><span>La quita de las listas sin borrarla</span></button><button type="button" class="bad" data-del="${t.id}"><b>Borrar</b></button></div></details>`;
+  const steps = t.steps?.length ? `<ol class="r-steps">${t.steps.map((s, i) => `<li class="${i + 1 < (t.step || 0) || t.status === "done" ? "done" : i + 1 === (t.step || 1) && live && t.phase === "exec" ? "cur" : ""}">${esc(s)}</li>`).join("")}</ol>` : "";
+  const doc = `<header class="r-head"><p class="kicker">${esc(k.label)} · ${live ? esc(prog.txt) : t.status === "error" ? "Con error" : fmtDate(t.createdAt)}${t.archived ? " · Archivado" : ""}</p><h1 id="rTitle">${esc(t.order)}</h1></header>
+    ${p.resumen ? `<section class="r-sum"><p class="lbl">Resumen</p>${md(p.resumen)}</section>` : ""}
+    ${live && t.steps?.length ? `<section class="r-progress"><p class="lbl">${esc(prog.txt)}</p>${steps}</section>` : ""}
+    <div class="r-main md2">${html || `<p class="thinking">${esc(prog.txt)}…</p>`}</div>
+    ${p.cc ? `<section class="r-cc"><div class="r-cc-h"><p class="lbl">Cambios para la app</p>${live ? "" : `<button class="btn sm" type="button" data-apply="${t.id}">Enviar a Claude Code</button>`}</div><div class="md2">${md(p.cc)}</div></section>` : ""}
+    ${p.process ? `<details class="r-proc"><summary>Cómo lo ha trabajado <span class="note">${p.stepsN ? p.stepsN + " pasos" : "detalle"}</span></summary><div class="md2">${md(p.process)}</div></details>` : ""}
+    ${t.firstResult && t.revised ? `<details class="r-proc"><summary>Primera versión <span class="note">antes de su autoevaluación</span></summary><div class="md2">${md(t.firstResult)}</div></details>` : ""}`;
+  const side = `<section><p class="lbl">Sobre esta entrega</p><dl class="facts">
+      <dt>Puesto</dt><dd><button class="linkbtn" type="button" data-agent="${a.id}">${esc(a.name)}</button></dd>
+      <dt>Pedido por</dt><dd>${esc(t.from)}</dd><dt>Fecha</dt><dd>${fmtDate(t.createdAt)}</dd>
+      <dt>Modo</dt><dd>${t.mode === "pro" ? "Por pasos" : "Rápido"}</dd>
+      ${sk.length ? `<dt>Métodos</dt><dd>${sk.map(s => esc(s.name)).join(", ")}</dd>` : ""}
+      ${typeof t.score === "number" ? `<dt>Autoevaluación</dt><dd>${t.score}/10${t.revised ? ", revisada" : ""}</dd>` : ""}</dl>
+      ${p.methods ? `<p class="note">${esc(p.methods)}</p>` : ""}</section>
+    ${t.status === "done" ? `<section><p class="lbl">¿Te sirve?</p>${t.feedback === "up" ? `<p class="note">La marcaste como útil.</p>` : t.feedback === "down" ? `<p class="note">La marcaste como mejorable y se está rehaciendo.</p>` : `<div class="crow"><button class="btn ghost sm" type="button" data-fb="up" data-fbid="${t.id}">Útil</button><button class="btn ghost sm" type="button" data-fb="down" data-fbid="${t.id}">Mejorable</button></div>
+      <form class="fbform" data-fbform="${t.id}" hidden><label for="fbt-${t.id}" hidden>Qué falló</label><input id="fbt-${t.id}" placeholder="Qué debería hacer distinto"><button class="btn sm" type="submit">Rehacer</button></form>`}</section>` : ""}
+    ${p.next && t.status === "done" ? `<section class="r-next"><p class="lbl">Siguiente paso</p><p>${esc(p.next)}</p><button class="btn sm" type="button" data-next="${t.id}">Encargarlo</button></section>` : ""}
+    ${execs.length ? `<section><p class="lbl">En la app</p>${execs.map(x => `<div class="exec"><span class="st ${x.state || ""}">${esc(EXEC_LABEL[x.state] || "Enviado")}</span> <b>${esc(x.repo)}</b><span class="note">${fmtDate(x.at)}${x.auto ? " · automático" : ""}</span>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">Abrir en Claude Code</a>` : ""}${x.error ? `<span class="note bad">${esc(x.error)}</span>` : ""}${x.session ? `<button class="linkbtn" type="button" data-execcheck="${t.id}" data-sess="${esc(x.session)}">Comprobar estado</button>` : ""}</div>`).join("")}</section>` : ""}
+    ${t.status === "done" ? `<section><p class="lbl">Pasar a otro puesto</p><div class="handoff"><label for="ho-${t.id}" hidden>Pasar a</label><select id="ho-${t.id}"><option value="">Elige puesto…</option>${others.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select>
+      <label for="hi-${t.id}" hidden>Instrucción</label><input id="hi-${t.id}" placeholder="Qué debe hacer con esto"><button class="btn ghost sm" type="button" data-handoff="${t.id}">Pasar</button></div></section>` : ""}`;
+  const docEl = $("#rDoc");
+  docEl.innerHTML = doc; enhanceDoc(docEl, t, live);
+  requestAnimationFrame(() => docEl.querySelectorAll(".sk-view").forEach(v => v.style.setProperty("--k", (v.clientWidth / 1280).toFixed(4))));
+  $("#rSide").innerHTML = side;
+  $("#rToc").innerHTML = tocHTML(docEl);
+  READER.lastPaint = Date.now();
+}
+const READER_SKETCH = t => { const h = liveHTML(t.result); return h ? `<button class="btn ghost sm" type="button" data-live="${t.id}">${/data-composition-id/.test(h) ? "Ver vídeo" : "Ver boceto"}</button>` : ""; };
+function refreshReader() {
+  if (!READER.id || !changed.has(READER.id)) return;
+  const t = state.tasks.find(x => x.id === READER.id); if (!t) return closeReader();
+  if (t.status === "work" && Date.now() - READER.lastPaint < 700) return;
+  const sc = $("#reader .r-scroll"), top = sc.scrollTop, atEnd = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 40;
+  paintReader(); sc.scrollTop = atEnd && t.status === "work" ? sc.scrollHeight : top;
+}
+
+/* ---------- Exportar: PDF, Word y Markdown ---------- */
+const decodeEnt = s => String(s).replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (m, e) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'", nbsp: " " }[e]));
+function docTitle(list, key) {
+  if (list.length === 1) return list[0].order;
+  return `${state.company}: entregables${key ? " de " + key : ""}`;
+}
+async function diagramImages(tokens) {
+  const out = new Map();
+  const walk = toks => { for (const tk of toks || []) { if (tk.type === "code" && /^mermaid/i.test(tk.lang || "")) out.set(tk, null); walk(tk.tokens); (tk.items || []).forEach(i => walk(i.tokens)); } };
+  walk(tokens);
+  for (const tk of out.keys()) { try { out.set(tk, await svgToPng(await mermaidSvg(tk.text))); } catch { out.set(tk, null); } }
+  return out;
+}
+function exportPieces(t) {
+  const p = docParts(t);
+  return { resumen: p.resumen, body: [p.main, p.cc ? "## Cambios para la app\n\n" + p.cc : "", p.process ? "# Anexo: cómo se ha trabajado\n\n" + p.process : ""].filter(Boolean).join("\n\n"), next: p.next, meta: `${byId[t.agentId].name} · ${fmtDate(t.createdAt)}${typeof t.score === "number" ? " · autoevaluación " + t.score + "/10" : ""}` };
+}
+// pdfmake: del árbol de marked a bloques con estilos sobrios.
+function pdfInline(tokens, st = {}) {
+  const out = [];
+  for (const tk of tokens || []) {
+    if (tk.type === "strong") out.push(...pdfInline(tk.tokens, { ...st, bold: true }));
+    else if (tk.type === "em") out.push(...pdfInline(tk.tokens, { ...st, italics: true }));
+    else if (tk.type === "del") out.push(...pdfInline(tk.tokens, { ...st, decoration: "lineThrough" }));
+    else if (tk.type === "codespan") out.push({ text: decodeEnt(tk.text), ...st, background: "#efede7", fontSize: 9.5 });
+    else if (tk.type === "link") out.push(...pdfInline(tk.tokens, { ...st, link: tk.href, color: "#2f6b4f", decoration: "underline" }));
+    else if (tk.type === "br") out.push({ text: "\n" });
+    else if (tk.type === "image") out.push({ text: tk.text || "", ...st });
+    else if (tk.tokens) out.push(...pdfInline(tk.tokens, st));
+    else out.push({ text: decodeEnt(tk.type === "html" ? tk.text.replace(/<[^>]+>/g, "") : tk.text ?? tk.raw ?? ""), ...st });
+  }
+  return out;
+}
+function pdfBlocks(tokens, imgs, depth = 0) {
+  const out = [];
+  for (const tk of tokens || []) {
+    if (tk.type === "heading") out.push({ text: pdfInline(tk.tokens), style: "h" + Math.min(tk.depth + 1, 4), tocItem: tk.depth <= 2 && depth === 0 });
+    else if (tk.type === "paragraph" || tk.type === "text") out.push({ text: pdfInline(tk.tokens || [{ type: "text", text: tk.text }]), style: "p" });
+    else if (tk.type === "list") out.push({ [tk.ordered ? "ol" : "ul"]: tk.items.map(it => { const b = pdfBlocks(it.tokens, imgs, depth + 1); if (it.task) b.unshift({ text: it.checked ? "[x] " : "[ ] " }); return b.length === 1 ? b[0] : { stack: b }; }), style: "list", start: tk.start || 1 });
+    else if (tk.type === "table") out.push({ table: { headerRows: 1, widths: tk.header.map(() => "*"), body: [tk.header.map(c => ({ text: pdfInline(c.tokens), bold: true, fontSize: 9.5 })), ...tk.rows.map(r => r.map(c => ({ text: pdfInline(c.tokens), fontSize: 9.5 })))] }, layout: { hLineWidth: (i, n) => i === 1 ? 0.8 : 0.4, vLineWidth: () => 0, hLineColor: () => "#cfcbc1", paddingTop: () => 4, paddingBottom: () => 4, paddingLeft: () => 4, paddingRight: () => 6 }, margin: [0, 4, 0, 10] });
+    else if (tk.type === "code") {
+      const im = imgs.get(tk);
+      if (im) out.push({ image: im.url, width: Math.min(515, im.w), margin: [0, 6, 0, 12] });
+      else if (/^html/i.test(tk.lang || "")) out.push({ text: "Boceto en HTML: ábrelo o descárgalo desde la oficina para verlo en vivo.", italics: true, color: "#55534d", style: "p" });
+      else out.push({ table: { widths: ["*"], body: [[{ text: tk.text, fontSize: 8.5, preserveLeadingSpaces: true, color: "#1d1d1b" }]] }, layout: { hLineWidth: () => 0, vLineWidth: () => 0, fillColor: () => "#f3f2ee", paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6 }, margin: [0, 2, 0, 10] });
+    }
+    else if (tk.type === "blockquote") out.push({ table: { widths: [2, "*"], body: [[{ text: "", fillColor: "#cfcbc1" }, { stack: pdfBlocks(tk.tokens, imgs, depth + 1), margin: [6, 0, 0, 0] }]] }, layout: "noBorders", margin: [0, 2, 0, 10] });
+    else if (tk.type === "hr") out.push({ canvas: [{ type: "line", x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, lineColor: "#cfcbc1" }], margin: [0, 8, 0, 8] });
+  }
+  return out;
+}
+async function exportPDF(list, title) {
+  const pdfMake = await LIB.pdf();
+  const content = [];
+  for (const [i, t] of list.entries()) {
+    const x = exportPieces(t), toks = marked.lexer(x.body), imgs = await diagramImages(toks);
+    if (list.length > 1) content.push({ text: `${i + 1}. ${t.order}`, style: "h1", tocItem: true, pageBreak: i ? "before" : undefined });
+    else content.push({ text: t.order, style: "title" });
+    content.push({ text: x.meta, style: "meta" });
+    if (x.resumen) content.push({ table: { widths: [3, "*"], body: [[{ text: "", fillColor: "#2f6b4f" }, { stack: [{ text: "Resumen", bold: true, fontSize: 10, margin: [0, 0, 0, 4] }, ...pdfBlocks(marked.lexer(x.resumen), new Map())], margin: [10, 6, 6, 4] }]] }, layout: { hLineWidth: () => 0, vLineWidth: () => 0, fillColor: (r, n, c) => c === 1 ? "#f3f2ee" : null }, margin: [0, 6, 0, 16] });
+    content.push(...pdfBlocks(toks, imgs));
+    if (x.next) content.push({ text: [{ text: "Siguiente paso: ", bold: true }, x.next], style: "p", margin: [0, 10, 0, 0] });
+  }
+  if (list.length > 1) content.unshift({ text: title, style: "title" }, { text: `Exportado el ${new Date().toLocaleString("es-ES")} · ${list.length} entregables`, style: "meta" }, { toc: { title: { text: "Índice", style: "h2" } }, margin: [0, 0, 0, 0] }, { text: "", pageBreak: "after" });
+  const dd = {
+    info: { title, author: state.company, creator: "Oficina" }, pageSize: "A4", pageMargins: [40, 48, 40, 52], content,
+    defaultStyle: { font: "Roboto", fontSize: 10.5, lineHeight: 1.3, color: "#1d1d1b" },
+    styles: { title: { fontSize: 21, bold: true, margin: [0, 0, 0, 4], lineHeight: 1.15 }, meta: { fontSize: 9, color: "#8a877f", margin: [0, 0, 0, 12] },
+      h1: { fontSize: 17, bold: true, margin: [0, 6, 0, 6] }, h2: { fontSize: 14.5, bold: true, margin: [0, 14, 0, 6] }, h3: { fontSize: 12, bold: true, margin: [0, 10, 0, 4] }, h4: { fontSize: 10.5, bold: true, margin: [0, 8, 0, 3] },
+      p: { margin: [0, 0, 0, 7] }, list: { margin: [0, 0, 0, 8] } },
+    footer: (cur, total) => ({ columns: [{ text: state.company, color: "#8a877f", fontSize: 8 }, { text: `${cur} / ${total}`, alignment: "right", color: "#8a877f", fontSize: 8 }], margin: [40, 18, 40, 0] }),
+  };
+  const blob = await new Promise((ok, ko) => { try { pdfMake.createPdf(dd).getBlob(ok); } catch (e) { ko(e); } });
+  return { blob, ext: ".pdf" };
+}
+// docx: mismo recorrido, con estilos de Word para que se pueda seguir editando.
+async function exportDOCX(list, title) {
+  const D = await LIB.docx();
+  const runs = (tokens, st = {}) => {
+    const out = [];
+    for (const tk of tokens || []) {
+      if (tk.type === "strong") out.push(...runs(tk.tokens, { ...st, bold: true }));
+      else if (tk.type === "em") out.push(...runs(tk.tokens, { ...st, italics: true }));
+      else if (tk.type === "del") out.push(...runs(tk.tokens, { ...st, strike: true }));
+      else if (tk.type === "codespan") out.push(new D.TextRun({ text: decodeEnt(tk.text), font: "Consolas", ...st }));
+      else if (tk.type === "link") out.push(new D.ExternalHyperlink({ link: tk.href, children: runs(tk.tokens, { ...st, style: "Hyperlink" }) }));
+      else if (tk.type === "br") out.push(new D.TextRun({ text: "", break: 1 }));
+      else if (tk.tokens) out.push(...runs(tk.tokens, st));
+      else out.push(new D.TextRun({ text: decodeEnt(tk.type === "html" ? tk.text.replace(/<[^>]+>/g, "") : tk.text ?? tk.raw ?? ""), ...st }));
+    }
+    return out;
+  };
+  let listN = 0;
+  const blocks = (tokens, imgs, lvl = 0, list = null) => {
+    const out = [];
+    for (const tk of tokens || []) {
+      const para = (children, extra = {}) => new D.Paragraph({ children, ...(list ? (list.ordered ? { numbering: { reference: "num", level: lvl, instance: list.inst } } : { bullet: { level: lvl } }) : {}), spacing: { after: 100 }, ...extra });
+      if (tk.type === "heading") out.push(new D.Paragraph({ heading: [D.HeadingLevel.HEADING_1, D.HeadingLevel.HEADING_2, D.HeadingLevel.HEADING_3, D.HeadingLevel.HEADING_4][Math.min(tk.depth, 4) - 1], children: runs(tk.tokens) }));
+      else if (tk.type === "paragraph" || tk.type === "text") out.push(para(runs(tk.tokens || [{ type: "text", text: tk.text }])));
+      else if (tk.type === "list") { const L = { ordered: tk.ordered, inst: ++listN }; for (const it of tk.items) { const sub = it.tokens || []; const first = sub.find(s => s.type === "text" || s.type === "paragraph"); out.push(new D.Paragraph({ children: [...(it.task ? [new D.TextRun(it.checked ? "☑ " : "☐ ")] : []), ...runs(first?.tokens || [])], ...(L.ordered ? { numbering: { reference: "num", level: lvl, instance: L.inst } } : { bullet: { level: lvl } }), spacing: { after: 60 } })); out.push(...blocks(sub.filter(s => s !== first), imgs, lvl + 1, L)); } }
+      else if (tk.type === "table") out.push(new D.Table({ width: { size: 100, type: D.WidthType.PERCENTAGE }, rows: [tk.header, ...tk.rows].map((row, ri) => new D.TableRow({ tableHeader: ri === 0, children: row.map(c => new D.TableCell({ shading: ri === 0 ? { fill: "EFEDE7" } : undefined, margins: { top: 60, bottom: 60, left: 80, right: 80 }, children: [new D.Paragraph({ children: runs(c.tokens, ri === 0 ? { bold: true } : {}) })] })) })) }), new D.Paragraph({ text: "" }));
+      else if (tk.type === "code") {
+        const im = imgs.get(tk);
+        if (im) { const bin = atob(im.url.split(",")[1]), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); const w = Math.min(600, im.w); out.push(new D.Paragraph({ children: [new D.ImageRun({ data: u8, transformation: { width: w, height: Math.round(im.h * w / im.w) } })] })); }
+        else if (/^html/i.test(tk.lang || "")) out.push(new D.Paragraph({ children: [new D.TextRun({ text: "Boceto en HTML: ábrelo o descárgalo desde la oficina para verlo en vivo.", italics: true })] }));
+        else out.push(...tk.text.split("\n").map(l => new D.Paragraph({ children: [new D.TextRun({ text: l || " ", font: "Consolas", size: 18 })], shading: { fill: "F3F2EE" }, spacing: { after: 0 } })), new D.Paragraph({ text: "" }));
+      }
+      else if (tk.type === "blockquote") out.push(...(tk.tokens || []).filter(x => x.tokens).map(x => new D.Paragraph({ children: runs(x.tokens, { italics: true }), indent: { left: 360 }, border: { left: { color: "CFCBC1", space: 8, style: D.BorderStyle.SINGLE, size: 12 } }, spacing: { after: 100 } })));
+      else if (tk.type === "hr") out.push(new D.Paragraph({ border: { bottom: { color: "CFCBC1", space: 1, style: D.BorderStyle.SINGLE, size: 6 } } }));
+    }
+    return out;
+  };
+  const children = [];
+  if (list.length > 1) children.push(new D.Paragraph({ heading: D.HeadingLevel.TITLE, children: [new D.TextRun(title)] }), new D.Paragraph({ children: [new D.TextRun({ text: `Exportado el ${new Date().toLocaleString("es-ES")} · ${list.length} entregables`, color: "8A877F" })] }), ...list.map((t, i) => new D.Paragraph({ text: `${i + 1}. ${t.order}`, spacing: { after: 40 } })));
+  for (const [i, t] of list.entries()) {
+    const x = exportPieces(t), toks = marked.lexer(x.body), imgs = await diagramImages(toks);
+    children.push(new D.Paragraph({ heading: list.length > 1 ? D.HeadingLevel.HEADING_1 : D.HeadingLevel.TITLE, children: [new D.TextRun(list.length > 1 ? `${i + 1}. ${t.order}` : t.order)], pageBreakBefore: list.length > 1 }));
+    children.push(new D.Paragraph({ children: [new D.TextRun({ text: x.meta, color: "8A877F", size: 18 })], spacing: { after: 200 } }));
+    if (x.resumen) { children.push(new D.Paragraph({ children: [new D.TextRun({ text: "Resumen", bold: true })], shading: { fill: "F3F2EE" }, border: { left: { color: "2F6B4F", space: 8, style: D.BorderStyle.SINGLE, size: 18 } } })); children.push(...blocks(marked.lexer(x.resumen), new Map())); }
+    children.push(...blocks(toks, imgs));
+    if (x.next) children.push(new D.Paragraph({ children: [new D.TextRun({ text: "Siguiente paso: ", bold: true }), new D.TextRun(x.next)], spacing: { before: 200 } }));
+  }
+  const lv = [0, 1, 2, 3].map(l => ({ level: l, format: D.LevelFormat.DECIMAL, text: `%${l + 1}.`, alignment: D.AlignmentType.START, style: { paragraph: { indent: { left: 360 * (l + 1), hanging: 260 } } } }));
+  const doc = new D.Document({ creator: "Oficina", title, styles: { default: { document: { run: { font: "Calibri", size: 22 } } } }, numbering: { config: [{ reference: "num", levels: lv }] }, sections: [{ children }] });
+  return { blob: await D.Packer.toBlob(doc), ext: ".docx" };
+}
+function exportMD(list, title) {
+  const one = t => taskMarkdown(t);
+  const data = list.length === 1 ? one(list[0]) : `# ${title}\n\nExportado el ${new Date().toLocaleString("es-ES")}. ${list.length} entregables.\n\n${list.map((t, i) => `${i + 1}. ${t.order} (${byId[t.agentId].name})`).join("\n")}\n\n---\n\n${list.map(one).join("\n---\n\n")}`;
+  return { blob: new Blob([data], { type: "text/markdown" }), ext: ".md" };
+}
+const fileName = s => String(s).replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 80) || "entrega";
+async function saveFile(filename, data) {
+  const dls = window.claude?.use ? await window.claude.use("downloads").catch(() => null) : null;
+  if (dls) { try { await dls.save({ filename, data }); return true; } catch { toast("Descarga cancelada."); return false; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(data instanceof Blob ? data : new Blob([data])); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000); return true;
+}
+async function exportTasks(list, fmt, label) {
+  if (!list.length) return toast("No hay entregables terminados en esa selección.");
+  const title = list.length === 1 ? list[0].order : docTitle(list, label);
+  toast(fmt === "md" ? "Preparando el archivo…" : `Preparando el ${fmt === "pdf" ? "PDF" : "documento de Word"}…`);
+  try {
+    const { blob, ext } = fmt === "pdf" ? await exportPDF(list, title) : fmt === "docx" ? await exportDOCX(list, title) : exportMD(list, title);
+    await saveFile(fileName(list.length === 1 ? `${byId[list[0].agentId].name}-${title}` : title) + ext, blob);
+  } catch (e) { toast("No se pudo crear el archivo: " + (e?.message || e)); }
+}
+
+/* ---------- Gestión de encargos: buscar, seleccionar, archivar, borrar y limpiar ---------- */
+state.sel = new Set(); state.q = ""; state.qDel = "";
+function matchQ(t, q) { if (!q) return true; const a = byId[t.agentId]; return (t.order + " " + a.name + " " + a.role + " " + (t.result || "").slice(0, 4000)).toLowerCase().includes(q.toLowerCase()); }
+function taskFilter(t, f) {
+  if (f === "archivados") return !!t.archived;
+  if (t.archived) return false;
+  return f === "todos" || t.status === f || (f.startsWith("room:") && byId[t.agentId].room === f.slice(5));
+}
+async function archiveTasks(ids, on = true) {
+  for (const id of ids) { const t = state.tasks.find(x => x.id === id); if (!t || t.status === "work") continue; t.archived = on; bump(t); await store.saveTask(t); }
+}
+async function deleteTasks(ids) {
+  const set = new Set(ids);
+  for (const id of set) { const t = state.tasks.find(x => x.id === id); if (t?.status === "work") stopTask(t); }
+  state.tasks = state.tasks.filter(x => !set.has(x.id));
+  for (const r of state.runs) if (r.reportId && set.has(r.reportId)) r.reportId = null;
+  set.forEach(id => state.sel.delete(id));
+  if (READER.id && set.has(READER.id)) closeReader();
+  paintAll();
+  for (const id of set) await store.deleteTask(id);
+}
+const DAY = 864e5;
+function cleanupCounts() {
+  const errs = state.tasks.filter(t => t.status === "error" && !t.archived);
+  const old = state.tasks.filter(t => t.status === "done" && !t.archived && Date.now() - t.createdAt > 7 * DAY);
+  const archived = state.tasks.filter(t => t.archived);
+  return { errs, old, archived };
+}
+function taskRowHTML(t) {
+  const a = byId[t.agentId], k = kindOf(t), sum = t.status === "done" ? summaryOf(t, 1)[0] || "" : t.status === "error" ? (t.result || "").split("\n").filter(Boolean).pop()?.replace(/^>\s*/, "") || "" : progressOf(t).txt;
+  return `<div class="trow ${state.sel.has(t.id) ? "sel" : ""}" data-row="${t.id}">
+    <label class="tcheck"><input type="checkbox" data-pick="${t.id}" ${state.sel.has(t.id) ? "checked" : ""} aria-label="Seleccionar"></label>
+    <button class="tmain" type="button" data-task="${t.id}"><span class="t">${esc(t.order)}</span><span class="m">${esc(k.label)} · ${fmtDate(t.createdAt)} · ${esc(t.from)}${sum ? " · " + esc(sum) : ""}</span></button>
+    <span class="who">${esc(a.name)}</span><span class="st ${t.status}">${esc(statusLabel(t))}${t.archived ? " · archivado" : ""}</span>
+    <span class="racts">${t.status === "work" ? `<button class="linkbtn" type="button" data-stop="${t.id}">Detener</button>` : `<button class="linkbtn" type="button" data-archive="${t.id}">${t.archived ? "Desarchivar" : "Archivar"}</button><button class="linkbtn bad" type="button" data-del="${t.id}">Borrar</button>`}</span></div>`;
+}
+function paintTasks() {
+  const all = state.tasks, cnt = f => all.filter(t => taskFilter(t, f)).length;
+  filterChips($("#taskFilters"), "fTasks", [["todos", `Todos ${cnt("todos") || ""}`], ["work", `En marcha ${cnt("work") || ""}`], ["done", `Terminados ${cnt("done") || ""}`], ["error", `Con error ${cnt("error") || ""}`], ["archivados", `Archivados ${cnt("archivados") || ""}`], ...ROOMS.map(r => ["room:" + r.id, r.name])]);
+  const list = all.filter(t => taskFilter(t, state.fTasks) && matchQ(t, state.q)).sort((a, b) => b.createdAt - a.createdAt);
+  const visible = new Set(list.map(t => t.id)); [...state.sel].forEach(id => { if (!state.tasks.some(t => t.id === id)) state.sel.delete(id); });
+  const n = state.sel.size, allOn = list.length && list.every(t => state.sel.has(t.id));
+  const c = cleanupCounts();
+  $("#taskTools").innerHTML = `<label class="search"><span hidden>Buscar</span><input type="search" id="taskQ" placeholder="Buscar en encargos y respuestas" value="${esc(state.q)}"></label>
+    ${n ? `<div class="bulk"><b>${n} ${n === 1 ? "seleccionado" : "seleccionados"}</b><button class="btn ghost sm" type="button" data-bulk="archive">Archivar</button><button class="btn ghost sm" type="button" data-bulk="unarchive">Desarchivar</button><button class="btn ghost sm" type="button" data-bulk="export">Exportar PDF</button><button class="btn ghost sm bad" type="button" data-bulk="delete">Borrar</button><button class="linkbtn" type="button" data-bulk="none">Quitar selección</button></div>`
+      : `<details class="menu"><summary class="btn ghost sm">Limpiar</summary><div class="menu-pop right"><button type="button" data-clean="errors" ${c.errs.length ? "" : "disabled"}><b>Borrar los que tienen error (${c.errs.length})</b><span>Encargos fallidos o detenidos</span></button><button type="button" data-clean="old" ${c.old.length ? "" : "disabled"}><b>Archivar terminados de hace más de 7 días (${c.old.length})</b><span>Siguen guardados en «Archivados»</span></button><button type="button" class="bad" data-clean="archived" ${c.archived.length ? "" : "disabled"}><b>Vaciar archivados (${c.archived.length})</b><span>Los borra para siempre</span></button></div></details>`}`;
+  $("#taskList").innerHTML = list.length ? `<div class="thead"><label class="tcheck"><input type="checkbox" id="pickAll" ${allOn ? "checked" : ""} aria-label="Seleccionar todos"></label><span>Encargo</span><span>Puesto</span><span>Estado</span><span></span></div>` + list.map(taskRowHTML).join("")
+    : `<p class="empty">${state.q ? "Nada coincide con la búsqueda." : state.fTasks === "archivados" ? "No hay encargos archivados." : "No hay encargos con este filtro."}</p>`;
+  const q = $("#taskQ"); if (q && paintTasks.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); paintTasks.focus = false; }
+  void visible;
+}
+function paintDeliverables() {
+  const f = state.fDel, done = state.tasks.filter(t => t.status === "done");
+  filterChips($("#delFilters"), "fDel", [["todos", "Todo"], ...ROOMS.map(r => [r.id, r.name]), ["archivados", "Archivados"]]);
+  const list = done.filter(t => (f === "archivados" ? t.archived : !t.archived && (f === "todos" || byId[t.agentId].room === f)) && matchQ(t, state.qDel)).sort((a, b) => b.createdAt - a.createdAt);
+  const anyDone = done.length;
+  paintExport();
+  const card = t => {
+    const a = byId[t.agentId], k = kindOf(t), sum = summaryOf(t, 3);
+    return `<article class="del" data-kind="${k.id}"><button class="del-open" type="button" data-task="${t.id}" aria-label="Abrir ${esc(t.order)}"></button>
+      <div class="del-h"><span class="kind">${esc(k.label)}</span><span class="d">${fmtDate(t.createdAt)}</span></div>
+      <h3 class="t">${esc(t.order)}</h3>
+      <ul class="x">${sum.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+      <div class="del-f"><span class="who"><img class="px" src="${P(a)}" alt=""><b>${esc(a.name)}</b></span>
+        <span class="del-acts"><button class="linkbtn" type="button" data-export="pdf" data-eid="${t.id}">PDF</button><button class="linkbtn" type="button" data-archive="${t.id}">${t.archived ? "Desarchivar" : "Archivar"}</button></span></div></article>`;
+  };
+  // Agrupado por fecha: hoy, esta semana y antes.
+  const start = new Date(); start.setHours(0, 0, 0, 0);
+  const groups = [["Hoy", t => t.createdAt >= +start], ["Esta semana", t => t.createdAt < +start && t.createdAt >= +start - 6 * DAY], ["Antes", t => t.createdAt < +start - 6 * DAY]];
+  const body = list.length ? groups.map(([g, fn]) => { const l = list.filter(fn); return l.length ? `<section class="dgroup"><h2 class="h3">${g} <span class="n">${l.length}</span></h2><div class="gallery">${l.map(card).join("")}</div></section>` : ""; }).join("")
+    : !anyDone ? `<div class="emptybox"><p><b>Todavía no hay nada terminado.</b></p><p class="note">Cuando un puesto entregue, aquí tendrás cada trabajo como documento: con su resumen, el índice, los bocetos en vivo y la descarga en PDF o Word.</p><button class="btn sm" type="button" data-go="oficina">Hacer un encargo</button></div>`
+    : `<p class="empty">${state.qDel ? "Nada coincide con la búsqueda." : f === "archivados" ? "No hay entregables archivados." : "Todavía no hay entregables en esta sala."}</p>`;
+  $("#delGrid").innerHTML = body;
+}
+async function exportDeliverables() {
+  const key = $("#expSel").value || "todos", g = exportGroups().find(x => x[0] === key) || exportGroups()[0];
+  const list = state.tasks.filter(t => t.status === "done" && !t.archived && g[2](t)).sort((a, b) => a.createdAt - b.createdAt);
+  await exportTasks(list, $("#expFmt").value || "pdf", key === "todos" ? "" : g[1].replace(/ \(\d+\)$/, ""));
+}
+
+/* ---------- Aplicar en la app: Claude Code hace el cambio y abre la PR ---------- */
+const CC_SERVER = "Claude Code Remote";
+const EXEC_LABEL = { sent: "Enviado", working: "Trabajando", blocked: "Necesita algo", review_ready: "Listo para revisar", completed: "Terminado", failed: "Falló", error: "No se pudo enviar" };
+const CC = { trigger: null, env: null, repos: ["guillelafargue/ai-fitness-pwa", "guillelafargue/oficina"], repo: "guillelafargue/ai-fitness-pwa", merge: true };
+function ccLoad() { try { Object.assign(CC, JSON.parse(localStorage.getItem("oficina.cc") || "{}")); } catch {} }
+function ccSave() { try { localStorage.setItem("oficina.cc", JSON.stringify({ trigger: CC.trigger, env: CC.env, repos: CC.repos, repo: CC.repo, merge: CC.merge })); } catch {} store.saveMeta?.(); }
+ccLoad();
+const CC_PROMPT = `Te lanza la Oficina de agentes del propietario para aplicar un cambio en una de sus apps. El mensaje que sigue trae el repositorio, el encargo y si debes fusionar.
+Haz esto, en orden y sin preguntar salvo que falte algo imprescindible:
+1. Añade el repositorio indicado a la sesión (herramienta add_repo) si no lo está y trabaja en una rama nueva.
+2. Lee CLAUDE.md, AGENTS.md y README del repositorio y respeta sus reglas y comprobaciones.
+3. Implementa el cambio completo. Si el encargo es abierto («revisa y mejora»), revisa el código, elige el cambio de más impacto y menos riesgo y hazlo.
+4. Pasa las comprobaciones del proyecto (tipos, lint, pruebas, build) y pruébalo si afecta a lo que se ve.
+5. Abre una PR en español que explique qué cambia para el usuario.
+6. Si el mensaje dice «Fusionar: sí» y todo pasa, fusiónala con squash: esa casilla marcada por el propietario en la Oficina es su aprobación. Si dice «Fusionar: no», déjala abierta.
+7. Termina con un resumen breve en español: qué cambió, el enlace de la PR y si se fusionó.`;
+async function ccMcp() { return window.claude?.use ? await window.claude.use("mcp").catch(() => null) : null; }
+function ccErr(e) {
+  return ({ server_not_connected: "Claude Code no está conectado a esta página. Ábrela dentro de Claude con tu cuenta.", needs_reauth: "Vuelve a conectar Claude Code en los ajustes de Claude.",
+    not_in_manifest: "No has dado permiso a esta página para usar Claude Code.", approval_required: "Hace falta tu aprobación: vuelve a pulsar y acepta el aviso de Claude.",
+    blocked_by_policy: "Tu organización no permite usar Claude Code desde aquí.", server_unavailable: "Claude Code no responde ahora mismo. Prueba en un momento." })[e?.code] || (e?.message ? "No se pudo enviar: " + String(e.message).slice(0, 220) : "No se pudo enviar.");
+}
+function ccText(t, repo, instr, merge) {
+  const p = docParts(t);
+  return `Repositorio: ${repo}
+Fusionar: ${merge ? "sí" : "no"}
+Encargo: ${instr || t.order}
+
+Entregado en la Oficina por el puesto ${byId[t.agentId].name} (${byId[t.agentId].role}) para «${t.order}»:
+
+${(p.cc ? "## Cambios para Claude Code\n" + p.cc + "\n\n" : "") + (p.main || t.result || "").slice(0, 40000)}`.slice(0, 60000);
+}
+async function ccSend(t, { repo, instr, merge, auto = false }) {
+  const rec = { at: Date.now(), repo, state: "sent", auto };
+  (t.exec ||= []).push(rec); bump(t);
+  try {
+    const mcp = await ccMcp(); if (!mcp) throw { code: "server_not_connected" };
+    const pay = r => r?.payload ?? r;
+    if (!CC.env) {
+      const envs = pay(await mcp.callTool(CC_SERVER, "list_environments", {}))?.environments || [];
+      const env = envs.find(e => e.state === "active" && /trusted/i.test(e.description || "")) || envs.find(e => e.state === "active") || envs[0];
+      if (!env) throw { message: "No tienes ningún entorno de Claude Code. Crea uno en claude.ai/code." };
+      CC.env = env.environment_id; ccSave();
+    }
+    const fire = async () => pay(await mcp.callTool(CC_SERVER, "fire_trigger", { trigger_id: CC.trigger, text: ccText(t, repo, instr, merge) }));
+    if (!CC.trigger) await ccCreateTrigger(mcp, pay);
+    let res;
+    try { res = await fire(); }
+    catch (e) { if (e?.code !== "tool_error") throw e; CC.trigger = null; await ccCreateTrigger(mcp, pay); res = await fire(); }
+    const vals = []; (function walk(v) { if (typeof v === "string") vals.push(v); else if (v && typeof v === "object") Object.values(v).forEach(walk); })(res);
+    const sess = vals.map(v => /\bsession_[A-Za-z0-9]{8,}/.exec(v)?.[0]).find(Boolean), url = vals.map(v => /https:\/\/claude\.ai\/code\/[^\s"']+/.exec(v)?.[0]).find(Boolean);
+    rec.session = sess || null; rec.url = url || (sess ? "https://claude.ai/code/" + sess : "https://claude.ai/code"); rec.state = "working";
+    toast("Enviado a Claude Code. Te avisará al terminar.");
+  } catch (e) { rec.state = "error"; rec.error = ccErr(e); toast(rec.error); }
+  bump(t); await store.saveTask(t); return rec;
+}
+async function ccCreateTrigger(mcp, pay) {
+  const r = pay(await mcp.callTool(CC_SERVER, "create_trigger", { name: "Oficina: aplicar cambios en la app", prompt: CC_PROMPT, create_new_session_on_fire: true, environment_id: CC.env, initiation: "human_request", notifications: { push: true } }));
+  CC.trigger = r?.trigger?.id || /"(trig_[A-Za-z0-9]{6,})"/.exec(JSON.stringify(r || {}))?.[1] || null;
+  if (!CC.trigger) throw { message: "Claude Code no devolvió la tarea creada." };
+  ccSave();
+}
+async function ccCheck(t, sess) {
+  const rec = (t.exec || []).find(x => x.session === sess); if (!rec) return;
+  try {
+    const mcp = await ccMcp(); if (!mcp) throw { code: "server_not_connected" };
+    const r = (await mcp.callTool(CC_SERVER, "get_session", { session_id: sess }, { cache: false }))?.payload || {};
+    const b = r.status_bucket || r.session?.status_bucket || r.status; if (b) rec.state = b;
+    toast(EXEC_LABEL[rec.state] ? "Estado: " + EXEC_LABEL[rec.state].toLowerCase() + "." : "Estado actualizado.");
+  } catch (e) { toast(ccErr(e)); }
+  bump(t); store.saveTask(t);
+}
+function openApply(t) {
+  const p = docParts(t);
+  $("#ccTitle").textContent = t.order;
+  $("#ccRepo").innerHTML = CC.repos.map(r => `<option ${r === CC.repo ? "selected" : ""}>${esc(r)}</option>`).join("") + `<option value="__otro">Otro repositorio…</option>`;
+  $("#ccOther").hidden = true; $("#ccOther").value = "";
+  $("#ccInstr").value = p.cc ? "Aplica los «Cambios para Claude Code» de esta entrega." : `Aplica en la app lo que propone esta entrega: ${t.order}`;
+  $("#ccMerge").checked = CC.merge;
+  $("#ccDlg").dataset.tid = t.id;
+  $("#ccNote").textContent = window.claude?.use ? "Claude Code abre una sesión en tu cuenta, hace el cambio en una rama, pasa las comprobaciones del proyecto y abre la PR. Te llega un aviso al terminar." : "Fuera de Claude no se puede lanzar Claude Code: copia el encargo y pégalo en claude.ai/code.";
+  $("#ccSend").textContent = window.claude?.use ? "Enviar a Claude Code" : "Copiar encargo";
+  $("#ccDlg").showModal();
+}
+$("#ccRepo")?.addEventListener("change", e => { $("#ccOther").hidden = e.target.value !== "__otro"; if (!$("#ccOther").hidden) $("#ccOther").focus(); });
+$("#ccDlg")?.addEventListener("close", async () => {
+  const dlg = $("#ccDlg"); if (dlg.returnValue !== "send") return;
+  const t = state.tasks.find(x => x.id === dlg.dataset.tid); if (!t) return;
+  let repo = $("#ccRepo").value === "__otro" ? $("#ccOther").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "") : $("#ccRepo").value;
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return toast("Escribe el repositorio como usuario/proyecto.");
+  if (!CC.repos.includes(repo)) CC.repos.push(repo);
+  CC.repo = repo; CC.merge = $("#ccMerge").checked; ccSave();
+  const instr = $("#ccInstr").value.trim();
+  if (!window.claude?.use) { try { await navigator.clipboard.writeText(ccText(t, repo, instr, CC.merge)); toast("Copiado. Pégalo en claude.ai/code."); } catch { toast("No se pudo copiar."); } return; }
+  ccSend(t, { repo, instr, merge: CC.merge });
+});
+
+/* ---------- Taller: mejora continua de la app ---------- */
+const TALLER = { on: false, apply: false, repo: "guillelafargue/oficina", perDay: 3, log: [], next: 0 };
+function tallerLoad() { try { Object.assign(TALLER, JSON.parse(localStorage.getItem("oficina.taller") || "{}")); } catch {} }
+function tallerSave() { try { localStorage.setItem("oficina.taller", JSON.stringify({ on: TALLER.on, apply: TALLER.apply, repo: TALLER.repo, perDay: TALLER.perDay, log: TALLER.log.slice(-40) })); } catch {} }
+tallerLoad();
+const appliedToday = () => TALLER.log.filter(x => x.applied && Date.now() - x.at < DAY).length;
+async function runTallerRound(manual = false) {
+  if (!aiReady()) { toast(errText({ code: "no_ai" })); openSettings(); return; }
+  if (state.tasks.some(t => t.status === "work" && t.from === "Taller")) { if (manual) toast("El Taller ya está con una ronda."); return; }
+  const done = TALLER.log.slice(-15).map(x => "- " + x.title).join("\n") || "- (nada todavía)";
+  const order = `Ronda de mejora continua de ${TALLER.repo}: revisa la app y elige UNA mejora de alto impacto y bajo riesgo que no se haya hecho ya.`;
+  const extra = `Repositorio de la app: ${TALLER.repo}.
+Mejoras ya propuestas o aplicadas (no las repitas):
+${done}
+Trabaja con el código del contexto si lo tienes; si no, con lo que sabes de la app por las entregas anteriores, y deja que Claude Code revise el repositorio para concretar. Entrega obligatoriamente «## Cambios para Claude Code» con el objetivo, los archivos, cómo probarlo y los criterios de aceptación.`;
+  if (manual) toast("El Taller empieza a revisar la app.");
+  const t = await runTask({ agentId: "audit", order, from: "Taller", mode: "pro", skillId: "audit.backlog", extra });
+  if (t.status !== "done") return;
+  const title = (docParts(t).resumen.split("\n").find(l => l.trim()) || t.order).replace(/^\s*[-*]\s*/, "").replace(/[*_`]/g, "").slice(0, 160);
+  const entry = { at: Date.now(), title, task: t.id, applied: false };
+  TALLER.log.push(entry);
+  if (TALLER.apply && appliedToday() < TALLER.perDay && window.claude?.use) {
+    const rec = await ccSend(t, { repo: TALLER.repo, instr: "Aplica los «Cambios para Claude Code» de esta entrega.", merge: true, auto: true });
+    entry.applied = rec.state !== "error";
+  }
+  tallerSave();
+}
+
 
 /* ---------- Arranque ---------- */
 function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }
