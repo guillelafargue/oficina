@@ -34,7 +34,10 @@ await p.addInitScript(tasks => {
   s.json = async q => (q.includes('"nota"') ? { nota: 9, fallos: [], aprendizajes: [], hechos: [] } : { skills: [], pasos: ["Paso"] });
   s.limits = async () => ({ images: false, tools: true });
   window.__stores = stores;
-  window.claude = { use: async n => ({ sample: s, db: { doc: () => base }, user: { id: async () => "u1" } })[n] || null };
+  window.__calls = [];
+  const mcp = { callTool: async (server, tool, input) => { window.__calls.push({ tool, input }); if (!window.__mcpOn) throw { code: "server_not_connected" };
+    return { payload: { list_environments: { environments: [{ environment_id: "env_A", state: "active", description: "trusted" }] }, create_trigger: { trigger: { id: "trig_1" } }, fire_trigger: { session_id: "session_01ABCDEFGHJK" } }[tool] || {} }; } };
+  window.claude = { use: async n => ({ sample: s, db: { doc: () => base }, user: { id: async () => "u1" }, mcp })[n] || null };
 }, tasks);
 await p.goto("file://" + file);
 await p.waitForTimeout(1500);
@@ -86,6 +89,12 @@ check(await p.evaluate(pid => PROJ.cur !== pid && state.tasks.some(t => t.id ===
 await p.evaluate(pid => projDelete(pid), pid);
 await p.waitForTimeout(300);
 check(await p.evaluate(() => PROJ.list.length === 1 && !Object.values(window.__stores.tasks).some(t => t.order === "Encargo de la tienda")), "borrar un proyecto borra sus encargos");
+
+// En la nube: el encargo sale a una sesión de Claude Code y la entrega llega por la base de datos.
+const cid = await p.evaluate(async () => { window.__mcpOn = true; const t = await runTask({ agentId: "elena", order: "Encargo en la nube", mode: "rapido" }); return t.id; });
+check(await p.evaluate(id => { const t = state.tasks.find(x => x.id === id); return t.status === "work" && t.cloud?.session === "session_01ABCDEFGHJK" && window.__calls.some(c => c.tool === "fire_trigger" && c.input.text.includes(id)); }, cid), "el encargo se envía a la nube con su id");
+await p.evaluate(async id => { const d = window.__stores.tasks[id]; window.__stores.tasks[id] = { ...d, status: "done", phase: "fin", result: "## Resumen\n- Hecho fuera." }; await cloudSync(true); }, cid);
+check(await p.evaluate(id => state.tasks.find(x => x.id === id)?.status === "done", cid), "la entrega de la nube aparece en la oficina");
 
 check(errs.length === 0, "sin errores de página" + (errs.length ? ": " + errs.join(" | ") : ""));
 await b.close();

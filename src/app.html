@@ -617,6 +617,11 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
     <div class="field"><label class="chk"><input type="checkbox" id="fTallerApply"><span><b>Aplicar los cambios solos</b><span>Envía cada mejora a Claude Code, que hace el cambio, pasa las comprobaciones, abre la PR y la fusiona si todo pasa. Te llega un aviso al terminar.</span></span></label>
       <label for="fTallerDay" class="note">Máximo al día</label><select id="fTallerDay"><option value="1">1 cambio</option><option value="3">3 cambios</option><option value="5">5 cambios</option></select></div>
     <div class="field"><label for="fRepos">Tus repositorios (uno por línea)</label><textarea id="fRepos" style="min-height:64px" placeholder="usuario/proyecto"></textarea><span class="note">Aparecen al pulsar «Aplicar en la app» en cualquier entrega.</span></div>
+    <h3 class="fh">Trabajo en la nube</h3>
+    <div class="field"><label class="chk"><input type="checkbox" id="fCloudOn"><span><b>Los encargos siguen aunque cierres la oficina</b><span>Cada encargo lo hace una sesión de Claude Code en la nube y deja aquí la entrega. Puedes salir de Claude o bloquear el móvil; te llega un aviso al terminar. Usa tu cuota de Claude Code.</span></span></label></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fCloudRound"><span><b>Rondas en la nube</b><span>Dirección trabaja sola en el proyecto abierto cada pocas horas, aunque no abras la oficina: decide de 1 a 3 encargos, los hace y te deja un informe.</span></span></label>
+      <label for="fCloudEvery" class="note">Cada</label><select id="fCloudEvery"><option value="2">2 horas</option><option value="4">4 horas</option><option value="8">8 horas</option><option value="24">Una vez al día</option></select>
+      <span class="note" id="cloudNote"></span></div>
     <h3 class="fh">Equipo</h3>
     <div class="field"><label class="chk"><input type="checkbox" id="fAuto"><span><b>Trabajo autónomo continuo</b><span>Mientras la app esté abierta, Dirección lanza rondas solas: decide qué hace falta, reparte y mejora lo flojo. Máximo 12 rondas por sesión.</span></span></label>
       <label for="fEvery" class="note">Cada</label><select id="fEvery"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
