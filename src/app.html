@@ -52,7 +52,13 @@ img.px { image-rendering: pixelated; }
 .top-in { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 28px; padding: 0 max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px)); height: 56px; }
 .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: none; }
 .brand b { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
-.brand span { color: var(--ink-3); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.brand .proj > summary { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; padding: 3px 8px; border: 1px solid var(--line-2); border-radius: 6px; }
+.brand .proj > summary:hover { background: var(--sunk); color: var(--ink); }
+.brand .proj > summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.brand .proj .menu-pop { min-width: 290px; }
+.menu-pop button[aria-current="true"] { background: var(--sunk); }
+.menu-pop button[aria-current="true"] b::after { content: " · abierto"; font-weight: 400; color: var(--ink-3); }
+.menu-pop hr { border: 0; border-top: 1px solid var(--line); margin: 4px 2px; }
 .tabs { display: flex; gap: 22px; height: 100%; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { border: 0; background: none; padding: 0; height: 100%; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-3); font-size: 14px; white-space: nowrap; box-shadow: inset 0 -2px 0 transparent; }
@@ -491,7 +497,7 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
 
 <header class="top">
   <div class="top-in">
-    <div class="brand"><b>Oficina</b><span id="coName"></span></div>
+    <div class="brand"><b>Oficina</b><details class="menu proj"><summary aria-label="Cambiar de proyecto"><span id="projName"></span></summary><div class="menu-pop" id="projPop"></div></details></div>
     <nav class="tabs" aria-label="Secciones">
       <button class="tab" type="button" data-view="oficina">Oficina <span class="n" id="nWork"></span></button>
       <button class="tab" type="button" data-view="encargos">Encargos <span class="n" id="nTasks"></span></button>
@@ -596,13 +602,14 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
 <dialog id="settings">
   <form method="dialog">
     <h2>Ajustes del proyecto</h2>
-    <div class="field"><label for="fCompany">Empresa o marca</label><input id="fCompany" maxlength="80"></div>
-    <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
+    <p class="note">Cada proyecto tiene su contexto, sus encargos y sus entregables. El equipo, sus skills y lo que aprenden son los mismos en todos.</p>
+    <div class="field"><label for="fCompany">Nombre del proyecto</label><input id="fCompany" maxlength="80"></div>
+    <div class="field"><label for="fBrief">De qué trata</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
     <h3 class="fh">Taller de producto</h3>
     <div class="field"><label class="chk"><input type="checkbox" id="fTallerOn"><span><b>Mejora continua de la app</b><span>Cada hora (o en rondas alternas del modo autónomo), Auditoría revisa la app, elige una mejora que no se haya hecho y prepara el cambio para Claude Code.</span></span></label></div>
-    <div class="field"><label for="fTallerRepo">Repositorio que mejora el Taller</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
+    <div class="field"><label for="fTallerRepo">Repositorio de este proyecto</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fTallerApply"><span><b>Aplicar los cambios solos</b><span>Envía cada mejora a Claude Code, que hace el cambio, pasa las comprobaciones, abre la PR y la fusiona si todo pasa. Te llega un aviso al terminar.</span></span></label>
       <label for="fTallerDay" class="note">Máximo al día</label><select id="fTallerDay"><option value="1">1 cambio</option><option value="3">3 cambios</option><option value="5">5 cambios</option></select></div>
     <div class="field"><label for="fRepos">Tus repositorios (uno por línea)</label><textarea id="fRepos" style="min-height:64px" placeholder="usuario/proyecto"></textarea><span class="note">Aparecen al pulsar «Aplicar en la app» en cualquier entrega.</span></div>
@@ -615,7 +622,18 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
       <div class="field"><label for="fModel">Modelo</label>
         <select id="fModel"><option value="claude-opus-5-5">Claude Opus 5.5 (máxima calidad)</option><option value="claude-sonnet-5-5">Claude Sonnet 5.5 (equilibrado)</option><option value="claude-haiku-5-5">Claude Haiku 5.5 (rápido)</option></select></div>
     </div>
-    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar</button></div>
+    <div class="row"><button class="btn ghost sm" type="button" id="projDel" hidden>Borrar este proyecto</button><span style="flex:1"></span><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+
+<dialog id="projDlg">
+  <form method="dialog">
+    <h2>Nuevo proyecto</h2>
+    <p class="note">Empieza vacío: sin contexto, encargos ni entregables. Trabaja el mismo equipo, con las mismas skills.</p>
+    <div class="field"><label for="nName">Nombre</label><input id="nName" maxlength="80" placeholder="Tienda online"></div>
+    <div class="field"><label for="nBrief">De qué trata</label><textarea id="nBrief" maxlength="5000" placeholder="Qué es, para quién, objetivos, tono de marca y presupuesto."></textarea></div>
+    <div class="field"><label for="nRepo">Repositorio en GitHub (opcional)</label><input id="nRepo" placeholder="usuario/proyecto" autocomplete="off"><span class="note">Lo usan «Aplicar en la app» y el Taller de producto en este proyecto.</span></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Crear proyecto</button></div>
   </form>
 </dialog>
 

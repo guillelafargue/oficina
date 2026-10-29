@@ -52,7 +52,13 @@ img.px { image-rendering: pixelated; }
 .top-in { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 28px; padding: 0 max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px)); height: 56px; }
 .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: none; }
 .brand b { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
-.brand span { color: var(--ink-3); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.brand .proj > summary { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; padding: 3px 8px; border: 1px solid var(--line-2); border-radius: 6px; }
+.brand .proj > summary:hover { background: var(--sunk); color: var(--ink); }
+.brand .proj > summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.brand .proj .menu-pop { min-width: 290px; }
+.menu-pop button[aria-current="true"] { background: var(--sunk); }
+.menu-pop button[aria-current="true"] b::after { content: " · abierto"; font-weight: 400; color: var(--ink-3); }
+.menu-pop hr { border: 0; border-top: 1px solid var(--line); margin: 4px 2px; }
 .tabs { display: flex; gap: 22px; height: 100%; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
 .tabs::-webkit-scrollbar { display: none; }
 .tab { border: 0; background: none; padding: 0; height: 100%; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-3); font-size: 14px; white-space: nowrap; box-shadow: inset 0 -2px 0 transparent; }
@@ -491,7 +497,7 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
 
 <header class="top">
   <div class="top-in">
-    <div class="brand"><b>Oficina</b><span id="coName"></span></div>
+    <div class="brand"><b>Oficina</b><details class="menu proj"><summary aria-label="Cambiar de proyecto"><span id="projName"></span></summary><div class="menu-pop" id="projPop"></div></details></div>
     <nav class="tabs" aria-label="Secciones">
       <button class="tab" type="button" data-view="oficina">Oficina <span class="n" id="nWork"></span></button>
       <button class="tab" type="button" data-view="encargos">Encargos <span class="n" id="nTasks"></span></button>
@@ -596,13 +602,14 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
 <dialog id="settings">
   <form method="dialog">
     <h2>Ajustes del proyecto</h2>
-    <div class="field"><label for="fCompany">Empresa o marca</label><input id="fCompany" maxlength="80"></div>
-    <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
+    <p class="note">Cada proyecto tiene su contexto, sus encargos y sus entregables. El equipo, sus skills y lo que aprenden son los mismos en todos.</p>
+    <div class="field"><label for="fCompany">Nombre del proyecto</label><input id="fCompany" maxlength="80"></div>
+    <div class="field"><label for="fBrief">De qué trata</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
     <h3 class="fh">Taller de producto</h3>
     <div class="field"><label class="chk"><input type="checkbox" id="fTallerOn"><span><b>Mejora continua de la app</b><span>Cada hora (o en rondas alternas del modo autónomo), Auditoría revisa la app, elige una mejora que no se haya hecho y prepara el cambio para Claude Code.</span></span></label></div>
-    <div class="field"><label for="fTallerRepo">Repositorio que mejora el Taller</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
+    <div class="field"><label for="fTallerRepo">Repositorio de este proyecto</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fTallerApply"><span><b>Aplicar los cambios solos</b><span>Envía cada mejora a Claude Code, que hace el cambio, pasa las comprobaciones, abre la PR y la fusiona si todo pasa. Te llega un aviso al terminar.</span></span></label>
       <label for="fTallerDay" class="note">Máximo al día</label><select id="fTallerDay"><option value="1">1 cambio</option><option value="3">3 cambios</option><option value="5">5 cambios</option></select></div>
     <div class="field"><label for="fRepos">Tus repositorios (uno por línea)</label><textarea id="fRepos" style="min-height:64px" placeholder="usuario/proyecto"></textarea><span class="note">Aparecen al pulsar «Aplicar en la app» en cualquier entrega.</span></div>
@@ -615,7 +622,18 @@ pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
       <div class="field"><label for="fModel">Modelo</label>
         <select id="fModel"><option value="claude-opus-5-5">Claude Opus 5.5 (máxima calidad)</option><option value="claude-sonnet-5-5">Claude Sonnet 5.5 (equilibrado)</option><option value="claude-haiku-5-5">Claude Haiku 5.5 (rápido)</option></select></div>
     </div>
-    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar</button></div>
+    <div class="row"><button class="btn ghost sm" type="button" id="projDel" hidden>Borrar este proyecto</button><span style="flex:1"></span><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+
+<dialog id="projDlg">
+  <form method="dialog">
+    <h2>Nuevo proyecto</h2>
+    <p class="note">Empieza vacío: sin contexto, encargos ni entregables. Trabaja el mismo equipo, con las mismas skills.</p>
+    <div class="field"><label for="nName">Nombre</label><input id="nName" maxlength="80" placeholder="Tienda online"></div>
+    <div class="field"><label for="nBrief">De qué trata</label><textarea id="nBrief" maxlength="5000" placeholder="Qué es, para quién, objetivos, tono de marca y presupuesto."></textarea></div>
+    <div class="field"><label for="nRepo">Repositorio en GitHub (opcional)</label><input id="nRepo" placeholder="usuario/proyecto" autocomplete="off"><span class="note">Lo usan «Aplicar en la app» y el Taller de producto en este proyecto.</span></div>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="save" type="submit">Crear proyecto</button></div>
   </form>
 </dialog>
 
@@ -2706,10 +2724,10 @@ Escribe en español, en Markdown, un informe ejecutivo breve para el propietario
 function newTask(o) {
   const t = { id: uid(), agentId: o.agentId, order: o.order, from: o.from || "Tú", skillId: o.skillId || null, mode: o.mode || "pro", runId: o.runId || null,
     extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0, ...(o.version > 1 ? { version: o.version } : {}) };
-  state.tasks.push(t); o._onCreate?.(t); return t;
+  projPush("tasks", t, o.project || projOfRun(o.runId) || PROJ.cur); o._onCreate?.(t); return t;
 }
 function setAgent(agentId) {
-  const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
+  const mine = projAll("tasks").filter(t => t.agentId === agentId && t.status === "work");
   const active = mine.find(t => t.phase !== "cola");
   state.status[agentId] = active ? "work" : mine.length ? "queue" : "idle";
   if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.phase === "review" ? "Autoevaluando" : active.phase === "revise" ? "Mejorando su trabajo" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
@@ -2765,7 +2783,7 @@ async function runCompany(order, kind) {
   if (state.run) { toast("La empresa ya está con un encargo. Puedes detenerlo o esperar."); return; }
   const ctl = new AbortController();
   const run = { id: uid(), kind, order, resumen: "Dirección está preparando el plan…", fases: [], status: "work", createdAt: Date.now(), ctl };
-  state.run = run; state.runs.push(run);
+  state.run = run; projPush("runs", run);
   state.status.elena = "work"; state.bubble.elena = kind === "auto" ? "Decidiendo" : "Repartiendo";
   paintAll();
   try {
@@ -3041,7 +3059,7 @@ function paintLive() {
   $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí verás lo último que se ha entregado.</p>`;
 }
 function paintRun() {
-  const box = $("#runBox"), r = state.run || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
+  const box = $("#runBox"), r = (state.run?.project === PROJ.cur ? state.run : null) || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
   if (!r) { box.hidden = true; return; }
   box.hidden = false;
   const lbl = { pend: "Pendiente", work: "En curso", done: "Hecho", error: "Error" };
@@ -3261,6 +3279,10 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-agent]"))) return openAgent(b.dataset.agent);
   if ((b = el("[data-task]"))) return openReader(b.dataset.task);
   if (!el("details.menu")) document.querySelectorAll("details.menu[open]").forEach(d => d.open = false);
+  if ((b = el("[data-proj], [data-projnew], #projPop [data-settings]"))) b.closest("details")?.removeAttribute("open");
+  if ((b = el("[data-proj]"))) return projSwitch(b.dataset.proj);
+  if (el("[data-projnew]")) return projNew();
+  if (el("#projDel")) { e.preventDefault(); if (PROJ.del === PROJ.cur) { $("#settings").close("cancel"); await projDelete(PROJ.cur); toast("Proyecto borrado."); } else { PROJ.del = PROJ.cur; paintProjDel(); } return; }
   if (el("#rBack")) return closeReader();
   if ((b = el("[data-stop]"))) { const t = state.tasks.find(x => x.id === b.dataset.stop); if (t) { stopTask(t); toast("Detenido."); } return; }
   if ((b = el("[data-archive]"))) { const t = state.tasks.find(x => x.id === b.dataset.archive); if (t) { const on = !t.archived; await archiveTasks([t.id], on); toast(on ? "Archivado. Lo tienes en «Archivados»." : "Vuelve a estar en las listas."); paintAll(); if (READER.id === t.id) paintReader(); } return; }
@@ -3493,11 +3515,12 @@ function openSettings() {
   $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
   $("#fTallerOn").checked = TALLER.on; $("#fTallerApply").checked = TALLER.apply; $("#fTallerRepo").value = TALLER.repo; $("#fTallerDay").value = String(TALLER.perDay);
   $("#fRepos").value = CC.repos.join("\n");
+  $("#fTallerRepo").value = projCur()?.repo || ""; PROJ.del = ""; paintProjDel();
   $("#settings").showModal();
 }
 $("#settings").addEventListener("close", async () => {
   if ($("#settings").returnValue !== "save") return;
-  state.company = $("#fCompany").value.trim() || "Mi empresa";
+  state.company = $("#fCompany").value.trim() || state.company;
   state.brief = $("#fBrief").value.trim() || state.brief;
   if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
   BRAIN.review = $("#fReview").checked;
@@ -3505,7 +3528,7 @@ $("#settings").addEventListener("close", async () => {
   if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
   const repoOk = r => /^[\w.-]+\/[\w.-]+$/.test(r), clean = r => r.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
   const tOn = TALLER.on; TALLER.on = $("#fTallerOn").checked; TALLER.apply = $("#fTallerApply").checked; TALLER.perDay = +$("#fTallerDay").value || 3;
-  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) TALLER.repo = tr;
+  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) { TALLER.repo = tr; projCur().repo = tr; if (!CC.repos.includes(tr)) CC.repos.push(tr); CC.repo = tr; ccSave(); } else if (!tr) projCur().repo = "";
   if (TALLER.on && !tOn) TALLER.next = Date.now() + 120e3;
   tallerSave();
   const repos = $("#fRepos").value.split("\n").map(clean).filter(repoOk); if (repos.length) { CC.repos = [...new Set(repos)]; if (!CC.repos.includes(CC.repo)) CC.repo = CC.repos[0]; ccSave(); }
@@ -3525,7 +3548,7 @@ $("#skillDlg").addEventListener("close", async () => {
   state.customSkills.push(s); await store.saveSkill(s); state.fSkills = "custom"; paintSkills(); paintCounts(); toast("Skill creada.");
 });
 function paintHeader() {
-  $("#coName").textContent = state.company;
+  paintProjects();
   $("#coTitle").textContent = state.company;
   $("#briefLine").textContent = state.brief.length > 160 ? state.brief.slice(0, 160) + "…" : state.brief;
 }
@@ -3630,14 +3653,14 @@ async function addCtx(entries, source, kind) {
   for (const e of parts) {
     if (full || keep.length + added >= CTX_MAX_FILES || total + e.text.length > CTX_MAX_TOTAL) { missing.add(e.file); continue; }
     const old = CTX.items.find(x => x.source === source && x.name === e.name);
-    const x = { id: old?.id || "x" + uid(), source, kind, name: e.name, text: e.text, active: true, createdAt: old?.createdAt || now };
+    const x = { id: old?.id || "x" + uid(), project: PROJ.cur, source, kind, name: e.name, text: e.text, active: true, createdAt: old?.createdAt || now };
     try { await store.saveCtx(x); } catch (err) { full = err?.code === "quota_exceeded" ? "store" : "error"; missing.add(e.file); continue; }
     if (old) Object.assign(old, x); else CTX.items.push(x);
     total += x.text.length; added++;
     if (added % 10 === 0) { CTX.busy = `Guardando ${added} de ${parts.length}…`; paintContext(); }
   }
   CTX.report = missing.size ? { source, files: entries.length, missing: [...missing], why: full === "store" ? "el almacén de la oficina se ha llenado" : full ? "hubo un error al guardar" : "se ha llegado al límite de contexto (24 M de caracteres)" } : null;
-  try { localStorage.setItem("oficina.ctxreport", JSON.stringify(CTX.report)); } catch {}
+  try { localStorage.setItem(ctxReportKey(), JSON.stringify(CTX.report)); } catch {}
   CTX.busy = ""; CTX.ver++; paintContext(); paintCounts(); paintComposer();
   toast(missing.size ? `${entries.length - missing.size} de ${entries.length} archivos cargados. Faltan ${missing.size}: mira el aviso en Contexto.` : `${entries.length} ${entries.length === 1 ? "archivo añadido" : "archivos añadidos"} al contexto, completos.`);
 }
@@ -3722,6 +3745,7 @@ const thaw = d => { const v = d.data(); try { return structuredClone(v); } catch
 const store = {
   db: null, base: null,
   async init() {
+    let meta = null;
     try {
       if (window.claude?.use) {
         const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
@@ -3732,12 +3756,12 @@ const store = {
     if (this.db) {
       try {
         const s = await this.base.get();
-        if (s.exists) { const d = thaw(s); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
+        if (s.exists) { const d = thaw(s); meta = d; state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
           this.base.collection("tasks").orderBy("createdAt", "desc").limit(1000).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
-        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
+        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (d.id.startsWith("facts-")) PROJ.facts[d.id.slice(6)] = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
         try {
           const col = this.base.collection("context"), items = []; let last = "";
           for (let i = 0; i < 10; i++) {
@@ -3748,24 +3772,25 @@ const store = {
           CTX.items = items.sort((a, b) => a.createdAt - b.createdAt);
         } catch { try { const cq = await this.base.collection("context").limit(1000).get(); CTX.items = cq.docs.map(thaw).filter(x => x?.id); } catch {} }
         mergeTasks(tq.docs.map(thaw)); mergeRuns(rq.docs.map(thaw)); state.customSkills = sq.docs.map(thaw).filter(s => byId[s.agentId]);
-      } catch { this.db = null; }
+      } catch { this.db = null; meta = null; }
     }
     if (!this.db) {
       try { const s = JSON.parse(localStorage.getItem("oficina.v2") || "null");
-        if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
+        if (s) { meta = s; state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
       CTX.items = await idb.all();
-      try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; loadBrainMeta(b); } } catch {}
+      try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; Object.assign(PROJ.facts, b.factsBy || {}); loadBrainMeta(b); } } catch {}
     }
-    try { CTX.report = JSON.parse(localStorage.getItem("oficina.ctxreport") || "null"); } catch {}
+    projSetup(meta);
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
   async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
   async del(col, id) { if (this.db) { try { await this.base.collection(col).doc(id).delete(); return; } catch {} } this.local(); },
-  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief, projectFiles: CTX.projectFiles, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every }).catch(() => this.local()); this.local(); },
+  saveMeta() { projKeep(); if (this.db) return this.base.set({ company: state.company, brief: state.brief, projects: PROJ.list, cur: PROJ.cur, projectFiles: CTX.projectFiles, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every }).catch(() => this.local()); this.local(); },
   saveBrain(key) {
-    if (this.db) { const items = key === "facts" ? BRAIN.facts : memOf(key); return this.base.collection("brain").doc(key).set({ items: items.map(({ _busy, ...x }) => x) }).catch(() => {}); }
-    try { localStorage.setItem("oficina.brain", JSON.stringify({ mem: BRAIN.mem, facts: BRAIN.facts, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every })); } catch {}
+    if (this.db) { const items = key === "facts" ? BRAIN.facts : memOf(key); return this.base.collection("brain").doc(key === "facts" ? factsDoc(PROJ.cur) : key).set({ items: items.map(({ _busy, ...x }) => x) }).catch(() => {}); }
+    projSync(); const factsBy = Object.fromEntries(PROJ.list.map(p => [p.id, PROJ.b[p.id]?.facts || []]));
+    try { localStorage.setItem("oficina.brain", JSON.stringify({ mem: BRAIN.mem, facts: PROJ.b[projDef()]?.facts || BRAIN.facts, factsBy, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every })); } catch {}
   },
   async saveCtx(x) { if (this.db) { try { await this.base.collection("context").doc(x.id).set(x); return; } catch (e) { if (e?.code === "quota_exceeded") { toast("El almacén está lleno: quita contexto o entregas antiguas."); throw e; } } } await idb.put(x); },
   async deleteCtx(id) { if (this.db) { try { await this.base.collection("context").doc(id).delete(); return; } catch {} } await idb.del(id); },
@@ -3775,8 +3800,9 @@ const store = {
   saveSkill(s) { return this.put("skills", s); },
   deleteSkill(id) { return this.del("skills", id); },
   local() {
-    try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
-      tasks: state.tasks.filter(t => t.status !== "work").slice(-300).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+    projKeep();
+    try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief, projects: PROJ.list, cur: PROJ.cur,
+      tasks: projAll("tasks").filter(t => t.status !== "work").sort((a, b) => a.createdAt - b.createdAt).slice(-300).map(({ v, ...r }) => r), runs: projAll("runs").filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
     if (!this.db) this.saveBrain("facts");
   },
 };
@@ -4338,6 +4364,93 @@ Trabaja con el código del contexto si lo tienes; si no, con lo que sabes de la 
     entry.applied = rec.state !== "error";
   }
   tallerSave();
+}
+
+
+/* ---------- Proyectos: cada uno con su contexto, encargos, entregables y hechos; el equipo es el mismo ---------- */
+// Lo que se ve (state.tasks, state.runs, CTX.items, BRAIN.facts) es el cajón del proyecto abierto.
+// Los demás cajones siguen en memoria: un encargo que se lanza en un proyecto termina en ese proyecto aunque cambies.
+const PROJ = { list: [], cur: null, b: {}, facts: {}, del: "" };
+const BRIEF0 = "Describe este proyecto en «Ajustes»: qué es, para quién, objetivos, tono de marca y presupuesto.";
+function projCur() { return PROJ.list.find(p => p.id === PROJ.cur) || PROJ.list[0]; }
+function projDef() { return PROJ.list[0]?.id || "p1"; }
+function projBox(pid) { return (PROJ.b[pid] ||= { tasks: [], runs: [], ctx: [], facts: [] }); }
+// Devuelve al cajón lo visible (algunas funciones sustituyen el array en vez de modificarlo).
+function projSync() { if (!PROJ.cur) return; const b = projBox(PROJ.cur); b.tasks = state.tasks; b.runs = state.runs; b.ctx = CTX.items; b.facts = BRAIN.facts; }
+function projAll(key) { projSync(); return PROJ.list.flatMap(p => PROJ.b[p.id]?.[key] || []); }
+function projPush(key, x, pid) { projSync(); x.project = pid || PROJ.cur; projBox(x.project)[key].push(x); }
+function projOfRun(runId) { return runId ? projAll("runs").find(r => r.id === runId)?.project : null; }
+function factsDoc(pid) { return pid === projDef() ? "facts" : "facts-" + pid; }
+function ctxReportKey(pid = PROJ.cur) { return "oficina.ctxreport" + (pid === projDef() ? "" : "." + pid); }
+
+// Se llama al arrancar, con todo lo cargado mezclado: lo reparte por proyecto (lo antiguo va al primero).
+function projSetup(meta) {
+  let list = Array.isArray(meta?.projects) ? meta.projects.filter(p => p?.id && p.name) : [];
+  if (!list.length) list = [{ id: "p1", name: state.company === "FuelIron" ? "Fueliron" : state.company, brief: state.brief, repo: /fuel/i.test(state.company) ? "guillelafargue/ai-fitness-pwa" : TALLER.repo, createdAt: Date.now() }];
+  PROJ.list = list; PROJ.b = {};
+  const ids = new Set(list.map(p => p.id)), def = list[0].id, home = x => (ids.has(x.project) ? x.project : def);
+  for (const p of list) projBox(p.id).facts = PROJ.facts[p.id] || (p.id === def ? BRAIN.facts : []);
+  for (const t of state.tasks) { t.project = home(t); projBox(t.project).tasks.push(t); }
+  for (const r of state.runs) { r.project = home(r); projBox(r.project).runs.push(r); }
+  for (const x of CTX.items) { x.project = home(x); projBox(x.project).ctx.push(x); }
+  let cur = meta?.cur; try { cur = localStorage.getItem("oficina.proj") || cur; } catch {}
+  PROJ.cur = ids.has(cur) ? cur : def;
+  projApply();
+}
+function projApply() {
+  const p = projCur(), b = projBox(p.id);
+  state.tasks = b.tasks; state.runs = b.runs; CTX.items = b.ctx; BRAIN.facts = b.facts;
+  state.company = p.name; state.brief = p.brief || BRIEF0;
+  try { CTX.report = JSON.parse(localStorage.getItem(ctxReportKey()) || "null"); } catch { CTX.report = null; }
+  if (p.repo) { TALLER.repo = p.repo; if (!CC.repos.includes(p.repo)) CC.repos.push(p.repo); CC.repo = p.repo; }
+  state.sel?.clear?.(); CTX.ver++;
+}
+function projSwitch(id) {
+  if (id === PROJ.cur || !PROJ.list.some(p => p.id === id)) return;
+  projSync(); if (READER.id) closeReader(); if (state.open) closeAgent();
+  PROJ.cur = id; try { localStorage.setItem("oficina.proj", id); } catch {}
+  projApply(); paintHeader(); paintAll(); paintComposer(); paintContext(); paintCounts();
+  store.saveMeta(); toast(`Ahora trabajáis en «${state.company}».`);
+}
+function projMenuHTML() {
+  projSync();
+  const rows = PROJ.list.map(p => {
+    const b = PROJ.b[p.id] || {}, n = (b.tasks || []).filter(t => !t.archived).length, w = (b.tasks || []).filter(t => t.status === "work").length;
+    return `<button type="button" data-proj="${p.id}" ${p.id === PROJ.cur ? 'aria-current="true"' : ""}><b>${esc(p.name)}</b><span>${n} ${n === 1 ? "encargo" : "encargos"}${w ? ` · ${w} en marcha` : ""}${p.repo ? " · " + esc(p.repo) : ""}</span></button>`;
+  }).join("");
+  return `${rows}<hr><button type="button" data-projnew><b>Nuevo proyecto</b><span>Su propio contexto, encargos y entregables, con el mismo equipo</span></button><button type="button" data-settings><b>Ajustes de «${esc(state.company)}»</b></button>`;
+}
+function paintProjects() { const m = $("#projPop"); if (m) m.innerHTML = projMenuHTML(); const s = $("#projName"); if (s) s.textContent = state.company; }
+function projNew() { ["nName", "nBrief", "nRepo"].forEach(i => $("#" + i).value = ""); $("#projDlg").showModal(); }
+$("#projDlg").addEventListener("close", () => {
+  if ($("#projDlg").returnValue !== "save") return;
+  const name = $("#nName").value.trim();
+  if (!name) { toast("El proyecto necesita un nombre."); return; }
+  const repo = $("#nRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
+  const p = { id: "p" + uid(), name, brief: $("#nBrief").value.trim() || BRIEF0, repo: /^[\w.-]+\/[\w.-]+$/.test(repo) ? repo : "", createdAt: Date.now() };
+  PROJ.list.push(p); projBox(p.id); projSwitch(p.id);
+});
+// Borrar un proyecto borra sus encargos, rondas, contexto y hechos. El equipo, sus skills y lo que han aprendido se quedan.
+async function projDelete(id) {
+  if (PROJ.list.length < 2) { toast("Tiene que quedar al menos un proyecto."); return; }
+  projSync(); const b = projBox(id), wasDef = id === projDef();
+  for (const t of b.tasks) if (t.status === "work") stopTask(t);
+  await Promise.all([...b.tasks.map(t => store.deleteTask(t.id)), ...b.runs.map(r => store.del("runs", r.id)), ...b.ctx.map(x => store.deleteCtx(x.id))]);
+  if (store.db) store.base.collection("brain").doc(factsDoc(id)).delete().catch(() => {});
+  try { localStorage.removeItem(ctxReportKey(id)); } catch {}
+  PROJ.list = PROJ.list.filter(p => p.id !== id); delete PROJ.b[id];
+  // Si se borra el primero, los hechos del nuevo primero pasan al documento «facts».
+  if (wasDef) { PROJ.cur = projDef(); projApply(); store.saveBrain("facts"); if (store.db) store.base.collection("brain").doc("facts-" + PROJ.cur).delete().catch(() => {}); }
+  PROJ.cur = null; projSwitch(projDef()); paintProjects();
+}
+// Lo que se edita en Ajustes (nombre y descripción) vive en el proyecto abierto.
+function projKeep() { const p = projCur(); if (!p) return; p.name = state.company; p.brief = state.brief; }
+function paintProjDel() {
+  const b = $("#projDel"); if (!b) return;
+  const n = projBox(PROJ.cur).tasks.length;
+  b.hidden = PROJ.list.length < 2;
+  b.textContent = PROJ.del === PROJ.cur ? `Sí, borrar «${state.company}» y sus ${n} encargos` : "Borrar este proyecto";
+  b.classList.toggle("bad", PROJ.del === PROJ.cur);
 }
 
 
