@@ -1,0 +1,26 @@
+name: Prueba de humo
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python3 build.py
+      - name: Comprobar que el código compila
+        run: |
+          for f in build/oficina.html public/index.html; do
+            awk '/^<script>$/{f=1;next} /^<\/script>$/{f=0} f' "$f" > /tmp/app.js
+            node --check /tmp/app.js
+          done
+      - run: npm install --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+      - run: node tests/smoke.mjs build/oficina.html
+      - run: node tests/smoke.mjs public/index.html

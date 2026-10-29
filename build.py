@@ -3,8 +3,8 @@ import pathlib
 root = pathlib.Path(__file__).parent
 src = root / "src"
 page = (src / "app.html").read_text()
-page = page.replace("/*__DATA__*/", "/*__DATA__*/\n/*__EXPERT__*/\n/*__STACK__*/\n/*__CANON__*/")
-for name, ph in (("data.js", "/*__DATA__*/"), ("expert.js", "/*__EXPERT__*/"), ("stack.js", "/*__STACK__*/"), ("canon.js", "/*__CANON__*/"), ("office.js", "/*__OFFICE__*/"), ("app.js", "/*__APP__*/")):
+page = page.replace("/*__DATA__*/", "/*__DATA__*/\n/*__EXPERT__*/\n/*__STACK__*/\n/*__CANON__*/\n/*__TALLER__*/")
+for name, ph in (("data.js", "/*__DATA__*/"), ("expert.js", "/*__EXPERT__*/"), ("stack.js", "/*__STACK__*/"), ("canon.js", "/*__CANON__*/"), ("taller.js", "/*__TALLER__*/"), ("office.js", "/*__OFFICE__*/"), ("app.js", "/*__APP__*/"), ("work.js", "/*__WORK__*/")):
     page = page.replace(ph, (src / name).read_text())
 (root / "build").mkdir(exist_ok=True)
 (root / "build/oficina.html").write_text(page)

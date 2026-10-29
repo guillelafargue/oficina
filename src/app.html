@@ -13,7 +13,7 @@
   --line-2: #cfcbc1;
   --ink: #1d1d1b;
   --ink-2: #55534d;
-  --ink-3: #8a877f;
+  --ink-3: #6b6860;
   --accent: #2f6b4f;
   --accent-ink: #ffffff;
   --accent-soft: #e4eee8;
@@ -291,7 +291,169 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
 .banner { font-size: 13.5px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); margin: -12px 0 20px; }
 .banner b { color: var(--ink); font-weight: 500; }
 
+
+/* Barras de herramientas, búsqueda y menús */
+.toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: -6px 0 14px; min-height: 36px; }
+.search input { min-height: 34px; width: min(340px, 100%); border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 10px; font-size: 13.5px; }
+.search { flex: 1 1 240px; }
+.bulk { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.bulk b { font-weight: 500; margin-right: 6px; }
+.bad, .btn.ghost.bad { color: var(--bad); }
+.menu { position: relative; }
+.menu > summary { list-style: none; cursor: pointer; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); margin-left: 2px; }
+.menu-pop { position: absolute; z-index: 35; top: calc(100% + 6px); left: 0; min-width: 260px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,.12); padding: 4px; display: flex; flex-direction: column; }
+.menu-pop.right, .r-acts .menu-pop, .toolbar .menu-pop { left: auto; right: 0; }
+.menu-pop button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 5px; display: flex; flex-direction: column; gap: 1px; font-size: 13.5px; }
+.menu-pop button:hover:not(:disabled) { background: var(--sunk); }
+.menu-pop button:disabled { opacity: .45; cursor: default; }
+.menu-pop button b { font-weight: 500; }
+.menu-pop button span { font-size: 12.5px; color: var(--ink-3); }
+.menu-pop button.bad b { color: var(--bad); }
+h3.fh { margin: 22px 0 0; font-size: 12px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+
+/* Encargos como bandeja */
+.trow, .thead { grid-template-columns: 22px minmax(0, 1fr) 130px 110px 150px; gap: 16px; align-items: center; }
+.trow { padding: 0; }
+.trow.sel { background: var(--accent-soft); }
+.trow .tmain { border: 0; background: none; text-align: left; padding: 12px 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.trow .tmain:hover .t { text-decoration: underline; text-underline-offset: 3px; }
+.trow .t { display: block; }
+.trow .m { display: block; }
+.trow .st { text-align: left; }
+.tcheck { display: flex; align-items: center; justify-content: center; }
+.tcheck input { accent-color: var(--accent); width: 15px; height: 15px; margin: 0; }
+.racts { display: flex; gap: 14px; justify-content: flex-end; }
+.racts .linkbtn { font-size: 12.5px; color: var(--ink-3); }
+.racts .linkbtn.bad { color: var(--bad); }
+.thead span:last-child { text-align: right; }
+
+/* Entregables */
+.dgroup { margin-top: 26px; }
+.dgroup .gallery { margin-top: 14px; }
+.del { position: relative; padding: 16px 18px 14px; gap: 10px; }
+.del-open { position: absolute; inset: 0; border: 0; background: none; border-radius: 8px; z-index: 0; }
+.del:hover { border-color: var(--ink-3); }
+.del-h, .del-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.del .kind { font-size: 11.5px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--accent); }
+.del[data-kind="web"] .kind, .del[data-kind="video"] .kind { color: #b0562a; }
+.del[data-kind="app"] .kind, .del[data-kind="code"] .kind { color: #3d5f8f; }
+.del .d { margin: 0; font-size: 12px; color: var(--ink-3); }
+.del h3.t { margin: 0; font-weight: 600; font-size: 15.5px; line-height: 1.3; letter-spacing: -.01em; }
+.del ul.x { margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+.del ul.x li::before { content: "– "; color: var(--ink-3); }
+.del ul.x li { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.del-f { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); }
+.del-f .who { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.del-acts { display: flex; gap: 12px; position: relative; z-index: 1; }
+.del-acts .linkbtn { font-size: 12.5px; color: var(--ink-3); }
+.emptybox { border: 1px dashed var(--line-2); border-radius: 8px; padding: 22px; margin-top: 20px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 620px; }
+.emptybox p { margin: 0; }
+
+/* Panel del agente: lista compacta */
+.dtask { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.dt-main { border: 0; background: none; text-align: left; padding: 0; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dt-main:hover .dt-t { text-decoration: underline; text-underline-offset: 3px; }
+.dt-k { font-size: 12px; color: var(--ink-3); }
+.dt-t { font-size: 14.5px; font-weight: 500; }
+.dt-x { font-size: 13px; color: var(--ink-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dtask .bar { grid-column: 1 / -1; margin-top: 4px; }
+
+/* Lector de entregas */
+body.noscroll { overflow: hidden; }
+.reader { position: fixed; inset: 0; z-index: 25; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
+.r-bar { display: flex; align-items: center; gap: 14px; padding: 10px max(24px, env(safe-area-inset-right, 0px)) 10px max(24px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); background: var(--bg); min-height: 56px; }
+.r-crumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); min-width: 0; flex: 1; }
+.r-crumb img { width: 22px; height: 22px; border-radius: 3px; background: var(--sunk); }
+.r-crumb b { color: var(--ink); font-weight: 500; }
+.r-crumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.r-scroll { flex: 1; overflow: auto; overscroll-behavior: contain; }
+.r-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 720px) 260px; gap: 48px; justify-content: center; padding: 36px max(24px, env(safe-area-inset-right, 0px)) 96px max(24px, env(safe-area-inset-left, 0px)); }
+.r-toc { position: sticky; top: 0; align-self: start; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 120px); overflow: auto; padding-top: 4px; }
+.r-toc a { font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 4px 0 4px 10px; border-left: 1px solid var(--line); line-height: 1.35; }
+.r-toc a.sub { padding-left: 22px; font-size: 12.5px; color: var(--ink-3); }
+.r-toc a:hover { color: var(--ink); border-left-color: var(--ink); }
+.r-doc { min-width: 0; }
+.r-head .kicker { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+.r-head h1 { margin: 0 0 24px; font-size: 30px; line-height: 1.15; letter-spacing: -.03em; font-weight: 600; text-wrap: balance; }
+.r-sum { border-left: 3px solid var(--accent); background: var(--surface); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 30px; }
+.r-sum .lbl { margin-bottom: 6px; color: var(--accent); }
+.r-sum ul, .r-sum ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 15px; }
+.r-sum p { margin: 0 0 6px; font-size: 15px; }
+.r-progress { margin-bottom: 24px; }
+.r-steps { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--ink-3); display: flex; flex-direction: column; gap: 3px; }
+.r-steps li.done { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.r-steps li.cur { color: var(--ink); font-weight: 500; }
+.r-cc { margin-top: 32px; border: 1px solid var(--line-2); border-radius: 8px; padding: 16px 18px; background: var(--surface); }
+.r-cc-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+.r-cc-h .lbl { margin: 0; }
+.r-proc { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
+.r-proc > summary { cursor: pointer; font-weight: 500; font-size: 14px; display: flex; gap: 10px; align-items: baseline; }
+.r-proc[open] > summary { margin-bottom: 10px; }
+.r-side { display: flex; flex-direction: column; gap: 26px; align-self: start; position: sticky; top: 0; font-size: 13.5px; }
+.r-side .lbl { margin-bottom: 8px; }
+.r-side p { margin: 0 0 8px; }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; margin: 0; }
+.facts dt { color: var(--ink-3); }
+.facts dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.facts .linkbtn { padding: 0; font-size: 13.5px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); }
+.r-next { border-top: 2px solid var(--ink); padding-top: 10px; }
+.handoff { display: flex; flex-direction: column; gap: 6px; }
+.handoff select, .handoff input { min-height: 32px; border: 1px solid var(--line-2); border-radius: 6px; background: var(--surface); padding: 0 8px; font-size: 13px; max-width: 100%; }
+.handoff .btn { align-self: flex-start; }
+.exec { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.exec a { color: var(--accent); font-size: 13px; }
+.exec .st.working, .exec .st.sent { color: var(--accent); } .exec .st.completed, .exec .st.review_ready { color: var(--ink); } .exec .st.failed, .exec .st.error { color: var(--bad); }
+
+/* Tipografía de documento */
+.md2 { font-size: 15.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.md2 > :first-child { margin-top: 0; }
+.md2 h1 { font-size: 24px; } .md2 h2 { font-size: 21px; margin: 38px 0 10px; letter-spacing: -.02em; padding-top: 18px; border-top: 1px solid var(--line); }
+.md2 h3 { font-size: 16.5px; margin: 26px 0 6px; } .md2 h4 { font-size: 15px; margin: 18px 0 4px; }
+.md2 h1, .md2 h2, .md2 h3, .md2 h4 { font-weight: 600; line-height: 1.25; scroll-margin-top: 16px; }
+.md2 > h2:first-child { border-top: 0; padding-top: 0; }
+.md2 p, .md2 ul, .md2 ol { margin: 0 0 14px; }
+.md2 li { margin-bottom: 5px; } .md2 li > ul, .md2 li > ol { margin: 5px 0 0; }
+.md2 strong { font-weight: 600; }
+.md2 a { color: var(--accent); }
+.md2 code { font-family: var(--f-mono); font-size: .86em; background: var(--sunk); padding: 1px 5px; border-radius: 4px; }
+.md2 pre.code { position: relative; background: var(--sunk); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
+.md2 pre code { background: none; padding: 0; font-size: inherit; }
+.copycode { position: absolute; top: 8px; right: 8px; border: 1px solid var(--line-2); background: var(--surface); border-radius: 5px; font-size: 12px; padding: 2px 8px; color: var(--ink-2); opacity: 0; transition: opacity .15s; }
+pre.code:hover .copycode, .copycode:focus-visible { opacity: 1; }
+.md2 blockquote { margin: 0 0 16px; padding: 4px 0 4px 16px; border-left: 3px solid var(--line-2); color: var(--ink-2); }
+.md2 hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.tbl { overflow-x: auto; margin: 4px 0 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.md2 table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.45; }
+.md2 th, .md2 td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.md2 th { font-weight: 600; font-size: 12.5px; color: var(--ink-2); background: var(--sunk); white-space: nowrap; }
+.md2 tr:last-child td { border-bottom: 0; }
+.opt { border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px 4px; margin: 0 0 14px; background: var(--surface); }
+.opt > h3 { margin-top: 0; }
+.opt.rec { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.diagram { margin: 6px 0 20px; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 14px; overflow-x: auto; }
+.diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+.diagram svg[aria-roledescription="gantt"] { min-width: 640px; }
+.diagram .note { color: #6b6860; }
+.sketch { margin: 6px 0 20px; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.sk-view { position: relative; height: 300px; overflow: hidden; background: #111; }
+.sk-view iframe { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; border: 0; transform: scale(var(--k, .5625)); transform-origin: 0 0; pointer-events: none; background: #fff; }
+.sketch figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.sketch figcaption > span:first-child { display: flex; flex-direction: column; }
+.sketch figcaption b { font-weight: 500; }
+.sk-acts { display: flex; gap: 6px; }
+.sketch pre.code { margin: 0; border-radius: 0; max-height: 360px; border-top: 1px solid var(--line); }
+.live-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.live-stage { display: flex; justify-content: center; background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 16px; overflow: hidden; }
+.livedlg .live-stage iframe { margin: 0; border: 0; border-radius: 0; height: 62vh; max-height: none; aspect-ratio: auto; }
+.livedlg iframe[data-dev="mobile"] { width: 390px; max-width: 100%; background: #fff; }
+.livedlg iframe[data-dev="desk"] { background: #fff; }
+
+@media (max-width: 1180px) { .r-grid { grid-template-columns: minmax(0, 1fr) 260px; } .r-toc { display: none; } }
 @media (max-width: 1080px) { .officegrid { grid-template-columns: minmax(0, 1fr); gap: 32px; } .live { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; } }
+@media (max-width: 900px) { .r-grid { grid-template-columns: minmax(0, 1fr); } .r-side { position: static; } }
 @media (max-width: 760px) {
   .top-in { flex-wrap: wrap; height: auto; padding-top: 12px; gap: 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .brand { flex: 1; }
@@ -312,6 +474,16 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   .sk details { grid-row: 3; }
   .sk .acts { grid-column: 2; grid-row: 1; }
   .drawer { top: 6vh; border-radius: 12px 12px 0 0; border-left: 0; border-top: 1px solid var(--line); padding-right: 0; }
+  .trow, .thead { grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; }
+  .trow .who, .thead span:nth-child(3), .trow .racts, .thead span:nth-child(5) { display: none; }
+  .r-bar { flex-wrap: wrap; padding-left: 16px; padding-right: 16px; gap: 8px 10px; }
+  .r-crumb { order: 3; flex-basis: 100%; }
+  .r-head h1 { font-size: 24px; }
+  .r-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; padding: 22px 16px 80px; }
+  .md2 { font-size: 15px; }
+  .sk-view { height: 220px; }
+  .tabs { gap: 16px; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); padding-right: 24px; } .tab { font-size: 13.5px; }
+  .toolbar { margin-top: 0; }
   .d-head, .d-body { padding-left: 18px; padding-right: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .bar.ind i { animation: none; } }
@@ -361,7 +533,7 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="officegrid">
       <div>
         <div class="roomtabs" id="roomTabs"></div>
-        <div class="stage-h"><h2 id="stageName"></h2><span class="sub">Toca un puesto para ver su trabajo o hacerle un encargo · <span class="num" id="clock"></span></span></div>
+        <div class="stage-h"><h2 id="stageName"></h2><span class="sub"><button class="btn ghost sm" type="button" id="btnTaller" hidden title="Auditoría revisa la app, elige una mejora y prepara el cambio para Claude Code">Revisar la app ahora</button> Toca un puesto para ver su trabajo o hacerle un encargo · <span class="num" id="clock"></span></span></div>
         <div class="canvaswrap"><canvas id="scene" role="img" aria-label="Sala de la oficina con los agentes trabajando"></canvas></div>
         <div class="team" id="team"></div>
       </div>
@@ -374,7 +546,8 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </section>
 
   <section class="view" id="v-encargos" hidden>
-    <div class="vh"><div><h1>Encargos</h1><p>Todo lo que has pedido, quién lo lleva y en qué punto está.</p></div></div>
+    <div class="vh"><div><h1>Encargos</h1><p>Todo lo que has pedido, quién lo lleva y en qué punto está. Selecciona varios para archivarlos, exportarlos o borrarlos de una vez.</p></div></div>
+    <div class="toolbar" id="taskTools"></div>
     <div class="filters" id="taskFilters"></div>
     <div id="taskList"></div>
   </section>
@@ -405,14 +578,19 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </section>
 
   <section class="view" id="v-entregables" hidden>
-    <div class="vh"><div><h1>Entregables</h1><p>El trabajo terminado, listo para copiar o descargar. Puedes exportarlo todo junto, por sala o por puesto.</p></div>
-      <div class="exp"><label for="expSel" hidden>Qué exportar</label><select id="expSel"></select><button class="btn ghost sm" type="button" id="expBtn">Exportar</button></div></div>
+    <div class="vh"><div><h1>Entregables</h1><p>Cada trabajo terminado es un documento: ábrelo para leerlo con su resumen, ver los bocetos en vivo, descargarlo en PDF o Word, o aplicarlo en tu app.</p></div></div>
+    <div class="toolbar"><label class="search"><span hidden>Buscar</span><input type="search" id="delQ" placeholder="Buscar en entregables"></label>
+      <div class="exp"><label for="expSel" hidden>Qué exportar</label><select id="expSel"></select><label for="expFmt" hidden>Formato</label><select id="expFmt"><option value="pdf">PDF</option><option value="docx">Word</option><option value="md">Markdown</option></select><button class="btn ghost sm" type="button" id="expBtn">Exportar</button></div></div>
     <div class="filters" id="delFilters"></div>
     <div id="delGrid"></div>
   </section>
 </main>
 
 <div class="scrim" id="scrim" hidden></div>
+<section class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="r-bar"><button class="btn ghost sm" type="button" id="rBack">Volver</button><div class="r-crumb" id="rCrumb"></div><div class="r-acts" id="rActs"></div></div>
+  <div class="r-scroll"><div class="r-grid"><nav class="r-toc" id="rToc" aria-label="Índice"></nav><article class="r-doc" id="rDoc"></article><aside class="r-side" id="rSide"></aside></div></div>
+</section>
 <section class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dName"></section>
 
 <dialog id="settings">
@@ -422,6 +600,13 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
     <div class="field"><label for="fBrief">En qué trabaja la oficina</label><textarea id="fBrief" maxlength="5000"></textarea>
       <span class="note">Todos los puestos leen esto antes de cada encargo: qué vendes, a quién, objetivos, tono de marca y presupuesto.</span></div>
     <div class="field"><label class="chk"><input type="checkbox" id="fReview"><span><b>Autoevaluación y mejora</b><span>Tras cada entrega, el puesto se pone nota; si no llega a 8, la rehace solo y guarda lo aprendido.</span></span></label></div>
+    <h3 class="fh">Taller de producto</h3>
+    <div class="field"><label class="chk"><input type="checkbox" id="fTallerOn"><span><b>Mejora continua de la app</b><span>Cada hora (o en rondas alternas del modo autónomo), Auditoría revisa la app, elige una mejora que no se haya hecho y prepara el cambio para Claude Code.</span></span></label></div>
+    <div class="field"><label for="fTallerRepo">Repositorio que mejora el Taller</label><input id="fTallerRepo" placeholder="usuario/proyecto" autocomplete="off"></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="fTallerApply"><span><b>Aplicar los cambios solos</b><span>Envía cada mejora a Claude Code, que hace el cambio, pasa las comprobaciones, abre la PR y la fusiona si todo pasa. Te llega un aviso al terminar.</span></span></label>
+      <label for="fTallerDay" class="note">Máximo al día</label><select id="fTallerDay"><option value="1">1 cambio</option><option value="3">3 cambios</option><option value="5">5 cambios</option></select></div>
+    <div class="field"><label for="fRepos">Tus repositorios (uno por línea)</label><textarea id="fRepos" style="min-height:64px" placeholder="usuario/proyecto"></textarea><span class="note">Aparecen al pulsar «Aplicar en la app» en cualquier entrega.</span></div>
+    <h3 class="fh">Equipo</h3>
     <div class="field"><label class="chk"><input type="checkbox" id="fAuto"><span><b>Trabajo autónomo continuo</b><span>Mientras la app esté abierta, Dirección lanza rondas solas: decide qué hace falta, reparte y mejora lo flojo. Máximo 12 rondas por sesión.</span></span></label>
       <label for="fEvery" class="note">Cada</label><select id="fEvery"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></div>
     <div id="keyFields">
@@ -455,16 +640,28 @@ dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: 
   </form>
 </dialog>
 
+<dialog id="ccDlg">
+  <form method="dialog">
+    <h2>Aplicar en la app</h2>
+    <p class="note" id="ccTitle"></p>
+    <div class="field"><label for="ccRepo">Repositorio</label><select id="ccRepo"></select><input id="ccOther" placeholder="usuario/proyecto" hidden autocomplete="off"></div>
+    <div class="field"><label for="ccInstr">Qué debe hacer Claude Code</label><textarea id="ccInstr" maxlength="4000"></textarea><span class="note">Recibe también la entrega completa como especificación.</span></div>
+    <div class="field"><label class="chk"><input type="checkbox" id="ccMerge"><span><b>Fusionar la PR si pasan las comprobaciones</b><span>Si lo desmarcas, la deja abierta para que la revises.</span></span></label></div>
+    <p class="note" id="ccNote"></p>
+    <div class="row"><button class="btn ghost" value="cancel" type="submit">Cancelar</button><button class="btn" value="send" type="submit" id="ccSend">Enviar a Claude Code</button></div>
+  </form>
+</dialog>
+
 <dialog id="liveDlg" class="livedlg">
   <form method="dialog">
-    <h2 id="liveTitle">Vista en vivo</h2>
+    <div class="live-h"><h2 id="liveTitle">Vista en vivo</h2><div class="seg" role="group" aria-label="Tamaño" id="liveDev"><button type="button" data-dev="mobile" aria-pressed="false">Móvil</button><button type="button" data-dev="desk" aria-pressed="true">Escritorio</button></div></div>
     <p class="note" id="liveNote">Así se ve la pieza.</p>
-    <iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe>
+    <div class="live-stage"><iframe id="liveFrame" title="Vista en vivo" sandbox="allow-scripts"></iframe></div>
     <div class="row"><button class="btn ghost" type="button" id="liveDl">Descargar HTML</button><button class="btn ghost" type="button" id="liveMp4" hidden>Descargar MP4</button><button class="btn" value="close" type="submit">Cerrar</button></div>
   </form>
 </dialog>
 
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
