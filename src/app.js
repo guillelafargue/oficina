@@ -247,8 +247,9 @@ function setAgent(agentId) {
 }
 // Cada encargo tiene su propio interruptor: se puede detener solo o caer con el encargo de empresa que lo contiene.
 const CTL = new Map();
-function stopTask(t) { const c = CTL.get(t.id); if (c) { t.stopped = true; c.abort(); } }
+function stopTask(t) { if (t.cloud && stopCloud(t)) return; const c = CTL.get(t.id); if (c) { t.stopped = true; c.abort(); } }
 async function runTask(o) {
+  if (!o.local && !o.runId && !o.image && cloudReady()) return runCloud(o);
   const a = byId[o.agentId], t = newTask(o), skill = t.skillId ? skillById(t.skillId) : null;
   const ctl = new AbortController(); CTL.set(t.id, ctl);
   if (o.signal) { if (o.signal.aborted) ctl.abort(); else o.signal.addEventListener("abort", () => ctl.abort(), { once: true }); }
@@ -554,6 +555,7 @@ function paintTeam() {
 function progressOf(t) {
   if (t.status !== "work") return { pct: 100, ind: false, txt: statusLabel(t) };
   if (t.phase === "cola") return { pct: 0, ind: false, txt: "En cola" };
+  if (t.phase === "cloud") return { pct: 50, ind: true, txt: t.cloud?.state === "sending" ? "Enviando a la nube" : "En la nube" };
   if (t.phase === "plan") return { pct: 8, ind: true, txt: "Planificando" };
   if (t.phase === "review") return { pct: 92, ind: true, txt: "Autoevaluando" };
   if (t.phase === "revise") return { pct: 95, ind: true, txt: `Mejorando (se puso un ${t.score})` };
@@ -1033,6 +1035,9 @@ function openSettings() {
   $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
   $("#fTallerOn").checked = TALLER.on; $("#fTallerApply").checked = TALLER.apply; $("#fTallerRepo").value = TALLER.repo; $("#fTallerDay").value = String(TALLER.perDay);
   $("#fRepos").value = CC.repos.join("\n");
+  $("#fCloudOn").checked = CLOUD.on; $("#fCloudRound").checked = CLOUD.round; $("#fCloudEvery").value = String(CLOUD.every);
+  const inClaude = !!window.claude?.use; ["fCloudOn", "fCloudRound", "fCloudEvery"].forEach(i => $("#" + i).disabled = !inClaude);
+  $("#cloudNote").textContent = inClaude ? "" : "Solo funciona abriendo la oficina dentro de Claude.";
   $("#fTallerRepo").value = projCur()?.repo || ""; PROJ.del = ""; paintProjDel();
   $("#settings").showModal();
 }
@@ -1049,6 +1054,9 @@ $("#settings").addEventListener("close", async () => {
   const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) { TALLER.repo = tr; projCur().repo = tr; if (!CC.repos.includes(tr)) CC.repos.push(tr); CC.repo = tr; ccSave(); } else if (!tr) projCur().repo = "";
   if (TALLER.on && !tOn) TALLER.next = Date.now() + 120e3;
   tallerSave();
+  CLOUD.on = $("#fCloudOn").checked;
+  const rWas = [CLOUD.round, CLOUD.every].join(); CLOUD.round = $("#fCloudRound").checked; CLOUD.every = +$("#fCloudEvery").value || 4; cloudSave();
+  if (window.claude?.use && [CLOUD.round, CLOUD.every].join() !== rWas) cloudRoundApply().then(() => toast(CLOUD.round ? "Rondas en la nube programadas." : "Rondas en la nube desactivadas.")).catch(e => { toast(ccErr(e)); if (CLOUD.round && !CLOUD.roundTrigger) { CLOUD.round = false; cloudSave(); } });
   const repos = $("#fRepos").value.split("\n").map(clean).filter(repoOk); if (repos.length) { CC.repos = [...new Set(repos)]; if (!CC.repos.includes(CC.repo)) CC.repo = CC.repos[0]; ccSave(); }
   paintAuto();
   paintHeader(); updateBanner(); await store.saveMeta(); toast("Guardado. El equipo ya conoce el proyecto.");
@@ -1299,6 +1307,7 @@ const store = {
       try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; Object.assign(PROJ.facts, b.factsBy || {}); loadBrainMeta(b); } } catch {}
     }
     projSetup(meta);
+    if (this.db) { cloudWatch(); setTimeout(() => cloudSync(true), 4000); }
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
@@ -1312,7 +1321,7 @@ const store = {
   },
   async saveCtx(x) { if (this.db) { try { await this.base.collection("context").doc(x.id).set(x); return; } catch (e) { if (e?.code === "quota_exceeded") { toast("El almacén está lleno: quita contexto o entregas antiguas."); throw e; } } } await idb.put(x); },
   async deleteCtx(id) { if (this.db) { try { await this.base.collection("context").doc(id).delete(); return; } catch {} } await idb.del(id); },
-  saveTask(t) { const { v, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); if (rec.firstResult) rec.firstResult = rec.firstResult.slice(0, 8000); return this.put("tasks", rec); },
+  saveTask(t) { if (t._lock && t.status === "work") return Promise.resolve(); const { v, _lock, ...rec } = t; rec.result = (rec.result || "").slice(0, 150000); rec.extra = (rec.extra || "").slice(0, 2000); if (rec.firstResult) rec.firstResult = rec.firstResult.slice(0, 8000); return this.put("tasks", rec); },
   deleteTask(id) { return this.del("tasks", id); },
   saveRun(r) { const { ctl, ...rec } = r; return this.put("runs", JSON.parse(JSON.stringify(rec))); },
   saveSkill(s) { return this.put("skills", s); },
@@ -1327,13 +1336,15 @@ const store = {
 function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + AUTO_WARMUP; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
-  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, ...(t.status === "work" ? { status: "error", interrupted: true, result: (t.result ? t.result + "\n\n" : "") + "> Se interrumpió al cerrar la oficina. Pulsa «Seguir» para retomarlo." } : {}), v: 0 });
+  for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, ...(t.status === "work" && t.cloud?.state === "working" ? { _lock: true } : t.status === "work" ? { status: "error", interrupted: true, result: (t.result ? t.result + "\n\n" : "") + "> Se interrumpió al cerrar la oficina. Pulsa «Seguir» para retomarlo." } : {}), v: 0 });
 }
 function mergeRuns(list) { const have = new Set(state.runs.map(r => r.id)); for (const r of list) if (r?.id && !have.has(r.id)) state.runs.push({ ...r, status: r.status === "work" ? "error" : r.status }); }
 
 /*__WORK__*/
 
 /*__PROJECTS__*/
+
+/*__CLOUD__*/
 
 /* ---------- Arranque ---------- */
 function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }

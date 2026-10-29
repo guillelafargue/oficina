@@ -553,7 +553,7 @@ Mejoras ya propuestas o aplicadas (no las repitas):
 ${done}
 Trabaja con el código del contexto si lo tienes; si no, con lo que sabes de la app por las entregas anteriores, y deja que Claude Code revise el repositorio para concretar. Entrega obligatoriamente «## Cambios para Claude Code» con el objetivo, los archivos, cómo probarlo y los criterios de aceptación.`;
   if (manual) toast("El Taller empieza a revisar la app.");
-  const t = await runTask({ agentId: "audit", order, from: "Taller", mode: "pro", skillId: "audit.backlog", extra });
+  const t = await runTask({ agentId: "audit", order, from: "Taller", mode: "pro", skillId: "audit.backlog", extra, local: true });
   if (t.status !== "done") return;
   const title = (docParts(t).resumen.split("\n").find(l => l.trim()) || t.order).replace(/^\s*[-*]\s*/, "").replace(/[*_`]/g, "").slice(0, 160);
   const entry = { at: Date.now(), title, task: t.id, applied: false };
