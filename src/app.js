@@ -493,11 +493,15 @@ async function giveFeedback(t, kind, comment) {
   if (state.open === a.id) openAgent(a.id);
 }
 // Trabajo autónomo continuo: Dirección lanza rondas solas mientras la app está abierta.
+// La primera ronda espera 5 minutos: si se abre la oficina un momento y se cierra, no deja encargos cortados.
+const AUTO_WARMUP = 5 * 60e3;
 function autoTick() {
   const au = BRAIN.auto;
   if (TALLER.on && !au.on && aiReady() && Date.now() >= (TALLER.next ||= Date.now() + 120e3)) { TALLER.next = Date.now() + 60 * 60e3; runTallerRound(); }
   if (!au.on || state.run || !aiReady() || au.rounds >= AUTO_MAX_ROUNDS) return paintAuto();
-  if (!au.next) au.next = Date.now() + 60e3;
+  // Con la oficina en segundo plano (otra app, pantalla bloqueada) el navegador la congela y lo que empiece se corta.
+  if (document.hidden) { au.next = Math.max(au.next || 0, Date.now() + AUTO_WARMUP); return; }
+  if (!au.next) au.next = Date.now() + AUTO_WARMUP;
   if (Date.now() >= au.next) { au.rounds++; au.next = Date.now() + au.every * 60e3; if (TALLER.on && au.rounds % 2 === 0) runTallerRound(); else runCompany("", "auto"); }
   paintAuto();
 }
@@ -812,11 +816,13 @@ document.addEventListener("click", async e => {
     const ids = [...state.sel], k = b.dataset.bulk;
     if (k === "none") { state.sel.clear(); return paintTasks(); }
     if (k === "delete") { if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = `¿Borrar ${ids.length}?`; return; } await deleteTasks(ids); toast(`${ids.length} borrados.`); return; }
+    if (k === "retry") { const l = state.tasks.filter(t => state.sel.has(t.id) && t.status === "error"); state.sel.clear(); await retryTasks(l); toast(l.length ? `${l.length} de nuevo en marcha.` : "Ninguno de los seleccionados tenía error."); return; }
     if (k === "export") return exportTasks(state.tasks.filter(t => state.sel.has(t.id) && t.status === "done").sort((a, b) => a.createdAt - b.createdAt), "pdf", "la selección");
     await archiveTasks(ids, k === "archive"); state.sel.clear(); toast(k === "archive" ? "Archivados." : "Desarchivados."); return paintAll();
   }
   if ((b = el("[data-clean]"))) {
     const c = cleanupCounts(), k = b.dataset.clean; b.closest("details")?.removeAttribute("open");
+    if (k === "resume") { await retryTasks(c.cut); toast(`${c.cut.length} encargos de nuevo en marcha.`); return; }
     if (k === "errors") { await deleteTasks(c.errs.map(t => t.id)); toast(`${c.errs.length} encargos con error borrados.`); }
     if (k === "old") { await archiveTasks(c.old.map(t => t.id)); toast(`${c.old.length} archivados.`); paintAll(); }
     if (k === "archived") { if (b.dataset.confirm !== "1") { b.closest("details").open = true; b.dataset.confirm = "1"; b.querySelector("b").textContent = `¿Borrar ${c.archived.length} para siempre?`; return; } await deleteTasks(c.archived.map(t => t.id)); toast("Archivados borrados."); }
@@ -866,7 +872,7 @@ document.addEventListener("click", async e => {
   if (el("#ctxPasteBtn")) { $("#pName").value = ""; $("#pText").value = ""; $("#pasteDlg").showModal(); return; }
   if (el("#ctxFilesBtn")) return $("#ctxFiles").click();
   if (el("#ctxDirBtn")) return $("#ctxDir").click();
-  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); if (!t) return; const wasOpen = READER.id === t.id; await deleteTasks([t.id]); const part = (t.interrupted || t.stopped) ? (t.result || "").replace(/\n*> [^\n]*$/, "").trim() : ""; runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, extra: (t.extra || "") + (part ? `\n\nYa llevabas esto hecho antes de que se interrumpiera. Úsalo y entrega el trabajo completo:\n${part.slice(0, 12000)}` : ""), version: t.version, _onCreate: n => { if (wasOpen) openReader(n.id); } }); toast("De nuevo en marcha."); return; }
+  if ((b = el("[data-retry]"))) { const t = state.tasks.find(x => x.id === b.dataset.retry); if (!t) return; await retryTasks([t], READER.id === t.id); toast("De nuevo en marcha."); return; }
   if ((b = el("[data-del]"))) {
     if (b.dataset.confirm !== "1") { b.dataset.confirm = "1"; b.textContent = "¿Seguro?"; return; }
     await deleteTasks([b.dataset.del]); toast("Borrado."); return;
@@ -1037,7 +1043,7 @@ $("#settings").addEventListener("close", async () => {
   if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
   BRAIN.review = $("#fReview").checked;
   const wasOn = BRAIN.auto.on; BRAIN.auto.on = $("#fAuto").checked; BRAIN.auto.every = +$("#fEvery").value || 30;
-  if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
+  if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + AUTO_WARMUP; BRAIN.auto.rounds = 0; }
   const repoOk = r => /^[\w.-]+\/[\w.-]+$/.test(r), clean = r => r.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
   const tOn = TALLER.on; TALLER.on = $("#fTallerOn").checked; TALLER.apply = $("#fTallerApply").checked; TALLER.perDay = +$("#fTallerDay").value || 3;
   const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) { TALLER.repo = tr; projCur().repo = tr; if (!CC.repos.includes(tr)) CC.repos.push(tr); CC.repo = tr; ccSave(); } else if (!tr) projCur().repo = "";
@@ -1318,7 +1324,7 @@ const store = {
     if (!this.db) this.saveBrain("facts");
   },
 };
-function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + 60e3; }
+function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + AUTO_WARMUP; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
   for (const t of list) if (t?.id && byId[t.agentId] && !have.has(t.id)) state.tasks.push({ steps: [], ...t, ...(t.status === "work" ? { status: "error", interrupted: true, result: (t.result ? t.result + "\n\n" : "") + "> Se interrumpió al cerrar la oficina. Pulsa «Seguir» para retomarlo." } : {}), v: 0 });

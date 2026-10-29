@@ -10,6 +10,7 @@ const now = Date.now();
 const doc = "## Resumen\n- Tres propuestas; recomiendo la B.\n\n## Propuestas\n\n### Opción A: corta\n**Qué:** algo.\n\n### Opción B: mejor (recomendada)\n**Qué:** otra cosa.\n\n| Paso | Coste |\n|---|---|\n| 1 | bajo |\n\n## Entrega final\nHaz la B.\n\n## Cambios para Claude Code\n- Cambia el texto del botón.\n\nSiguiente paso sugerido: probarla.";
 const tasks = [
   { id: "t1", agentId: "elena", order: "Propuestas de prueba", from: "Tú", status: "done", createdAt: now - 36e5, steps: [], result: doc, score: 9, mode: "rapido" },
+  { id: "t3", agentId: "elena", order: "Encargo cortado", from: "Tú", status: "work", createdAt: now - 6e5, steps: [], result: "Llevaba la mitad." },
   { id: "t2", agentId: "elena", order: "Encargo con error", from: "Tú", status: "error", createdAt: now - 864e5, steps: [], result: "> Se cortó." },
 ];
 
@@ -57,6 +58,10 @@ check(!(await p.locator("#reader").isVisible()), "Escape cierra el lector");
 
 await p.click('[data-view="encargos"]');
 await p.waitForTimeout(300);
+check(((await p.textContent("#taskList")) || "").includes("se cortó"), "avisa de los encargos que se cortaron al cerrar");
+await p.click('.notice [data-clean=\"resume\"]');
+await p.waitForTimeout(600);
+check(await p.evaluate(() => !state.tasks.some(t => t.id === "t3") && state.tasks.some(t => t.order === "Encargo cortado" && t.extra.includes("Llevaba la mitad"))), "«Retomarlos» los relanza desde lo que llevaban");
 await p.evaluate(() => deleteTasks(["t2"]));
 await p.waitForTimeout(300);
 check(!(await p.evaluate(() => "t2" in window.__stores.tasks)), "borrar quita la tarea de la base");

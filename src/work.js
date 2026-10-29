@@ -372,7 +372,20 @@ function cleanupCounts() {
   const errs = state.tasks.filter(t => t.status === "error" && !t.archived);
   const old = state.tasks.filter(t => t.status === "done" && !t.archived && Date.now() - t.createdAt > 7 * DAY);
   const archived = state.tasks.filter(t => t.archived);
-  return { errs, old, archived };
+  const cut = errs.filter(t => t.interrupted || t.stopped);
+  return { errs, old, archived, cut };
+}
+// Vuelve a lanzar encargos con error. Si se cortaron a medias, el puesto sigue desde lo que llevaba.
+// Van a la cola común: aunque sean muchos, trabajan unos pocos a la vez.
+async function retryTasks(list, openFirst) {
+  list = list.filter(t => t.status === "error"); if (!list.length) return;
+  await deleteTasks(list.map(t => t.id));
+  list.sort((a, b) => a.createdAt - b.createdAt).forEach((t, i) => {
+    const part = (t.interrupted || t.stopped) ? (t.result || "").replace(/\n*> [^\n]*$/, "").trim() : "";
+    runTask({ agentId: t.agentId, order: t.order, from: t.from, skillId: t.skillId, mode: t.mode, project: t.project, version: t.version,
+      extra: (t.extra || "") + (part ? `\n\nYa llevabas esto hecho antes de que se interrumpiera. Úsalo y entrega el trabajo completo:\n${part.slice(0, 12000)}` : ""),
+      _onCreate: n => { if (openFirst && !i) openReader(n.id); } });
+  });
 }
 function taskRowHTML(t) {
   const a = byId[t.agentId], k = kindOf(t), sum = t.status === "done" ? summaryOf(t, 1)[0] || "" : t.status === "error" ? (t.result || "").split("\n").filter(Boolean).pop()?.replace(/^>\s*/, "") || "" : progressOf(t).txt;
@@ -390,10 +403,11 @@ function paintTasks() {
   const n = state.sel.size, allOn = list.length && list.every(t => state.sel.has(t.id));
   const c = cleanupCounts();
   $("#taskTools").innerHTML = `<label class="search"><span hidden>Buscar</span><input type="search" id="taskQ" placeholder="Buscar en encargos y respuestas" value="${esc(state.q)}"></label>
-    ${n ? `<div class="bulk"><b>${n} ${n === 1 ? "seleccionado" : "seleccionados"}</b><button class="btn ghost sm" type="button" data-bulk="archive">Archivar</button><button class="btn ghost sm" type="button" data-bulk="unarchive">Desarchivar</button><button class="btn ghost sm" type="button" data-bulk="export">Exportar PDF</button><button class="btn ghost sm bad" type="button" data-bulk="delete">Borrar</button><button class="linkbtn" type="button" data-bulk="none">Quitar selección</button></div>`
-      : `<details class="menu"><summary class="btn ghost sm">Limpiar</summary><div class="menu-pop right"><button type="button" data-clean="errors" ${c.errs.length ? "" : "disabled"}><b>Borrar los que tienen error (${c.errs.length})</b><span>Encargos fallidos o detenidos</span></button><button type="button" data-clean="old" ${c.old.length ? "" : "disabled"}><b>Archivar terminados de hace más de 7 días (${c.old.length})</b><span>Siguen guardados en «Archivados»</span></button><button type="button" class="bad" data-clean="archived" ${c.archived.length ? "" : "disabled"}><b>Vaciar archivados (${c.archived.length})</b><span>Los borra para siempre</span></button></div></details>`}`;
-  $("#taskList").innerHTML = list.length ? `<div class="thead"><label class="tcheck"><input type="checkbox" id="pickAll" ${allOn ? "checked" : ""} aria-label="Seleccionar todos"></label><span>Encargo</span><span>Puesto</span><span>Estado</span><span></span></div>` + list.map(taskRowHTML).join("")
-    : `<p class="empty">${state.q ? "Nada coincide con la búsqueda." : state.fTasks === "archivados" ? "No hay encargos archivados." : "No hay encargos con este filtro."}</p>`;
+    ${n ? `<div class="bulk"><b>${n} ${n === 1 ? "seleccionado" : "seleccionados"}</b><button class="btn ghost sm" type="button" data-bulk="archive">Archivar</button><button class="btn ghost sm" type="button" data-bulk="unarchive">Desarchivar</button><button class="btn ghost sm" type="button" data-bulk="retry">Reintentar</button><button class="btn ghost sm" type="button" data-bulk="export">Exportar PDF</button><button class="btn ghost sm bad" type="button" data-bulk="delete">Borrar</button><button class="linkbtn" type="button" data-bulk="none">Quitar selección</button></div>`
+      : `<details class="menu"><summary class="btn ghost sm">Limpiar</summary><div class="menu-pop right"><button type="button" data-clean="resume" ${c.cut.length ? "" : "disabled"}><b>Retomar los interrumpidos (${c.cut.length})</b><span>Siguen desde lo que llevaban hecho</span></button><button type="button" data-clean="errors" ${c.errs.length ? "" : "disabled"}><b>Borrar los que tienen error (${c.errs.length})</b><span>Encargos fallidos o detenidos</span></button><button type="button" data-clean="old" ${c.old.length ? "" : "disabled"}><b>Archivar terminados de hace más de 7 días (${c.old.length})</b><span>Siguen guardados en «Archivados»</span></button><button type="button" class="bad" data-clean="archived" ${c.archived.length ? "" : "disabled"}><b>Vaciar archivados (${c.archived.length})</b><span>Los borra para siempre</span></button></div></details>`}`;
+  const cutN = c.cut.filter(t => t.interrupted).length;
+  $("#taskList").innerHTML = (cutN ? `<div class="notice"><p><b>${cutN} ${cutN === 1 ? "encargo se cortó" : "encargos se cortaron"} porque la oficina se cerró mientras trabajaba.</b> Los puestos solo trabajan con la oficina abierta y en pantalla: al salir de Claude o bloquear el móvil, se paran.</p><div class="row"><button class="btn sm" type="button" data-clean="resume">${cutN === 1 ? "Retomarlo" : "Retomarlos"}</button><button class="btn ghost sm" type="button" data-f="fTasks" data-v="error">${cutN === 1 ? "Verlo" : "Verlos"}</button></div></div>` : "") + (list.length ? `<div class="thead"><label class="tcheck"><input type="checkbox" id="pickAll" ${allOn ? "checked" : ""} aria-label="Seleccionar todos"></label><span>Encargo</span><span>Puesto</span><span>Estado</span><span></span></div>` + list.map(taskRowHTML).join("")
+    : `<p class="empty">${state.q ? "Nada coincide con la búsqueda." : state.fTasks === "archivados" ? "No hay encargos archivados." : "No hay encargos con este filtro."}</p>`);
   const q = $("#taskQ"); if (q && paintTasks.focus) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); paintTasks.focus = false; }
   void visible;
 }
