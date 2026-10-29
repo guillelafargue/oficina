@@ -1309,6 +1309,7 @@ const store = {
     projSetup(meta);
     if (this.db) { cloudWatch(); setTimeout(() => cloudSync(true), 4000); }
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
+    quietOnce();
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
   async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
@@ -1333,6 +1334,14 @@ const store = {
     if (!this.db) this.saveBrain("facts");
   },
 };
+// El propietario pidió (29-oct-2026) que la oficina solo trabaje cuando él da una orden: se apaga una vez todo lo autónomo.
+// Si después lo vuelve a encender en Ajustes, se respeta.
+function quietOnce() {
+  try { if (localStorage.getItem("oficina.quiet1")) return; localStorage.setItem("oficina.quiet1", "1"); } catch { return; }
+  BRAIN.auto.on = false; TALLER.on = false; TALLER.apply = false; tallerSave();
+  if (CLOUD.round) { CLOUD.round = false; cloudSave(); if (CLOUD.roundTrigger) cloudRoundApply().catch(() => {}); }
+  store.saveMeta(); paintAuto();
+}
 function loadBrainMeta(d) { if (typeof d.review === "boolean") BRAIN.review = d.review; BRAIN.auto.on = !!d.autoOn; BRAIN.auto.every = d.autoEvery || 30; if (BRAIN.auto.on) BRAIN.auto.next = Date.now() + AUTO_WARMUP; }
 function mergeTasks(list) {
   const have = new Set(state.tasks.map(t => t.id));
