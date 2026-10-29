@@ -236,10 +236,10 @@ Escribe en español, en Markdown, un informe ejecutivo breve para el propietario
 function newTask(o) {
   const t = { id: uid(), agentId: o.agentId, order: o.order, from: o.from || "Tú", skillId: o.skillId || null, mode: o.mode || "pro", runId: o.runId || null,
     extra: o.extra || "", steps: [], step: 0, phase: "cola", result: "", status: "work", createdAt: Date.now(), hasImage: !!o.image, v: 0, ...(o.version > 1 ? { version: o.version } : {}) };
-  state.tasks.push(t); o._onCreate?.(t); return t;
+  projPush("tasks", t, o.project || projOfRun(o.runId) || PROJ.cur); o._onCreate?.(t); return t;
 }
 function setAgent(agentId) {
-  const mine = state.tasks.filter(t => t.agentId === agentId && t.status === "work");
+  const mine = projAll("tasks").filter(t => t.agentId === agentId && t.status === "work");
   const active = mine.find(t => t.phase !== "cola");
   state.status[agentId] = active ? "work" : mine.length ? "queue" : "idle";
   if (active) state.bubble[agentId] = active.phase === "plan" ? "Planificando" : active.phase === "review" ? "Autoevaluando" : active.phase === "revise" ? "Mejorando su trabajo" : active.steps.length && active.step ? `Paso ${active.step}/${active.steps.length}` : "Trabajando";
@@ -295,7 +295,7 @@ async function runCompany(order, kind) {
   if (state.run) { toast("La empresa ya está con un encargo. Puedes detenerlo o esperar."); return; }
   const ctl = new AbortController();
   const run = { id: uid(), kind, order, resumen: "Dirección está preparando el plan…", fases: [], status: "work", createdAt: Date.now(), ctl };
-  state.run = run; state.runs.push(run);
+  state.run = run; projPush("runs", run);
   state.status.elena = "work"; state.bubble.elena = kind === "auto" ? "Decidiendo" : "Repartiendo";
   paintAll();
   try {
@@ -571,7 +571,7 @@ function paintLive() {
   $("#recentList").innerHTML = recent.length ? recent.map(jobHTML).join("") : `<p class="empty">Aquí verás lo último que se ha entregado.</p>`;
 }
 function paintRun() {
-  const box = $("#runBox"), r = state.run || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
+  const box = $("#runBox"), r = (state.run?.project === PROJ.cur ? state.run : null) || state.runs.filter(x => Date.now() - x.createdAt < 36e5).sort((a, b) => b.createdAt - a.createdAt)[0];
   if (!r) { box.hidden = true; return; }
   box.hidden = false;
   const lbl = { pend: "Pendiente", work: "En curso", done: "Hecho", error: "Error" };
@@ -791,6 +791,10 @@ document.addEventListener("click", async e => {
   if ((b = el("[data-agent]"))) return openAgent(b.dataset.agent);
   if ((b = el("[data-task]"))) return openReader(b.dataset.task);
   if (!el("details.menu")) document.querySelectorAll("details.menu[open]").forEach(d => d.open = false);
+  if ((b = el("[data-proj], [data-projnew], #projPop [data-settings]"))) b.closest("details")?.removeAttribute("open");
+  if ((b = el("[data-proj]"))) return projSwitch(b.dataset.proj);
+  if (el("[data-projnew]")) return projNew();
+  if (el("#projDel")) { e.preventDefault(); if (PROJ.del === PROJ.cur) { $("#settings").close("cancel"); await projDelete(PROJ.cur); toast("Proyecto borrado."); } else { PROJ.del = PROJ.cur; paintProjDel(); } return; }
   if (el("#rBack")) return closeReader();
   if ((b = el("[data-stop]"))) { const t = state.tasks.find(x => x.id === b.dataset.stop); if (t) { stopTask(t); toast("Detenido."); } return; }
   if ((b = el("[data-archive]"))) { const t = state.tasks.find(x => x.id === b.dataset.archive); if (t) { const on = !t.archived; await archiveTasks([t.id], on); toast(on ? "Archivado. Lo tienes en «Archivados»." : "Vuelve a estar en las listas."); paintAll(); if (READER.id === t.id) paintReader(); } return; }
@@ -1023,11 +1027,12 @@ function openSettings() {
   $("#fReview").checked = BRAIN.review; $("#fAuto").checked = BRAIN.auto.on; $("#fEvery").value = String(BRAIN.auto.every);
   $("#fTallerOn").checked = TALLER.on; $("#fTallerApply").checked = TALLER.apply; $("#fTallerRepo").value = TALLER.repo; $("#fTallerDay").value = String(TALLER.perDay);
   $("#fRepos").value = CC.repos.join("\n");
+  $("#fTallerRepo").value = projCur()?.repo || ""; PROJ.del = ""; paintProjDel();
   $("#settings").showModal();
 }
 $("#settings").addEventListener("close", async () => {
   if ($("#settings").returnValue !== "save") return;
-  state.company = $("#fCompany").value.trim() || "Mi empresa";
+  state.company = $("#fCompany").value.trim() || state.company;
   state.brief = $("#fBrief").value.trim() || state.brief;
   if (AI.mode !== "sample") saveSettingsLocal({ key: $("#fKey").value.trim(), model: $("#fModel").value });
   BRAIN.review = $("#fReview").checked;
@@ -1035,7 +1040,7 @@ $("#settings").addEventListener("close", async () => {
   if (BRAIN.auto.on && !wasOn) { BRAIN.auto.next = Date.now() + 60e3; BRAIN.auto.rounds = 0; }
   const repoOk = r => /^[\w.-]+\/[\w.-]+$/.test(r), clean = r => r.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$|\/$/g, "");
   const tOn = TALLER.on; TALLER.on = $("#fTallerOn").checked; TALLER.apply = $("#fTallerApply").checked; TALLER.perDay = +$("#fTallerDay").value || 3;
-  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) TALLER.repo = tr;
+  const tr = clean($("#fTallerRepo").value); if (repoOk(tr)) { TALLER.repo = tr; projCur().repo = tr; if (!CC.repos.includes(tr)) CC.repos.push(tr); CC.repo = tr; ccSave(); } else if (!tr) projCur().repo = "";
   if (TALLER.on && !tOn) TALLER.next = Date.now() + 120e3;
   tallerSave();
   const repos = $("#fRepos").value.split("\n").map(clean).filter(repoOk); if (repos.length) { CC.repos = [...new Set(repos)]; if (!CC.repos.includes(CC.repo)) CC.repo = CC.repos[0]; ccSave(); }
@@ -1055,7 +1060,7 @@ $("#skillDlg").addEventListener("close", async () => {
   state.customSkills.push(s); await store.saveSkill(s); state.fSkills = "custom"; paintSkills(); paintCounts(); toast("Skill creada.");
 });
 function paintHeader() {
-  $("#coName").textContent = state.company;
+  paintProjects();
   $("#coTitle").textContent = state.company;
   $("#briefLine").textContent = state.brief.length > 160 ? state.brief.slice(0, 160) + "…" : state.brief;
 }
@@ -1160,14 +1165,14 @@ async function addCtx(entries, source, kind) {
   for (const e of parts) {
     if (full || keep.length + added >= CTX_MAX_FILES || total + e.text.length > CTX_MAX_TOTAL) { missing.add(e.file); continue; }
     const old = CTX.items.find(x => x.source === source && x.name === e.name);
-    const x = { id: old?.id || "x" + uid(), source, kind, name: e.name, text: e.text, active: true, createdAt: old?.createdAt || now };
+    const x = { id: old?.id || "x" + uid(), project: PROJ.cur, source, kind, name: e.name, text: e.text, active: true, createdAt: old?.createdAt || now };
     try { await store.saveCtx(x); } catch (err) { full = err?.code === "quota_exceeded" ? "store" : "error"; missing.add(e.file); continue; }
     if (old) Object.assign(old, x); else CTX.items.push(x);
     total += x.text.length; added++;
     if (added % 10 === 0) { CTX.busy = `Guardando ${added} de ${parts.length}…`; paintContext(); }
   }
   CTX.report = missing.size ? { source, files: entries.length, missing: [...missing], why: full === "store" ? "el almacén de la oficina se ha llenado" : full ? "hubo un error al guardar" : "se ha llegado al límite de contexto (24 M de caracteres)" } : null;
-  try { localStorage.setItem("oficina.ctxreport", JSON.stringify(CTX.report)); } catch {}
+  try { localStorage.setItem(ctxReportKey(), JSON.stringify(CTX.report)); } catch {}
   CTX.busy = ""; CTX.ver++; paintContext(); paintCounts(); paintComposer();
   toast(missing.size ? `${entries.length - missing.size} de ${entries.length} archivos cargados. Faltan ${missing.size}: mira el aviso en Contexto.` : `${entries.length} ${entries.length === 1 ? "archivo añadido" : "archivos añadidos"} al contexto, completos.`);
 }
@@ -1252,6 +1257,7 @@ const thaw = d => { const v = d.data(); try { return structuredClone(v); } catch
 const store = {
   db: null, base: null,
   async init() {
+    let meta = null;
     try {
       if (window.claude?.use) {
         const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
@@ -1262,12 +1268,12 @@ const store = {
     if (this.db) {
       try {
         const s = await this.base.get();
-        if (s.exists) { const d = thaw(s); state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
+        if (s.exists) { const d = thaw(s); meta = d; state.company = d.company || state.company; state.brief = d.brief || state.brief; CTX.projectFiles = !!d.projectFiles; loadBrainMeta(d); }
         const [tq, rq, sq] = await Promise.all([
           this.base.collection("tasks").orderBy("createdAt", "desc").limit(1000).get(),
           this.base.collection("runs").orderBy("createdAt", "desc").limit(50).get(),
           this.base.collection("skills").get()]);
-        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
+        try { const bq = await this.base.collection("brain").get(); for (const d of bq.docs) { const x = thaw(d); if (d.id === "facts") BRAIN.facts = x.items || []; else if (d.id.startsWith("facts-")) PROJ.facts[d.id.slice(6)] = x.items || []; else if (byId[d.id]) BRAIN.mem[d.id] = x.items || []; } } catch {}
         try {
           const col = this.base.collection("context"), items = []; let last = "";
           for (let i = 0; i < 10; i++) {
@@ -1278,24 +1284,25 @@ const store = {
           CTX.items = items.sort((a, b) => a.createdAt - b.createdAt);
         } catch { try { const cq = await this.base.collection("context").limit(1000).get(); CTX.items = cq.docs.map(thaw).filter(x => x?.id); } catch {} }
         mergeTasks(tq.docs.map(thaw)); mergeRuns(rq.docs.map(thaw)); state.customSkills = sq.docs.map(thaw).filter(s => byId[s.agentId]);
-      } catch { this.db = null; }
+      } catch { this.db = null; meta = null; }
     }
     if (!this.db) {
       try { const s = JSON.parse(localStorage.getItem("oficina.v2") || "null");
-        if (s) { state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
+        if (s) { meta = s; state.company = s.company || state.company; state.brief = s.brief || state.brief; mergeTasks(s.tasks || []); mergeRuns(s.runs || []); state.customSkills = s.skills || []; } } catch {}
       CTX.items = await idb.all();
-      try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; loadBrainMeta(b); } } catch {}
+      try { const b = JSON.parse(localStorage.getItem("oficina.brain") || "null"); if (b) { BRAIN.mem = b.mem || {}; BRAIN.facts = b.facts || []; Object.assign(PROJ.facts, b.factsBy || {}); loadBrainMeta(b); } } catch {}
     }
-    try { CTX.report = JSON.parse(localStorage.getItem("oficina.ctxreport") || "null"); } catch {}
+    projSetup(meta);
     CTX.ver++; if (CTX.projectFiles) enableProjectFiles(false);
     paintHeader(); paintAll(); paintComposer(); if (state.view !== "oficina") go(state.view);
   },
   async put(col, rec) { if (this.db) { try { await this.base.collection(col).doc(rec.id).set(rec); return; } catch (e) { if (e?.code === "quota_exceeded") toast("El almacén está lleno: borra entregas antiguas."); } } this.local(); },
   async del(col, id) { if (this.db) { try { await this.base.collection(col).doc(id).delete(); return; } catch {} } this.local(); },
-  saveMeta() { if (this.db) return this.base.set({ company: state.company, brief: state.brief, projectFiles: CTX.projectFiles, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every }).catch(() => this.local()); this.local(); },
+  saveMeta() { projKeep(); if (this.db) return this.base.set({ company: state.company, brief: state.brief, projects: PROJ.list, cur: PROJ.cur, projectFiles: CTX.projectFiles, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every }).catch(() => this.local()); this.local(); },
   saveBrain(key) {
-    if (this.db) { const items = key === "facts" ? BRAIN.facts : memOf(key); return this.base.collection("brain").doc(key).set({ items: items.map(({ _busy, ...x }) => x) }).catch(() => {}); }
-    try { localStorage.setItem("oficina.brain", JSON.stringify({ mem: BRAIN.mem, facts: BRAIN.facts, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every })); } catch {}
+    if (this.db) { const items = key === "facts" ? BRAIN.facts : memOf(key); return this.base.collection("brain").doc(key === "facts" ? factsDoc(PROJ.cur) : key).set({ items: items.map(({ _busy, ...x }) => x) }).catch(() => {}); }
+    projSync(); const factsBy = Object.fromEntries(PROJ.list.map(p => [p.id, PROJ.b[p.id]?.facts || []]));
+    try { localStorage.setItem("oficina.brain", JSON.stringify({ mem: BRAIN.mem, facts: PROJ.b[projDef()]?.facts || BRAIN.facts, factsBy, review: BRAIN.review, autoOn: BRAIN.auto.on, autoEvery: BRAIN.auto.every })); } catch {}
   },
   async saveCtx(x) { if (this.db) { try { await this.base.collection("context").doc(x.id).set(x); return; } catch (e) { if (e?.code === "quota_exceeded") { toast("El almacén está lleno: quita contexto o entregas antiguas."); throw e; } } } await idb.put(x); },
   async deleteCtx(id) { if (this.db) { try { await this.base.collection("context").doc(id).delete(); return; } catch {} } await idb.del(id); },
@@ -1305,8 +1312,9 @@ const store = {
   saveSkill(s) { return this.put("skills", s); },
   deleteSkill(id) { return this.del("skills", id); },
   local() {
-    try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief,
-      tasks: state.tasks.filter(t => t.status !== "work").slice(-300).map(({ v, ...r }) => r), runs: state.runs.filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
+    projKeep();
+    try { localStorage.setItem("oficina.v2", JSON.stringify({ company: state.company, brief: state.brief, projects: PROJ.list, cur: PROJ.cur,
+      tasks: projAll("tasks").filter(t => t.status !== "work").sort((a, b) => a.createdAt - b.createdAt).slice(-300).map(({ v, ...r }) => r), runs: projAll("runs").filter(r => r.status !== "work").slice(-30).map(({ ctl, ...r }) => r), skills: state.customSkills })); } catch {}
     if (!this.db) this.saveBrain("facts");
   },
 };
@@ -1318,6 +1326,8 @@ function mergeTasks(list) {
 function mergeRuns(list) { const have = new Set(state.runs.map(r => r.id)); for (const r of list) if (r?.id && !have.has(r.id)) state.runs.push({ ...r, status: r.status === "work" ? "error" : r.status }); }
 
 /*__WORK__*/
+
+/*__PROJECTS__*/
 
 /* ---------- Arranque ---------- */
 function tick() { $("#clock").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }); }

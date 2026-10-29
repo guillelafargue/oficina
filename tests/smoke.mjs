@@ -27,7 +27,8 @@ await p.addInitScript(tasks => {
   const snap = (id, d) => ({ id, exists: !!d, data: () => JSON.parse(JSON.stringify(d)) });
   const stores = { tasks: Object.fromEntries(tasks.map(t => [t.id, t])) };
   const col = n => { const q = { where: () => q, orderBy: () => q, limit: () => q, get: async () => ({ docs: Object.entries(stores[n] || {}).map(([k, v]) => snap(k, v)) }), doc: id => ({ set: async v => { (stores[n] ||= {})[id] = v; }, delete: async () => { delete (stores[n] || {})[id]; }, get: async () => snap(id, (stores[n] || {})[id]) }) }; return q; };
-  const base = { get: async () => snap("office", { company: "Prueba" }), set: async () => {}, collection: col };
+  let meta = { company: "Prueba" };
+  const base = { get: async () => snap("office", meta), set: async v => { meta = JSON.parse(JSON.stringify(v)); window.__meta = meta; }, collection: col };
   const s = async (q, o = {}) => { const t = "## Resumen\n- Hecho.\n\n## Entrega final\nListo."; o.onText?.({ text: t }); return { text: t }; };
   s.json = async q => (q.includes('"nota"') ? { nota: 9, fallos: [], aprendizajes: [], hechos: [] } : { skills: [], pasos: ["Paso"] });
   s.limits = async () => ({ images: false, tools: true });
@@ -59,6 +60,27 @@ await p.waitForTimeout(300);
 await p.evaluate(() => deleteTasks(["t2"]));
 await p.waitForTimeout(300);
 check(!(await p.evaluate(() => "t2" in window.__stores.tasks)), "borrar quita la tarea de la base");
+
+// Proyectos: uno nuevo empieza vacío, sus encargos quedan aparte y se puede volver al primero.
+await p.click(".proj > summary");
+await p.click("[data-projnew]");
+await p.fill("#nName", "Tienda");
+await p.fill("#nBrief", "Tienda online de ropa.");
+await p.click('#projDlg button[value="save"]');
+await p.waitForTimeout(400);
+check(((await p.textContent("#projName")) || "") === "Tienda", "se crea y se abre un proyecto nuevo");
+check(await p.locator('[data-task="t1"]:visible').count() === 0, "el proyecto nuevo empieza sin encargos");
+const pid = await p.evaluate(() => PROJ.cur);
+await p.evaluate(() => { newTask({ agentId: "elena", order: "Encargo de la tienda" }).status = "done"; paintAll(); });
+check(await p.evaluate(() => state.tasks.length === 1 && state.tasks[0].project === PROJ.cur), "un encargo nuevo es del proyecto abierto");
+check(await p.evaluate(() => (window.__meta?.projects || []).length === 2), "la lista de proyectos se guarda");
+await p.click(".proj > summary");
+await p.click('[data-proj]:not([aria-current])');
+await p.waitForTimeout(400);
+check(await p.evaluate(pid => PROJ.cur !== pid && state.tasks.some(t => t.id === "t1") && !state.tasks.some(t => t.project === pid), pid), "al volver al primero están sus encargos y no los de la tienda");
+await p.evaluate(pid => projDelete(pid), pid);
+await p.waitForTimeout(300);
+check(await p.evaluate(() => PROJ.list.length === 1 && !Object.values(window.__stores.tasks).some(t => t.order === "Encargo de la tienda")), "borrar un proyecto borra sus encargos");
 
 check(errs.length === 0, "sin errores de página" + (errs.length ? ": " + errs.join(" | ") : ""));
 await b.close();

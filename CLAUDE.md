@@ -8,7 +8,7 @@ Oficina es una empresa virtual pixel-art con agentes de IA (artifact de Claude y
 - Fusiona tú los PR (squash) cuando la prueba de humo pase; no hace falta pedir permiso.
 
 ## Estructura
-- `src/data.js` salas, puestos y skills · `src/expert.js` referentes · `src/canon.js` obras y principios · `src/stack.js` herramientas · `src/taller.js` sala «Taller de producto» (Auditoría, Interfaz, Implementación, Calidad) · `src/office.js` motor pixel-art y planos · `src/app.html` y `src/app.js` interfaz · `src/work.js` lector de entregas, exportar PDF/Word/Markdown, gestión de encargos, «Aplicar en la app» (Claude Code) y rondas del Taller.
+- `src/data.js` salas, puestos y skills · `src/expert.js` referentes · `src/canon.js` obras y principios · `src/stack.js` herramientas · `src/taller.js` sala «Taller de producto» (Auditoría, Interfaz, Implementación, Calidad) · `src/office.js` motor pixel-art y planos · `src/app.html` y `src/app.js` interfaz · `src/work.js` lector de entregas, exportar PDF/Word/Markdown, gestión de encargos, «Aplicar en la app» (Claude Code) y rondas del Taller · `src/projects.js` proyectos (cada uno con su contexto, encargos, rondas y hechos; el equipo, sus skills y su memoria se comparten; los registros llevan `project` y lo antiguo va al primero).
 - `build.py` lo junta todo en `build/oficina.html` (artifact) y `public/index.html` (PWA, GitHub Pages).
 
 ## Comprobar un cambio
